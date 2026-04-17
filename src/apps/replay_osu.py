@@ -6,20 +6,26 @@ from src.skills.osu.env.osu_env import OsuEnv
 from src.skills.osu.parser.osu_parser import parse_beatmap
 from src.skills.osu.replay.replay_io import load_replay
 from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
+from src.core.config.paths import PATHS
 
 
 def main() -> None:
-    beatmap_path = (
-        r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\StylipS - Spica"
-        r"\StylipS - Spica. (TV-size) (Lanturn) [Easy-ka].osu"
-    )
+    beatmap_path = PATHS.active_map
+    replay_path = PATHS.best_eval_replay
 
-    replay_path = Path(
-        r"D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase1_ppo\replays\latest_live_replay.json"
-    )
+    if not replay_path.exists():
+        print("[бух] replay не найден")
+        print("[сделай сначала] python -m src.apps.eval_osu")
+        return
 
     beatmap = parse_beatmap(beatmap_path)
-    env = OsuEnv(beatmap=beatmap)
+    env = OsuEnv(
+        beatmap=beatmap,
+        dt_ms=16.6667,
+        upcoming_count=5,
+        cursor_speed_scale=14.0,
+        click_threshold=0.75,
+    )
 
     viewer = OsuViewer(
         env,

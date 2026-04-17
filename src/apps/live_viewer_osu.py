@@ -8,7 +8,7 @@ from src.skills.osu.env.types import OsuAction
 from src.skills.osu.parser.osu_parser import parse_beatmap
 from src.skills.osu.replay.replay_io import save_replay
 from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
-
+from src.core.config.paths import PATHS
 
 @dataclass(slots=True)
 class SimpleChasePolicy:
@@ -42,12 +42,7 @@ class SimpleChasePolicy:
 
 
 def main() -> None:
-    beatmap_path = (
-        r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\StylipS - Spica"
-        r"\StylipS - Spica. (TV-size) (Lanturn) [Easy-ka].osu"
-        # r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\Sati Akura - Sentimental Love"
-        # r"\Sati Akura - Sentimental Love (TV Size) (Nao Tomori) [Myxo's Easy].osu"
-    )
+    beatmap_path = PATHS.active_map
 
     beatmap = parse_beatmap(beatmap_path)
 
@@ -74,10 +69,7 @@ def main() -> None:
     policy = SimpleChasePolicy()
     viewer.run(policy)
 
-    replay_path = (
-        Path(r"D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase1_ppo\replays")
-        / "latest_live_replay.json"
-    )
+    replay_path = PATHS.latest_live_replay
     save_replay(env.replay_frames, replay_path)
     print(f"[saved replay] {replay_path}")
 

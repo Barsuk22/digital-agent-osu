@@ -1,0 +1,29 @@
+window_width: 1600
+window_height: 900
+fps: 60
+
+background_dim_alpha: 150
+playfield_pad_x: 80
+playfield_pad_y: 60
+
+cursor_trail_length: 32
+show_follow_points: true
+
+audio_offset_ms: 0.0
+
+combo_colors:
+  - [255, 122, 147]
+  - [76, 132, 255]
+  - [255, 210, 87]
+  - [126, 221, 255]
+
+cursor_color: [255, 90, 135]
+cursor_trail_color: [255, 140, 170]
+
+slider_inner_color: [20, 30, 48]
+slider_outer_color: [248, 248, 252]
+
+burst_300_color: [140, 220, 255]
+burst_100_color: [130, 255, 150]
+burst_50_color: [255, 225, 130]
+burst_miss_color: [255, 110, 110]

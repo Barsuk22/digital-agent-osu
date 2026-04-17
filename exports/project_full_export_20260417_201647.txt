@@ -1,0 +1,4051 @@
+====================================================================================================
+PROJECT FULL EXPORT
+====================================================================================================
+
+Root: D:\Projects\digital_agent_osu_project
+Exported at: 2026-04-17 20:16:47
+Total exported files: 95
+
+====================================================================================================
+PROJECT TREE
+====================================================================================================
+
+digital_agent_osu_project/
+├── configs/
+│   ├── base/
+│   │   ├── app.yaml
+│   │   ├── logging.yaml
+│   │   ├── paths.yaml
+│   │   └── storage.yaml
+│   ├── girl/
+│   │   ├── memory.yaml
+│   │   ├── persona.yaml
+│   │   ├── safety.yaml
+│   │   ├── state.yaml
+│   │   └── thought.yaml
+│   ├── osu/
+│   │   ├── curriculum_spica.yaml
+│   │   ├── env.yaml
+│   │   ├── judgement.yaml
+│   │   ├── maps.yaml
+│   │   ├── parser.yaml
+│   │   ├── reward_phase1.yaml
+│   │   ├── reward_phase2.yaml
+│   │   ├── reward_phase3.yaml
+│   │   └── viewer.yaml
+│   └── training/
+│       ├── checkpoints.yaml
+│       ├── eval.yaml
+│       ├── offline_rl.yaml
+│       └── ppo.yaml
+├── docs/
+│   ├── architecture/
+│   │   ├── game_learning.md
+│   │   ├── memory_model.md
+│   │   ├── module_map.md
+│   │   ├── safety_model.md
+│   │   ├── skill_system.md
+│   │   └── system_overview.md
+│   ├── dev/
+│   │   ├── coding_rules.md
+│   │   ├── roadmap.md
+│   │   └── test_strategy.md
+│   ├── girl/
+│   │   ├── emotional_state.md
+│   │   ├── initiative_logic.md
+│   │   ├── memory_layers.md
+│   │   ├── persona_core.md
+│   │   ├── thought_engine.md
+│   │   └── world_interface.md
+│   ├── osu/
+│   │   ├── curriculum_plan.md
+│   │   ├── hit_judgement_spec.md
+│   │   ├── osu_env_spec.md
+│   │   ├── osu_parser_spec.md
+│   │   ├── phase0_status.md
+│   │   ├── phase1_status.md
+│   │   ├── phase2_status.md
+│   │   ├── phase3_aim_stabilization_draft.md
+│   │   ├── reward_design.md
+│   │   ├── skill_extraction_gate.md
+│   │   ├── viewer_migration_notes.md
+│   │   └── viewer_spec.md
+│   └── MASTER_PLAN.md
+├── notebooks/
+├── scripts/
+├── src/
+│   ├── agent/
+│   │   ├── controller/
+│   │   ├── decision/
+│   │   ├── planner/
+│   │   ├── runtime/
+│   │   └── __init__.py
+│   ├── apps/
+│   │   ├── __init__.py
+│   │   ├── eval_osu.py
+│   │   ├── live_viewer_osu.py
+│   │   ├── parse_osu_map.py
+│   │   ├── replay_osu.py
+│   │   └── train_osu.py
+│   ├── core/
+│   │   ├── config/
+│   │   ├── events/
+│   │   ├── logging/
+│   │   ├── schemas/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── __init__.py
+│   ├── girl/
+│   │   ├── initiative/
+│   │   ├── memory_bridge/
+│   │   ├── orchestration/
+│   │   ├── persona/
+│   │   ├── safety/
+│   │   ├── state/
+│   │   ├── style/
+│   │   ├── thought/
+│   │   └── __init__.py
+│   ├── learning/
+│   │   ├── common/
+│   │   ├── curriculum/
+│   │   ├── imitation/
+│   │   ├── rl/
+│   │   │   ├── buffers/
+│   │   │   │   └── __init__.py
+│   │   │   ├── ppo/
+│   │   │   │   └── __init__.py
+│   │   │   ├── samplers/
+│   │   │   │   └── __init__.py
+│   │   │   ├── trainers/
+│   │   │   │   └── __init__.py
+│   │   │   └── __init__.py
+│   │   ├── transfer/
+│   │   └── __init__.py
+│   ├── memory/
+│   │   ├── consolidation/
+│   │   ├── episodic/
+│   │   ├── long_term/
+│   │   ├── session/
+│   │   ├── short_term/
+│   │   ├── skill_memory/
+│   │   └── __init__.py
+│   ├── skills/
+│   │   ├── base/
+│   │   ├── osu/
+│   │   │   ├── curriculum/
+│   │   │   │   └── __init__.py
+│   │   │   ├── domain/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── math_utils.py
+│   │   │   │   ├── models.py
+│   │   │   │   ├── osu_rules.py
+│   │   │   │   └── slider_path.py
+│   │   │   ├── env/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── osu_env.py
+│   │   │   │   └── types.py
+│   │   │   ├── evaluation/
+│   │   │   │   └── __init__.py
+│   │   │   ├── parser/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── osu_parser.py
+│   │   │   ├── replay/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── replay_io.py
+│   │   │   ├── reward/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── judgement.py
+│   │   │   ├── training/
+│   │   │   │   └── __init__.py
+│   │   │   ├── viewer/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── pygame_viewer.py
+│   │   │   │   └── replay_models.py
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   ├── storage/
+│   │   ├── files/
+│   │   ├── repositories/
+│   │   ├── sqlite/
+│   │   ├── vector/
+│   │   └── __init__.py
+│   ├── world/
+│   │   ├── audio/
+│   │   ├── browser/
+│   │   ├── desktop/
+│   │   ├── game_io/
+│   │   ├── sensors/
+│   │   ├── vision/
+│   │   └── __init__.py
+│   └── __init__.py
+├── tests/
+│   ├── fixtures/
+│   │   ├── osu/
+│   │   └── synthetic/
+│   ├── integration/
+│   │   ├── learning/
+│   │   ├── osu/
+│   │   └── runtime/
+│   └── unit/
+│       ├── memory/
+│       ├── osu/
+│       │   ├── curriculum/
+│       │   ├── domain/
+│       │   ├── env/
+│       │   ├── parser/
+│       │   ├── reward/
+│       │   └── viewer/
+│       └── skills/
+├── .env.example
+├── .gitignore
+├── pyproject.toml
+└── README.md
+
+====================================================================================================
+EXPORTED FILE LIST
+====================================================================================================
+
+- .env.example
+- .gitignore
+- configs/base/app.yaml
+- configs/base/logging.yaml
+- configs/base/paths.yaml
+- configs/base/storage.yaml
+- configs/girl/memory.yaml
+- configs/girl/persona.yaml
+- configs/girl/safety.yaml
+- configs/girl/state.yaml
+- configs/girl/thought.yaml
+- configs/osu/curriculum_spica.yaml
+- configs/osu/env.yaml
+- configs/osu/judgement.yaml
+- configs/osu/maps.yaml
+- configs/osu/parser.yaml
+- configs/osu/reward_phase1.yaml
+- configs/osu/reward_phase2.yaml
+- configs/osu/reward_phase3.yaml
+- configs/osu/viewer.yaml
+- configs/training/checkpoints.yaml
+- configs/training/eval.yaml
+- configs/training/offline_rl.yaml
+- configs/training/ppo.yaml
+- docs/architecture/game_learning.md
+- docs/architecture/memory_model.md
+- docs/architecture/module_map.md
+- docs/architecture/safety_model.md
+- docs/architecture/skill_system.md
+- docs/architecture/system_overview.md
+- docs/dev/coding_rules.md
+- docs/dev/roadmap.md
+- docs/dev/test_strategy.md
+- docs/girl/emotional_state.md
+- docs/girl/initiative_logic.md
+- docs/girl/memory_layers.md
+- docs/girl/persona_core.md
+- docs/girl/thought_engine.md
+- docs/girl/world_interface.md
+- docs/MASTER_PLAN.md
+- docs/osu/curriculum_plan.md
+- docs/osu/hit_judgement_spec.md
+- docs/osu/osu_env_spec.md
+- docs/osu/osu_parser_spec.md
+- docs/osu/phase0_status.md
+- docs/osu/phase1_status.md
+- docs/osu/phase2_status.md
+- docs/osu/phase3_aim_stabilization_draft.md
+- docs/osu/reward_design.md
+- docs/osu/skill_extraction_gate.md
+- docs/osu/viewer_migration_notes.md
+- docs/osu/viewer_spec.md
+- pyproject.toml
+- README.md
+- src/__init__.py
+- src/agent/__init__.py
+- src/apps/__init__.py
+- src/apps/eval_osu.py
+- src/apps/live_viewer_osu.py
+- src/apps/parse_osu_map.py
+- src/apps/replay_osu.py
+- src/apps/train_osu.py
+- src/core/__init__.py
+- src/girl/__init__.py
+- src/learning/__init__.py
+- src/learning/rl/__init__.py
+- src/learning/rl/buffers/__init__.py
+- src/learning/rl/ppo/__init__.py
+- src/learning/rl/samplers/__init__.py
+- src/learning/rl/trainers/__init__.py
+- src/memory/__init__.py
+- src/skills/__init__.py
+- src/skills/osu/__init__.py
+- src/skills/osu/curriculum/__init__.py
+- src/skills/osu/domain/__init__.py
+- src/skills/osu/domain/math_utils.py
+- src/skills/osu/domain/models.py
+- src/skills/osu/domain/osu_rules.py
+- src/skills/osu/domain/slider_path.py
+- src/skills/osu/env/__init__.py
+- src/skills/osu/env/osu_env.py
+- src/skills/osu/env/types.py
+- src/skills/osu/evaluation/__init__.py
+- src/skills/osu/parser/__init__.py
+- src/skills/osu/parser/osu_parser.py
+- src/skills/osu/replay/__init__.py
+- src/skills/osu/replay/replay_io.py
+- src/skills/osu/reward/__init__.py
+- src/skills/osu/reward/judgement.py
+- src/skills/osu/training/__init__.py
+- src/skills/osu/viewer/__init__.py
+- src/skills/osu/viewer/pygame_viewer.py
+- src/skills/osu/viewer/replay_models.py
+- src/storage/__init__.py
+- src/world/__init__.py
+
+
+====================================================================================================
+FILE 0001: .env.example
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\.env.example
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0002: .gitignore
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\.gitignore
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0003: configs/base/app.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\base\app.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0004: configs/base/logging.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\base\logging.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0005: configs/base/paths.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\base\paths.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0006: configs/base/storage.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\base\storage.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0007: configs/girl/memory.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\girl\memory.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0008: configs/girl/persona.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\girl\persona.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0009: configs/girl/safety.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\girl\safety.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0010: configs/girl/state.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\girl\state.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0011: configs/girl/thought.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\girl\thought.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0012: configs/osu/curriculum_spica.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\curriculum_spica.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0013: configs/osu/env.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\env.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0014: configs/osu/judgement.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\judgement.yaml
+Size: 381 bytes
+----------------------------------------------------------------------------------------------------
+# osu judgement configuration
+# timing windows, hit radius logic, slider/spinner thresholds
+
+timing:
+  use_od: true
+
+hit_windows:
+  great_ms: null
+  good_ms: null
+  meh_ms: null
+
+radius:
+  use_circle_size: true
+  scale: 1.0
+
+slider:
+  head_only_phase4: true
+  require_follow: false
+  tick_reward_enabled: false
+
+spinner:
+  enabled: true
+  min_spin_rate: 0.0
+
+====================================================================================================
+FILE 0015: configs/osu/maps.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\maps.yaml
+Size: 185 bytes
+----------------------------------------------------------------------------------------------------
+# osu maps registry
+# train/eval splits, pools, active maps by phase
+
+maps: []
+
+train_pools:
+  phase0: []
+  phase1: []
+  phase2: []
+  phase3: []
+
+eval_pools:
+  default: []
+
+====================================================================================================
+FILE 0016: configs/osu/parser.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\parser.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0017: configs/osu/reward_phase1.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\reward_phase1.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0018: configs/osu/reward_phase2.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\reward_phase2.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0019: configs/osu/reward_phase3.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\reward_phase3.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0020: configs/osu/viewer.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\osu\viewer.yaml
+Size: 574 bytes
+----------------------------------------------------------------------------------------------------
+window_width: 1600
+window_height: 900
+fps: 60
+
+background_dim_alpha: 150
+playfield_pad_x: 80
+playfield_pad_y: 60
+
+cursor_trail_length: 32
+show_follow_points: true
+
+audio_offset_ms: 0.0
+
+combo_colors:
+  - [255, 122, 147]
+  - [76, 132, 255]
+  - [255, 210, 87]
+  - [126, 221, 255]
+
+cursor_color: [255, 90, 135]
+cursor_trail_color: [255, 140, 170]
+
+slider_inner_color: [20, 30, 48]
+slider_outer_color: [248, 248, 252]
+
+burst_300_color: [140, 220, 255]
+burst_100_color: [130, 255, 150]
+burst_50_color: [255, 225, 130]
+burst_miss_color: [255, 110, 110]
+
+====================================================================================================
+FILE 0021: configs/training/checkpoints.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\training\checkpoints.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0022: configs/training/eval.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\training\eval.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0023: configs/training/offline_rl.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\training\offline_rl.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0024: configs/training/ppo.yaml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\configs\training\ppo.yaml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0025: docs/architecture/game_learning.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\game_learning.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0026: docs/architecture/memory_model.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\memory_model.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0027: docs/architecture/module_map.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\module_map.md
+Size: 364 bytes
+----------------------------------------------------------------------------------------------------
+
+
+
+## girl vs agent
+
+### `src/girl`
+Отвечает за character brain:
+- persona
+- thought
+- state
+- style
+- initiative
+- memory bridge
+- orchestration
+
+### `src/agent`
+Отвечает за execution layer:
+- planner
+- decision
+- controller
+- runtime
+
+Коротко:
+- girl = кто она
+- agent = как она действует
+
+====================================================================================================
+FILE 0028: docs/architecture/safety_model.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\safety_model.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0029: docs/architecture/skill_system.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\skill_system.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0030: docs/architecture/system_overview.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\architecture\system_overview.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0031: docs/dev/coding_rules.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\dev\coding_rules.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0032: docs/dev/roadmap.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\dev\roadmap.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0033: docs/dev/test_strategy.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\dev\test_strategy.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0034: docs/girl/emotional_state.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\emotional_state.md
+Size: 1 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0035: docs/girl/initiative_logic.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\initiative_logic.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0036: docs/girl/memory_layers.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\memory_layers.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0037: docs/girl/persona_core.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\persona_core.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0038: docs/girl/thought_engine.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\thought_engine.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0039: docs/girl/world_interface.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\girl\world_interface.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0040: docs/MASTER_PLAN.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\MASTER_PLAN.md
+Size: 6720 bytes
+----------------------------------------------------------------------------------------------------
+# 🧠 MASTER PLAN — OSU AGENT (REAL MAP CURRICULUM + SKILL MEMORY)
+
+---
+
+## 🔹 ФАЗА 0 — CORE FOUNDATION (ОБЯЗАТЕЛЬНО)
+
+### Цель
+Создать честную osu-like среду, где агент действительно “играет”, а не симулирует.
+
+### Что должно быть
+
+#### 1. .osu parser
+- circles / sliders / spinners
+- hit time / spawn time
+- slider path (points, repeats)
+- timing windows (OD)
+
+#### 2. Environment
+- текущее время
+- cursor (x, y)
+- ближайшие объекты (N вперёд)
+- состояние текущего объекта
+- distance до цели
+- time_to_hit
+
+#### 3. Action space
+- dx, dy (continuous)
+- click (continuous → threshold)
+
+#### 4. Hit system
+- 300 / 100 / 50 / miss
+- hit only if inside radius
+
+**Slider:**
+- head
+- follow
+- ticks
+
+**Spinner:**
+- вращение
+- накопление скорости
+
+#### 5. Viewer (ОБЯЗАТЕЛЬНО)
+- карта
+- курсор агента
+- клики
+- hit/miss
+- combo / accuracy
+- replay
+
+---
+
+## 🔹 ФАЗА 1 — INITIAL CONTACT (НЕ ПАНИКУЕТ)
+
+### Цель
+Агент перестаёт “зависать” и начинает хоть как-то взаимодействовать с картой.
+
+### Среда
+👉 одна простая реальная `.osu` карта
+
+### Фокус обучения
+- движение к объектам
+- базовый клик
+- понимание “есть цель”
+
+### Reward
+- + за приближение к кругу  
+- + за hit  
+- - за miss  
+- - за лишний клик  
+
+👉 sliders / spinner = почти игнор
+
+### Критерий
+- агент кликает  
+- не стоит на месте  
+- иногда попадает  
+
+---
+
+## 🔹 ФАЗА 2 — TIMING FOUNDATION
+
+### Цель
+Научить “когда нажимать”
+
+### Что меняется
+👉 усиливается влияние времени
+
+### Reward
+- Gaussian вокруг hit time  
+- штраф за early / late  
+- штраф за click вне окна  
+
+### Критерий
+- появляется timing  
+- уменьшается random clicking  
+
+---
+
+## 🔹 ФАЗА 3 — AIM STABILIZATION
+
+### Цель
+Связать позицию и клик
+
+### Что важно
+- курсор должен быть на цели В МОМЕНТ клика  
+
+### Reward
+- сильный штраф за click далеко от цели  
+- бонус за точное попадание  
+
+### Критерий
+- меньше “клик рядом”  
+- больше реальных hit  
+
+---
+
+## 🔹 ФАЗА 4 — SLIDER INTRO
+
+### Цель
+Агент перестаёт умирать от слайдеров
+
+### Что включаем
+- reward за slider head  
+- небольшой reward за follow  
+
+### Пока НЕ требуем
+- идеального ведения  
+- ticks  
+
+### Критерий
+- не игнорирует слайдер  
+- не срывается мгновенно  
+
+---
+
+## 🔹 ФАЗА 5 — SLIDER CONTROL
+
+### Цель
+Полноценное управление слайдером
+
+### Что добавляем
+- reward за ticks  
+- reward за удержание  
+- штраф за drop  
+
+### Критерий
+- стабильно ведёт простые слайдеры  
+
+---
+
+## 🔹 ФАЗА 6 — SPINNER CONTROL
+
+### Цель
+Агент понимает спиннер
+
+### Reward
+- скорость вращения  
+- удержание движения  
+- штраф за “стояние”  
+
+### Критерий
+- начинает крутить  
+- не игнорирует  
+
+---
+
+## 🔹 ФАЗА 7 — MULTI-MAP GENERALIZATION
+
+### Цель
+Перенос навыка на разные карты
+
+### Что делаем
+- добавляем 5–10 easy карт  
+- разные паттерны  
+
+### Проверяем
+- не ломается ли поведение  
+- есть ли перенос  
+
+### Критерий
+- стабильная игра на разных картах  
+
+---
+
+## 🔹 ФАЗА 8 — PATTERN FORMATION
+
+### Цель
+Начало понимания паттернов
+
+### Что появляется
+- doubles  
+- triples  
+- маленькие цепочки  
+
+### Что важно
+- не “каждый круг отдельно”  
+- а “движение как последовательность”  
+
+### Критерий
+- держит короткие комбо  
+
+---
+
+## ФАЗА 9 — STABILITY GATE / SKILL EXTRACTION GATE
+
+### Цель
+
+Проверить, что агент уже играет не случайно, а повторяемо.
+
+### Что проверяем
+hit rate держится стабильно
+useful clicks не разваливаются
+timing drift не хаотичный
+поведение повторяется на нескольких эпизодах
+хорошие куски реально похожи друг на друга
+
+### Критерий
+успешные паттерны повторяются
+можно честно извлекать навык, а не случайную удачу
+
+## ФАЗА 10 — SKILL MEMORY INIT
+
+### Цель
+Начать сохранять только устойчивые успешные паттерны
+
+### Что делаем
+ищем хорошие эпизоды
+режем на куски
+кластеризуем
+сохраняем как заготовки навыков
+
+### Типы навыков
+jump
+short chain
+slider follow
+
+### Критерий
+навыки не мусорные
+навыки повторно применимы
+
+## ФАЗА 11 — SKILL SYSTEM + SELECTION
+
+### Цель
+Использовать навыки во время игры
+
+### Добавляется
+skill selector
+ranking применимости
+fallback на основную policy
+
+### Критерий
+навык реально помогает
+skill usage повышает качество игры
+
+
+## 🔹 ФАЗА 12 — SPEED & COMPLEXITY
+
+### Цель
+Поднять уровень до real osu
+
+### Что растёт
+- AR  
+- OD  
+- плотность  
+- jumps  
+- streams  
+
+### Добавляем
+- temporal model (LSTM / attention)  
+
+### Критерий
+- не разваливается на скорости  
+
+---
+
+## 🔹 ФАЗА 13 — FINAL GENERALIZATION
+
+### Цель
+Играть новые карты
+
+### Проверка
+- unseen maps  
+- разные стили  
+- разные BPM  
+
+### Финальные метрики
+- accuracy  
+- combo  
+- стабильность
+
+====================================================================================================
+FILE 0041: docs/osu/curriculum_plan.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\curriculum_plan.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0042: docs/osu/hit_judgement_spec.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\hit_judgement_spec.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0043: docs/osu/osu_env_spec.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\osu_env_spec.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0044: docs/osu/osu_parser_spec.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\osu_parser_spec.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0045: docs/osu/phase0_status.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\phase0_status.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0046: docs/osu/phase1_status.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\phase1_status.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0047: docs/osu/phase2_status.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\phase2_status.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0048: docs/osu/phase3_aim_stabilization_draft.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\phase3_aim_stabilization_draft.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0049: docs/osu/reward_design.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\reward_design.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0050: docs/osu/skill_extraction_gate.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\skill_extraction_gate.md
+Size: 993 bytes
+----------------------------------------------------------------------------------------------------
+# Skill Extraction Gate
+
+## Цель
+Проверить, что агент уже играет не случайно, а повторяемо, и только потом включать извлечение навыков.
+
+## Что проверяем
+- hit rate стабилен
+- useful clicks стабилизировались
+- timing drift не хаотичный
+- успешные паттерны повторяются
+- хорошие эпизоды похожи друг на друга
+
+## Критерий прохождения
+- агент показывает повторяемое поведение
+- успешные куски можно кластеризовать
+- извлечённые паттерны выглядят как реальные заготовки навыков, а не случайное везение
+
+## Следующий шаг
+После прохождения gate можно переходить к Skill Memory Init.
+
+====================================================================================================
+FILE 0051: docs/osu/viewer_migration_notes.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\viewer_migration_notes.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0052: docs/osu/viewer_spec.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\docs\osu\viewer_spec.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0053: pyproject.toml
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\pyproject.toml
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0054: README.md
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\README.md
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0055: src/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0056: src/agent/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\agent\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0057: src/apps/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0058: src/apps/eval_osu.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\eval_osu.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0059: src/apps/live_viewer_osu.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\live_viewer_osu.py
+Size: 2583 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
+from src.skills.osu.env.osu_env import OsuEnv
+from src.skills.osu.env.types import OsuAction
+from src.skills.osu.parser.osu_parser import parse_beatmap
+from src.skills.osu.replay.replay_io import save_replay
+from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
+
+
+@dataclass(slots=True)
+class SimpleChasePolicy:
+    click_time_threshold_ms: float = 55.0
+    pos_gain: float = 0.06
+    click_distance_threshold: float = 52.0
+
+    def __call__(self, obs) -> OsuAction:
+        target = None
+        for item in obs.upcoming:
+            if item.kind_id != -1:
+                target = item
+                break
+
+        if target is None:
+            return OsuAction(dx=0.0, dy=0.0, click_strength=0.0)
+
+        dx = (target.x - obs.cursor_x) * self.pos_gain
+        dy = (target.y - obs.cursor_y) * self.pos_gain
+
+        dx = max(-1.0, min(1.0, dx))
+        dy = max(-1.0, min(1.0, dy))
+
+        should_click = (
+            abs(target.time_to_hit_ms) <= self.click_time_threshold_ms
+            and target.distance_to_cursor <= self.click_distance_threshold
+        )
+
+        click_strength = 1.0 if should_click else 0.0
+        return OsuAction(dx=dx, dy=dy, click_strength=click_strength)
+
+
+def main() -> None:
+    beatmap_path = (
+        r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\StylipS - Spica"
+        r"\StylipS - Spica. (TV-size) (Lanturn) [Easy-ka].osu"
+        # r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\Sati Akura - Sentimental Love"
+        # r"\Sati Akura - Sentimental Love (TV Size) (Nao Tomori) [Myxo's Easy].osu"
+    )
+
+    beatmap = parse_beatmap(beatmap_path)
+
+    env = OsuEnv(
+        beatmap=beatmap,
+        dt_ms=16.6667,
+        upcoming_count=5,
+        cursor_speed_scale=14.0,
+        click_threshold=0.75,
+    )
+
+    viewer = OsuViewer(
+        env,
+        ViewerConfig(
+            window_width=1600,
+            window_height=900,
+            fps=60,
+            background_dim_alpha=150,
+            playfield_pad_x=80,
+            playfield_pad_y=60,
+        ),
+    )
+
+    policy = SimpleChasePolicy()
+    viewer.run(policy)
+
+    replay_path = (
+        Path(r"D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase1_ppo\replays")
+        / "latest_live_replay.json"
+    )
+    save_replay(env.replay_frames, replay_path)
+    print(f"[saved replay] {replay_path}")
+
+
+if __name__ == "__main__":
+    main()
+
+====================================================================================================
+FILE 0060: src/apps/parse_osu_map.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\parse_osu_map.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0061: src/apps/replay_osu.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\replay_osu.py
+Size: 1119 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from pathlib import Path
+
+from src.skills.osu.env.osu_env import OsuEnv
+from src.skills.osu.parser.osu_parser import parse_beatmap
+from src.skills.osu.replay.replay_io import load_replay
+from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
+
+
+def main() -> None:
+    beatmap_path = (
+        r"D:\Projects\digital_agent_osu_project\data\raw\osu\maps\StylipS - Spica"
+        r"\StylipS - Spica. (TV-size) (Lanturn) [Easy-ka].osu"
+    )
+
+    replay_path = Path(
+        r"D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase1_ppo\replays\latest_live_replay.json"
+    )
+
+    beatmap = parse_beatmap(beatmap_path)
+    env = OsuEnv(beatmap=beatmap)
+
+    viewer = OsuViewer(
+        env,
+        ViewerConfig(
+            window_width=1600,
+            window_height=900,
+            fps=60,
+            background_dim_alpha=150,
+            playfield_pad_x=80,
+            playfield_pad_y=60,
+        ),
+    )
+
+    frames = load_replay(replay_path)
+    viewer.play_replay(frames)
+
+
+if __name__ == "__main__":
+    main()
+
+====================================================================================================
+FILE 0062: src/apps/train_osu.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\apps\train_osu.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0063: src/core/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\core\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0064: src/girl/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\girl\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0065: src/learning/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0066: src/learning/rl/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\rl\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0067: src/learning/rl/buffers/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\rl\buffers\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0068: src/learning/rl/ppo/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\rl\ppo\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0069: src/learning/rl/samplers/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\rl\samplers\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0070: src/learning/rl/trainers/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\learning\rl\trainers\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0071: src/memory/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\memory\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0072: src/skills/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0073: src/skills/osu/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0074: src/skills/osu/curriculum/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\curriculum\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0075: src/skills/osu/domain/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\domain\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0076: src/skills/osu/domain/math_utils.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\domain\math_utils.py
+Size: 719 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import math
+from typing import Tuple
+
+
+OSU_PLAYFIELD_WIDTH = 512
+OSU_PLAYFIELD_HEIGHT = 384
+
+
+def clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
+def clamp_position(x: float, y: float) -> Tuple[float, float]:
+    return (
+        clamp(x, 0.0, OSU_PLAYFIELD_WIDTH),
+        clamp(y, 0.0, OSU_PLAYFIELD_HEIGHT),
+    )
+
+
+def distance(x1: float, y1: float, x2: float, y2: float) -> float:
+    return math.hypot(x2 - x1, y2 - y1)
+
+
+def osu_circle_radius(cs: float) -> float:
+    # стандартная формула osu! примерно такая:
+    # radius = 54.4 - 4.48 * CS
+    return 54.4 - 4.48 * cs
+
+====================================================================================================
+FILE 0077: src/skills/osu/domain/models.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\domain\models.py
+Size: 2498 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import List, Optional, Tuple
+
+
+Vec2 = Tuple[float, float]
+
+
+class HitObjectType(str, Enum):
+    CIRCLE = "circle"
+    SLIDER = "slider"
+    SPINNER = "spinner"
+
+
+@dataclass(slots=True)
+class TimingPoint:
+    time_ms: float
+    beat_length: float
+    meter: int
+    sample_set: int
+    sample_index: int
+    volume: int
+    uninherited: bool
+    effects: int
+
+    @property
+    def slider_velocity_multiplier(self) -> float:
+        if self.uninherited:
+            return 1.0
+        if self.beat_length == 0:
+            return 1.0
+        return max(0.1, -100.0 / self.beat_length)
+
+
+@dataclass(slots=True)
+class DifficultySettings:
+    hp: float
+    cs: float
+    od: float
+    ar: float
+    slider_multiplier: float
+    slider_tick_rate: float
+
+
+@dataclass(slots=True)
+class CircleObject:
+    x: float
+    y: float
+    time_ms: float
+    combo_index: int
+    combo_number: int
+    hitsound: int
+
+
+@dataclass(slots=True)
+class SliderObject:
+    x: float
+    y: float
+    time_ms: float
+    combo_index: int
+    combo_number: int
+    hitsound: int
+    curve_type: str
+    control_points: List[Vec2]
+    repeats: int
+    pixel_length: float
+    edge_sounds: List[int] = field(default_factory=list)
+    edge_sets: List[str] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class SpinnerObject:
+    x: float
+    y: float
+    time_ms: float
+    combo_index: int
+    combo_number: int
+    hitsound: int
+    end_time_ms: float
+
+
+@dataclass(slots=True)
+class HitObject:
+    kind: HitObjectType
+    circle: Optional[CircleObject] = None
+    slider: Optional[SliderObject] = None
+    spinner: Optional[SpinnerObject] = None
+
+    @property
+    def time_ms(self) -> float:
+        if self.kind == HitObjectType.CIRCLE:
+            return self.circle.time_ms
+        if self.kind == HitObjectType.SLIDER:
+            return self.slider.time_ms
+        return self.spinner.time_ms
+
+
+@dataclass(slots=True)
+class ParsedBeatmap:
+    beatmap_path: Path
+    beatmap_dir: Path
+    audio_filename: str
+    audio_path: Optional[Path]
+    background_filename: Optional[str]
+    background_path: Optional[Path]
+    title: str
+    artist: str
+    version: str
+    difficulty: DifficultySettings
+    timing_points: List[TimingPoint]
+    hit_objects: List[HitObject]
+
+====================================================================================================
+FILE 0078: src/skills/osu/domain/osu_rules.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\domain\osu_rules.py
+Size: 2012 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from src.skills.osu.domain.models import ParsedBeatmap, SliderObject, TimingPoint
+
+
+def ar_to_preempt_ms(ar: float) -> float:
+    if ar < 5.0:
+        return 1200.0 + 600.0 * (5.0 - ar) / 5.0
+    return 1200.0 - 750.0 * (ar - 5.0) / 5.0
+
+
+def hit_window_300(od: float) -> float:
+    return 79.5 - 6.0 * od
+
+
+def hit_window_100(od: float) -> float:
+    return 139.5 - 8.0 * od
+
+
+def hit_window_50(od: float) -> float:
+    return 199.5 - 10.0 * od
+
+
+def timing_point_at(beatmap: ParsedBeatmap, time_ms: float) -> TimingPoint:
+    chosen = beatmap.timing_points[0]
+    for tp in beatmap.timing_points:
+        if tp.time_ms <= time_ms:
+            chosen = tp
+        else:
+            break
+    return chosen
+
+
+def inherited_timing_point_at(beatmap: ParsedBeatmap, time_ms: float) -> TimingPoint | None:
+    chosen = None
+    for tp in beatmap.timing_points:
+        if tp.time_ms > time_ms:
+            break
+        if not tp.uninherited:
+            chosen = tp
+    return chosen
+
+
+def base_timing_point_at(beatmap: ParsedBeatmap, time_ms: float) -> TimingPoint:
+    chosen = beatmap.timing_points[0]
+    for tp in beatmap.timing_points:
+        if tp.time_ms > time_ms:
+            break
+        if tp.uninherited:
+            chosen = tp
+    return chosen
+
+
+def slider_duration_ms(beatmap: ParsedBeatmap, slider: SliderObject) -> float:
+    base_tp = base_timing_point_at(beatmap, slider.time_ms)
+    inherited_tp = inherited_timing_point_at(beatmap, slider.time_ms)
+
+    sv_multiplier = 1.0 if inherited_tp is None else inherited_tp.slider_velocity_multiplier
+
+    beats = (slider.pixel_length * slider.repeats) / (
+        100.0 * beatmap.difficulty.slider_multiplier * sv_multiplier
+    )
+    return beats * base_tp.beat_length
+
+
+def slider_span_duration_ms(beatmap: ParsedBeatmap, slider: SliderObject) -> float:
+    total = slider_duration_ms(beatmap, slider)
+    return total / max(1, slider.repeats)
+
+====================================================================================================
+FILE 0079: src/skills/osu/domain/slider_path.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\domain\slider_path.py
+Size: 6177 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import List, Sequence, Tuple
+
+from src.skills.osu.domain.models import SliderObject
+
+Vec2 = Tuple[float, float]
+
+
+def _lerp(a: Vec2, b: Vec2, t: float) -> Vec2:
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+
+def _distance(a: Vec2, b: Vec2) -> float:
+    return math.hypot(b[0] - a[0], b[1] - a[1])
+
+
+def _bezier_point(points: Sequence[Vec2], t: float) -> Vec2:
+    pts = list(points)
+    while len(pts) > 1:
+        pts = [_lerp(pts[i], pts[i + 1], t) for i in range(len(pts) - 1)]
+    return pts[0]
+
+
+def _sample_line(points: Sequence[Vec2], samples_per_segment: int = 24) -> List[Vec2]:
+    result: List[Vec2] = []
+    for i in range(len(points) - 1):
+        a = points[i]
+        b = points[i + 1]
+        for s in range(samples_per_segment):
+            t = s / samples_per_segment
+            result.append(_lerp(a, b, t))
+    result.append(points[-1])
+    return result
+
+
+def _sample_bezier(points: Sequence[Vec2], samples: int = 128) -> List[Vec2]:
+    if len(points) == 1:
+        return [points[0]]
+    return [_bezier_point(points, i / (samples - 1)) for i in range(samples)]
+
+
+def _sample_passthrough(points: Sequence[Vec2], samples: int = 128) -> List[Vec2]:
+    # Для Phase 0.7: passthrough временно ведём как bezier-подобную кривую.
+    # Это не osu-perfect arc solver, но уже даёт гладкий путь.
+    return _sample_bezier(points, samples=samples)
+
+
+def sample_slider_curve(slider: SliderObject) -> List[Vec2]:
+    points: List[Vec2] = [(slider.x, slider.y), *slider.control_points]
+
+    if len(points) < 2:
+        return points
+
+    curve_type = slider.curve_type.upper()
+
+    if curve_type == "L":
+        return _sample_line(points)
+    if curve_type == "B":
+        return _sample_bezier(points)
+    if curve_type == "P":
+        return _sample_passthrough(points)
+
+    # fallback
+    return _sample_bezier(points)
+
+
+@dataclass(slots=True)
+class SliderPath:
+    sampled_points: List[Vec2]
+    cumulative_lengths: List[float]
+    total_length: float
+
+    def position_at_distance(self, distance_value: float) -> Vec2:
+        if not self.sampled_points:
+            return (0.0, 0.0)
+
+        if self.total_length <= 1e-6:
+            return self.sampled_points[0]
+
+        d = max(0.0, min(self.total_length, distance_value))
+
+        for i in range(1, len(self.cumulative_lengths)):
+            prev_len = self.cumulative_lengths[i - 1]
+            curr_len = self.cumulative_lengths[i]
+            if d <= curr_len:
+                seg_len = curr_len - prev_len
+                if seg_len <= 1e-9:
+                    return self.sampled_points[i]
+                t = (d - prev_len) / seg_len
+                return _lerp(self.sampled_points[i - 1], self.sampled_points[i], t)
+
+        return self.sampled_points[-1]
+
+    def position_at_progress(self, progress_0_1: float) -> Vec2:
+        if self.total_length <= 1e-6:
+            return self.sampled_points[0] if self.sampled_points else (0.0, 0.0)
+        d = max(0.0, min(1.0, progress_0_1)) * self.total_length
+        return self.position_at_distance(d)
+
+
+def build_slider_path(slider: SliderObject) -> SliderPath:
+    sampled = sample_slider_curve(slider)
+
+    if not sampled:
+        sampled = [(slider.x, slider.y)]
+
+    cumulative = [0.0]
+    total = 0.0
+
+    for i in range(1, len(sampled)):
+        total += _distance(sampled[i - 1], sampled[i])
+        cumulative.append(total)
+
+    # Подрезаем/растягиваем путь под pixel_length карты
+    if total > 1e-6 and slider.pixel_length > 0:
+        target_length = slider.pixel_length
+
+        # Если путь длиннее нужного — обрезаем до pixel_length
+        if total >= target_length:
+            trimmed_points: List[Vec2] = [sampled[0]]
+            trimmed_cumulative: List[float] = [0.0]
+
+            for i in range(1, len(sampled)):
+                prev_len = cumulative[i - 1]
+                curr_len = cumulative[i]
+
+                if curr_len < target_length:
+                    trimmed_points.append(sampled[i])
+                    trimmed_cumulative.append(curr_len)
+                    continue
+
+                seg_len = curr_len - prev_len
+                if seg_len <= 1e-9:
+                    trimmed_points.append(sampled[i])
+                    trimmed_cumulative.append(target_length)
+                    break
+
+                t = (target_length - prev_len) / seg_len
+                cut_point = _lerp(sampled[i - 1], sampled[i], t)
+                trimmed_points.append(cut_point)
+                trimmed_cumulative.append(target_length)
+                break
+
+            return SliderPath(
+                sampled_points=trimmed_points,
+                cumulative_lengths=trimmed_cumulative,
+                total_length=target_length,
+            )
+
+    return SliderPath(
+        sampled_points=sampled,
+        cumulative_lengths=cumulative,
+        total_length=total,
+    )
+
+
+def slider_progress_at_time(
+    start_time_ms: float,
+    end_time_ms: float,
+    current_time_ms: float,
+) -> float:
+    if end_time_ms <= start_time_ms:
+        return 1.0
+    return max(0.0, min(1.0, (current_time_ms - start_time_ms) / (end_time_ms - start_time_ms)))
+
+
+def slider_ball_position(
+    path: SliderPath,
+    repeats: int,
+    start_time_ms: float,
+    end_time_ms: float,
+    current_time_ms: float,
+) -> Vec2:
+    if repeats <= 0:
+        return path.sampled_points[0] if path.sampled_points else (0.0, 0.0)
+
+    total_progress = slider_progress_at_time(start_time_ms, end_time_ms, current_time_ms)
+    span_progress = total_progress * repeats
+
+    span_index = min(repeats - 1, int(span_progress))
+    local_progress = span_progress - span_index
+
+    reverse = (span_index % 2) == 1
+    if reverse:
+        local_progress = 1.0 - local_progress
+
+    return path.position_at_progress(local_progress)
+
+====================================================================================================
+FILE 0080: src/skills/osu/env/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\env\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0081: src/skills/osu/env/osu_env.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\env\osu_env.py
+Size: 8656 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List
+
+from src.skills.osu.domain.math_utils import clamp_position, distance
+from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap
+from src.skills.osu.domain.osu_rules import ar_to_preempt_ms, slider_duration_ms
+from src.skills.osu.env.types import OsuAction, OsuObservation, UpcomingObjectView
+from src.skills.osu.reward.judgement import OsuJudge
+from src.skills.osu.viewer.replay_models import ReplayFrame
+
+
+@dataclass(slots=True)
+class EnvStepResult:
+    observation: OsuObservation
+    reward: float
+    done: bool
+    info: dict
+
+
+class OsuEnv:
+    def __init__(
+        self,
+        beatmap: ParsedBeatmap,
+        dt_ms: float = 16.6667,
+        upcoming_count: int = 5,
+        cursor_start_x: float = 256.0,
+        cursor_start_y: float = 192.0,
+        click_threshold: float = 0.75,
+        cursor_speed_scale: float = 14.0,
+    ) -> None:
+        self.beatmap = beatmap
+        self.dt_ms = dt_ms
+        self.upcoming_count = upcoming_count
+        self.click_threshold = click_threshold
+        self.cursor_speed_scale = cursor_speed_scale
+        self.judge = OsuJudge(beatmap)
+
+        self.cursor_start_x = cursor_start_x
+        self.cursor_start_y = cursor_start_y
+
+        self.time_ms = 0.0
+        self.cursor_x = cursor_start_x
+        self.cursor_y = cursor_start_y
+        self.done = False
+        self.last_click_down = False
+        self.current_click_down = False
+        self.last_info: dict = {}
+        self.replay_frames: list[ReplayFrame] = []
+        self.recent_judgements: list[dict] = []
+
+    def reset(self) -> OsuObservation:
+        self.time_ms = 0.0
+        self.cursor_x = self.cursor_start_x
+        self.cursor_y = self.cursor_start_y
+        self.done = False
+        self.last_click_down = False
+        self.current_click_down = False
+        self.last_info = {}
+        self.replay_frames = []
+        self.recent_judgements = []
+        self.judge.reset()
+        return self._build_observation()
+
+    def step(self, action: OsuAction, dt_ms_override: float | None = None) -> EnvStepResult:
+        if self.done:
+            obs = self._build_observation()
+            return EnvStepResult(
+                observation=obs,
+                reward=0.0,
+                done=True,
+                info={"message": "env already done", **self.last_info},
+            )
+
+        dt_step = self.dt_ms if dt_ms_override is None else max(0.1, float(dt_ms_override))
+
+        new_x = self.cursor_x + action.dx * self.cursor_speed_scale
+        new_y = self.cursor_y + action.dy * self.cursor_speed_scale
+        self.cursor_x, self.cursor_y = clamp_position(new_x, new_y)
+
+        click_down = action.click_strength >= self.click_threshold
+        just_pressed = click_down and not self.last_click_down
+        self.current_click_down = click_down
+
+        judge_result = self.judge.update(
+            time_ms=self.time_ms,
+            cursor_x=self.cursor_x,
+            cursor_y=self.cursor_y,
+            just_pressed=just_pressed,
+            click_down=click_down,
+            dt_ms=dt_step,
+        )
+
+        self.last_click_down = click_down
+        self.time_ms += dt_step
+
+        if self.judge.is_finished(self.time_ms):
+            self.done = True
+
+        obs = self._build_observation()
+
+        info = {
+            "score_value": judge_result.score_value,
+            "judgement": judge_result.judgement,
+            "combo": self.judge.combo,
+            "max_combo": self.judge.max_combo,
+            "accuracy": self.judge.accuracy(),
+            "hit_count": self.judge.hit_count,
+            "miss_count": self.judge.miss_count,
+            "time_ms": self.time_ms,
+            "cursor_x": self.cursor_x,
+            "cursor_y": self.cursor_y,
+            "click_down": click_down,
+            "popup_x": judge_result.popup_x,
+            "popup_y": judge_result.popup_y,
+        }
+        self.last_info = info
+
+        if judge_result.judgement != "none":
+            self.recent_judgements.append(
+                {
+                    "time_ms": self.time_ms,
+                    "judgement": judge_result.judgement,
+                    "score_value": judge_result.score_value,
+                    "popup_x": judge_result.popup_x,
+                    "popup_y": judge_result.popup_y,
+                }
+            )
+            self.recent_judgements = self.recent_judgements[-20:]
+
+        self.replay_frames.append(
+            ReplayFrame(
+                time_ms=self.time_ms,
+                cursor_x=self.cursor_x,
+                cursor_y=self.cursor_y,
+                click_down=click_down,
+                judgement=judge_result.judgement,
+                combo=self.judge.combo,
+                accuracy=self.judge.accuracy(),
+                reward=judge_result.reward,
+                score_value=judge_result.score_value,
+                popup_x=judge_result.popup_x,
+                popup_y=judge_result.popup_y,
+            )
+        )
+
+        return EnvStepResult(
+            observation=obs,
+            reward=judge_result.reward,
+            done=self.done,
+            info=info,
+        )
+
+    def get_visible_objects(self) -> List[HitObject]:
+        preempt = ar_to_preempt_ms(self.beatmap.difficulty.ar)
+        visible: List[HitObject] = []
+
+        for obj in self.beatmap.hit_objects:
+            start_visible = obj.time_ms - preempt
+
+            if obj.kind == HitObjectType.CIRCLE:
+                end_visible = obj.time_ms + 220.0
+            elif obj.kind == HitObjectType.SLIDER:
+                end_visible = obj.slider.time_ms + slider_duration_ms(self.beatmap, obj.slider) + 220.0
+            else:
+                end_visible = obj.spinner.end_time_ms + 220.0
+
+            if self.time_ms < start_visible:
+                if visible:
+                    break
+                continue
+
+            if self.time_ms <= end_visible:
+                visible.append(obj)
+
+        return visible
+
+    def consume_recent_judgements(self, now_ms: float, ttl_ms: float = 700.0) -> list[dict]:
+        active = [j for j in self.recent_judgements if now_ms - j["time_ms"] <= ttl_ms]
+        self.recent_judgements = active
+        return active
+
+    def _build_observation(self) -> OsuObservation:
+        upcoming = self.judge.peek_upcoming_objects(self.time_ms, self.upcoming_count)
+
+        views: List[UpcomingObjectView] = []
+        for obj in upcoming:
+            x, y = self._object_anchor(obj)
+            kind_id = self._kind_to_id(obj.kind)
+
+            if obj.kind == HitObjectType.CIRCLE:
+                is_active = 1.0 if abs(obj.circle.time_ms - self.time_ms) <= 80.0 else 0.0
+            elif obj.kind == HitObjectType.SLIDER:
+                is_active = 1.0 if self.time_ms >= obj.slider.time_ms else 0.0
+            else:
+                is_active = 1.0 if self.time_ms >= obj.spinner.time_ms else 0.0
+
+            views.append(
+                UpcomingObjectView(
+                    kind_id=kind_id,
+                    x=x,
+                    y=y,
+                    time_to_hit_ms=obj.time_ms - self.time_ms,
+                    distance_to_cursor=distance(self.cursor_x, self.cursor_y, x, y),
+                    is_active=is_active,
+                )
+            )
+
+        while len(views) < self.upcoming_count:
+            views.append(
+                UpcomingObjectView(
+                    kind_id=-1,
+                    x=0.0,
+                    y=0.0,
+                    time_to_hit_ms=0.0,
+                    distance_to_cursor=0.0,
+                    is_active=0.0,
+                )
+            )
+
+        return OsuObservation(
+            time_ms=self.time_ms,
+            cursor_x=self.cursor_x,
+            cursor_y=self.cursor_y,
+            upcoming=views,
+        )
+
+    @staticmethod
+    def _kind_to_id(kind: HitObjectType) -> int:
+        if kind == HitObjectType.CIRCLE:
+            return 0
+        if kind == HitObjectType.SLIDER:
+            return 1
+        if kind == HitObjectType.SPINNER:
+            return 2
+        return -1
+
+    @staticmethod
+    def _object_anchor(obj: HitObject) -> tuple[float, float]:
+        if obj.kind == HitObjectType.CIRCLE:
+            return obj.circle.x, obj.circle.y
+        if obj.kind == HitObjectType.SLIDER:
+            return obj.slider.x, obj.slider.y
+        return obj.spinner.x, obj.spinner.y
+
+====================================================================================================
+FILE 0082: src/skills/osu/env/types.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\env\types.py
+Size: 584 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List
+
+
+@dataclass(slots=True)
+class UpcomingObjectView:
+    kind_id: int          # 0 circle, 1 slider, 2 spinner, -1 empty
+    x: float
+    y: float
+    time_to_hit_ms: float
+    distance_to_cursor: float
+    is_active: float
+
+
+@dataclass(slots=True)
+class OsuObservation:
+    time_ms: float
+    cursor_x: float
+    cursor_y: float
+    upcoming: List[UpcomingObjectView]
+
+
+@dataclass(slots=True)
+class OsuAction:
+    dx: float
+    dy: float
+    click_strength: float
+
+====================================================================================================
+FILE 0083: src/skills/osu/evaluation/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\evaluation\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0084: src/skills/osu/parser/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\parser\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0085: src/skills/osu/parser/osu_parser.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\parser\osu_parser.py
+Size: 8649 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import re
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from src.skills.osu.domain.models import (
+    CircleObject,
+    DifficultySettings,
+    HitObject,
+    HitObjectType,
+    ParsedBeatmap,
+    SliderObject,
+    SpinnerObject,
+    TimingPoint,
+)
+
+TYPE_CIRCLE = 1
+TYPE_SLIDER = 2
+TYPE_NEW_COMBO = 4
+TYPE_SPINNER = 8
+
+
+def parse_key_value_section(lines: List[str]) -> Dict[str, str]:
+    data: Dict[str, str] = {}
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def split_sections(text: str) -> Dict[str, List[str]]:
+    sections: Dict[str, List[str]] = {}
+    current: Optional[str] = None
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            if current is not None:
+                sections[current].append("")
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            current = line[1:-1]
+            sections[current] = []
+            continue
+
+        if current is not None:
+            sections[current].append(line)
+
+    return sections
+
+
+def parse_timing_points(lines: List[str]) -> List[TimingPoint]:
+    result: List[TimingPoint] = []
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+        parts = line.split(",")
+        if len(parts) < 8:
+            continue
+
+        result.append(
+            TimingPoint(
+                time_ms=float(parts[0]),
+                beat_length=float(parts[1]),
+                meter=int(parts[2]),
+                sample_set=int(parts[3]),
+                sample_index=int(parts[4]),
+                volume=int(parts[5]),
+                uninherited=parts[6] == "1",
+                effects=int(parts[7]),
+            )
+        )
+
+    result.sort(key=lambda tp: tp.time_ms)
+    return result
+
+
+def parse_slider_path(raw: str) -> Tuple[str, List[Tuple[float, float]]]:
+    parts = raw.split("|")
+    curve_type = parts[0]
+    control_points: List[Tuple[float, float]] = []
+    for point_raw in parts[1:]:
+        px, py = point_raw.split(":")
+        control_points.append((float(px), float(py)))
+    return curve_type, control_points
+
+
+def parse_hit_objects(lines: List[str]) -> List[HitObject]:
+    result: List[HitObject] = []
+
+    combo_index = 0
+    combo_number = 0
+    first_object = True
+
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+
+        parts = line.split(",")
+        if len(parts) < 5:
+            continue
+
+        x = float(parts[0])
+        y = float(parts[1])
+        time_ms = float(parts[2])
+        object_type = int(parts[3])
+        hitsound = int(parts[4])
+
+        is_new_combo = first_object or bool(object_type & TYPE_NEW_COMBO)
+
+        if is_new_combo:
+            if not first_object:
+                combo_skip = (object_type >> 4) & 0b111
+                combo_index += 1 + combo_skip
+            combo_number = 1
+        else:
+            combo_number += 1
+
+        if object_type & TYPE_CIRCLE:
+            result.append(
+                HitObject(
+                    kind=HitObjectType.CIRCLE,
+                    circle=CircleObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+        if object_type & TYPE_SLIDER:
+            curve_raw = parts[5]
+            repeats = int(parts[6])
+            pixel_length = float(parts[7])
+            edge_sounds = list(map(int, parts[8].split("|"))) if len(parts) > 8 and parts[8] else []
+            edge_sets = parts[9].split("|") if len(parts) > 9 and parts[9] else []
+
+            curve_type, control_points = parse_slider_path(curve_raw)
+
+            result.append(
+                HitObject(
+                    kind=HitObjectType.SLIDER,
+                    slider=SliderObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                        curve_type=curve_type,
+                        control_points=control_points,
+                        repeats=repeats,
+                        pixel_length=pixel_length,
+                        edge_sounds=edge_sounds,
+                        edge_sets=edge_sets,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+        if object_type & TYPE_SPINNER:
+            end_time_ms = float(parts[5])
+            result.append(
+                HitObject(
+                    kind=HitObjectType.SPINNER,
+                    spinner=SpinnerObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                        end_time_ms=end_time_ms,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+    return result
+
+
+def parse_background_filename(events_lines: List[str]) -> Optional[str]:
+    bg_pattern = re.compile(r'^\s*0\s*,\s*0\s*,\s*"([^"]+)"')
+    for line in events_lines:
+        if not line or line.startswith("//"):
+            continue
+        m = bg_pattern.match(line)
+        if m:
+            return m.group(1)
+    return None
+
+
+def resolve_audio_path(beatmap_dir: Path, audio_filename: str) -> Optional[Path]:
+    if audio_filename:
+        candidate = beatmap_dir / audio_filename
+        if candidate.exists():
+            return candidate
+
+    fallback_names = ["audio.mp3", "audio.ogg", "audio.wav"]
+    for name in fallback_names:
+        candidate = beatmap_dir / name
+        if candidate.exists():
+            return candidate
+
+    return None
+
+
+def resolve_background_path(beatmap_dir: Path, background_filename: Optional[str]) -> Optional[Path]:
+    if background_filename:
+        candidate = beatmap_dir / background_filename
+        if candidate.exists():
+            return candidate
+
+    for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp"):
+        matches = list(beatmap_dir.glob(ext))
+        if matches:
+            return matches[0]
+
+    return None
+
+
+def parse_beatmap(path: str | Path) -> ParsedBeatmap:
+    beatmap_path = Path(path)
+    beatmap_dir = beatmap_path.parent
+
+    text = beatmap_path.read_text(encoding="utf-8")
+    sections = split_sections(text)
+
+    general = parse_key_value_section(sections.get("General", []))
+    metadata = parse_key_value_section(sections.get("Metadata", []))
+    difficulty_raw = parse_key_value_section(sections.get("Difficulty", []))
+
+    difficulty = DifficultySettings(
+        hp=float(difficulty_raw.get("HPDrainRate", 5)),
+        cs=float(difficulty_raw.get("CircleSize", 5)),
+        od=float(difficulty_raw.get("OverallDifficulty", 5)),
+        ar=float(difficulty_raw.get("ApproachRate", difficulty_raw.get("OverallDifficulty", 5))),
+        slider_multiplier=float(difficulty_raw.get("SliderMultiplier", 1.4)),
+        slider_tick_rate=float(difficulty_raw.get("SliderTickRate", 1.0)),
+    )
+
+    audio_filename = general.get("AudioFilename", "")
+    background_filename = parse_background_filename(sections.get("Events", []))
+
+    return ParsedBeatmap(
+        beatmap_path=beatmap_path,
+        beatmap_dir=beatmap_dir,
+        audio_filename=audio_filename,
+        audio_path=resolve_audio_path(beatmap_dir, audio_filename),
+        background_filename=background_filename,
+        background_path=resolve_background_path(beatmap_dir, background_filename),
+        title=metadata.get("Title", ""),
+        artist=metadata.get("Artist", ""),
+        version=metadata.get("Version", ""),
+        difficulty=difficulty,
+        timing_points=parse_timing_points(sections.get("TimingPoints", [])),
+        hit_objects=parse_hit_objects(sections.get("HitObjects", [])),
+    )
+
+====================================================================================================
+FILE 0086: src/skills/osu/replay/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\replay\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0087: src/skills/osu/replay/replay_io.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\replay\replay_io.py
+Size: 684 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import json
+from dataclasses import asdict
+from pathlib import Path
+from typing import List
+
+from src.skills.osu.viewer.replay_models import ReplayFrame
+
+
+def save_replay(frames: List[ReplayFrame], path: str | Path) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = [asdict(frame) for frame in frames]
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_replay(path: str | Path) -> List[ReplayFrame]:
+    path = Path(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [ReplayFrame(**item) for item in payload]
+
+====================================================================================================
+FILE 0088: src/skills/osu/reward/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\reward\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0089: src/skills/osu/reward/judgement.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\reward\judgement.py
+Size: 15764 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import Optional
+
+from src.skills.osu.domain.math_utils import distance, osu_circle_radius
+from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap, SliderObject
+from src.skills.osu.domain.osu_rules import (
+    hit_window_100,
+    hit_window_300,
+    hit_window_50,
+    slider_duration_ms,
+    slider_span_duration_ms,
+)
+from src.skills.osu.domain.slider_path import build_slider_path, slider_ball_position
+
+
+@dataclass(slots=True)
+class JudgeResult:
+    reward: float = 0.0
+    score_value: int = 0
+    judgement: str = "none"
+    popup_x: float | None = None
+    popup_y: float | None = None
+
+
+class OsuJudge:
+    def __init__(self, beatmap: ParsedBeatmap) -> None:
+        self.beatmap = beatmap
+        self.objects = beatmap.hit_objects
+        self.cs = beatmap.difficulty.cs
+        self.od = beatmap.difficulty.od
+        self.radius = osu_circle_radius(self.cs)
+
+        self.object_index = 0
+        self.combo = 0
+        self.max_combo = 0
+        self.hit_count = 0
+        self.miss_count = 0
+        self.score_sum = 0
+        self.score_max_sum = 0
+
+        self.active_slider: Optional[dict] = None
+        self.active_spinner: Optional[dict] = None
+
+    def reset(self) -> None:
+        self.object_index = 0
+        self.combo = 0
+        self.max_combo = 0
+        self.hit_count = 0
+        self.miss_count = 0
+        self.score_sum = 0
+        self.score_max_sum = 0
+        self.active_slider = None
+        self.active_spinner = None
+
+    def accuracy(self) -> float:
+        if self.score_max_sum <= 0:
+            return 1.0
+        return self.score_sum / self.score_max_sum
+
+    def is_finished(self, time_ms: float) -> bool:
+        if self.object_index < len(self.objects):
+            return False
+        if self.active_slider is not None:
+            return False
+        if self.active_spinner is not None:
+            return False
+        return True
+
+    def peek_upcoming_objects(self, time_ms: float, count: int):
+        result = []
+        idx = self.object_index
+        while idx < len(self.objects) and len(result) < count:
+            result.append(self.objects[idx])
+            idx += 1
+        return result
+
+    def update(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        just_pressed: bool,
+        click_down: bool,
+        dt_ms: float,
+    ) -> JudgeResult:
+        result = JudgeResult()
+
+        self._expire_missed_objects(time_ms, result)
+        self._update_active_slider(time_ms, cursor_x, cursor_y, click_down, dt_ms, result)
+        self._update_active_spinner(time_ms, cursor_x, cursor_y, click_down, dt_ms, result)
+
+        if self.object_index >= len(self.objects):
+            return result
+
+        obj = self.objects[self.object_index]
+
+        if obj.kind == HitObjectType.CIRCLE and just_pressed:
+            return self._try_hit_circle(obj, time_ms, cursor_x, cursor_y)
+
+        if obj.kind == HitObjectType.SLIDER and just_pressed:
+            return self._try_start_slider(obj, time_ms, cursor_x, cursor_y)
+
+        if obj.kind == HitObjectType.SPINNER:
+            return self._try_start_spinner(obj, time_ms)
+
+        return result
+
+    def current_slider_ball_position(self, time_ms: float) -> tuple[float, float] | None:
+        if self.active_slider is None:
+            return None
+
+        return slider_ball_position(
+            path=self.active_slider["path"],
+            repeats=self.active_slider["slider"].repeats,
+            start_time_ms=self.active_slider["start_time"],
+            end_time_ms=self.active_slider["end_time"],
+            current_time_ms=time_ms,
+        )
+
+    def _object_anchor(self, obj: HitObject) -> tuple[float, float]:
+        if obj.kind == HitObjectType.CIRCLE:
+            return obj.circle.x, obj.circle.y
+        if obj.kind == HitObjectType.SLIDER:
+            return obj.slider.x, obj.slider.y
+        return obj.spinner.x, obj.spinner.y
+
+    def _expire_missed_objects(self, time_ms: float, result: JudgeResult) -> None:
+        while self.object_index < len(self.objects):
+            obj = self.objects[self.object_index]
+
+            if obj.kind == HitObjectType.SPINNER:
+                break
+            if obj.kind == HitObjectType.SLIDER and self.active_slider is not None:
+                break
+
+            miss_deadline = obj.time_ms + hit_window_50(self.od)
+
+            if time_ms <= miss_deadline:
+                break
+
+            if obj.kind in (HitObjectType.CIRCLE, HitObjectType.SLIDER):
+                self._register_miss(result, obj)
+                self.object_index += 1
+                continue
+
+            break
+
+    def _try_hit_circle(
+        self,
+        obj: HitObject,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+    ) -> JudgeResult:
+        timing_error = abs(time_ms - obj.circle.time_ms)
+        dist = distance(cursor_x, cursor_y, obj.circle.x, obj.circle.y)
+
+        if dist > self.radius:
+            return JudgeResult(
+                reward=-0.15,
+                score_value=0,
+                judgement="click_outside",
+                popup_x=obj.circle.x,
+                popup_y=obj.circle.y,
+            )
+
+        if timing_error <= hit_window_300(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(300, "300", obj.circle.x, obj.circle.y)
+        if timing_error <= hit_window_100(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(100, "100", obj.circle.x, obj.circle.y)
+        if timing_error <= hit_window_50(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(50, "50", obj.circle.x, obj.circle.y)
+
+        return JudgeResult(
+            reward=-0.05,
+            score_value=0,
+            judgement="bad_timing",
+            popup_x=obj.circle.x,
+            popup_y=obj.circle.y,
+        )
+
+    def _try_start_slider(
+        self,
+        obj: HitObject,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+    ) -> JudgeResult:
+        slider = obj.slider
+        timing_error = abs(time_ms - slider.time_ms)
+        dist = distance(cursor_x, cursor_y, slider.x, slider.y)
+
+        if dist > self.radius:
+            return JudgeResult(
+                reward=-0.15,
+                score_value=0,
+                judgement="slider_head_outside",
+                popup_x=slider.x,
+                popup_y=slider.y,
+            )
+
+        if timing_error > hit_window_50(self.od):
+            return JudgeResult(
+                reward=-0.05,
+                score_value=0,
+                judgement="slider_bad_timing",
+                popup_x=slider.x,
+                popup_y=slider.y,
+            )
+
+        total_duration_ms = slider_duration_ms(self.beatmap, slider)
+        span_duration_ms = slider_span_duration_ms(self.beatmap, slider)
+        path = build_slider_path(slider)
+
+        tick_times = self._build_slider_tick_times(slider, span_duration_ms)
+
+        self.active_slider = {
+            "slider": slider,
+            "path": path,
+            "start_time": slider.time_ms,
+            "end_time": slider.time_ms + total_duration_ms,
+            "tick_times": tick_times,
+            "next_tick_index": 0,
+            "tick_hits": 0,
+            "tick_misses": 0,
+        }
+
+        self.object_index += 1
+
+        head_value = self._score_value_from_timing_error(timing_error)
+        hit = self._register_scored_hit(head_value, "slider_head", slider.x, slider.y)
+        hit.reward += 0.15
+        return hit
+
+    def _build_slider_tick_times(self, slider: SliderObject, span_duration_ms: float) -> list[float]:
+        tick_times: list[float] = []
+
+        tick_rate = max(0.0, self.beatmap.difficulty.slider_tick_rate)
+        if tick_rate <= 0.0:
+            return tick_times
+
+        ticks_per_span = max(0, int(math.floor((tick_rate - 0.01))))
+        if ticks_per_span <= 0:
+            return tick_times
+
+        for span_idx in range(slider.repeats):
+            span_start = slider.time_ms + span_idx * span_duration_ms
+            for i in range(1, ticks_per_span + 1):
+                frac = i / (ticks_per_span + 1)
+                tick_times.append(span_start + frac * span_duration_ms)
+
+        return tick_times
+
+    def _update_active_slider(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        click_down: bool,
+        dt_ms: float,
+        result: JudgeResult,
+    ) -> None:
+        if self.active_slider is None:
+            return
+
+        slider: SliderObject = self.active_slider["slider"]
+        path = self.active_slider["path"]
+        start_time = self.active_slider["start_time"]
+        end_time = self.active_slider["end_time"]
+
+        ball_x, ball_y = slider_ball_position(
+            path=path,
+            repeats=slider.repeats,
+            start_time_ms=start_time,
+            end_time_ms=end_time,
+            current_time_ms=time_ms,
+        )
+
+        dist = distance(cursor_x, cursor_y, ball_x, ball_y)
+        follow_radius = self.radius * 1.4
+
+        if time_ms < end_time:
+            if click_down and dist <= follow_radius:
+                result.reward += 0.014 * (dt_ms / 16.6667)
+                if result.judgement == "none":
+                    result.judgement = "slider_follow"
+                    result.popup_x = ball_x
+                    result.popup_y = ball_y
+            else:
+                result.reward -= 0.002 * (dt_ms / 16.6667)
+
+        tick_times = self.active_slider["tick_times"]
+        while self.active_slider["next_tick_index"] < len(tick_times):
+            tick_time = tick_times[self.active_slider["next_tick_index"]]
+
+            if time_ms < tick_time:
+                break
+
+            tick_x, tick_y = slider_ball_position(
+                path=path,
+                repeats=slider.repeats,
+                start_time_ms=start_time,
+                end_time_ms=end_time,
+                current_time_ms=tick_time,
+            )
+            tick_dist = distance(cursor_x, cursor_y, tick_x, tick_y)
+
+            if click_down and tick_dist <= follow_radius:
+                result.reward += 0.08
+                result.score_value = max(result.score_value, 10)
+                result.judgement = "slider_tick"
+                result.popup_x = tick_x
+                result.popup_y = tick_y
+                self.active_slider["tick_hits"] += 1
+            else:
+                result.reward -= 0.04
+                if result.judgement == "none":
+                    result.judgement = "slider_tick_miss"
+                    result.popup_x = tick_x
+                    result.popup_y = tick_y
+                self.active_slider["tick_misses"] += 1
+
+            self.active_slider["next_tick_index"] += 1
+
+        if time_ms < end_time:
+            return
+
+        if click_down and dist <= follow_radius:
+            result.reward += 0.35
+            if result.judgement == "none":
+                result.judgement = "slider_finish"
+                result.popup_x = ball_x
+                result.popup_y = ball_y
+        else:
+            result.reward -= 0.20
+            if result.judgement == "none":
+                result.judgement = "slider_drop"
+                result.popup_x = ball_x
+                result.popup_y = ball_y
+
+        self.active_slider = None
+
+    def _try_start_spinner(self, obj: HitObject, time_ms: float) -> JudgeResult:
+        spinner = obj.spinner
+
+        if self.active_spinner is None and time_ms >= spinner.time_ms:
+            self.active_spinner = {
+                "start_time": spinner.time_ms,
+                "end_time": spinner.end_time_ms,
+                "spin_progress": 0.0,
+                "last_angle": None,
+            }
+            self.object_index += 1
+            return JudgeResult(reward=0.05, score_value=0, judgement="spinner_start", popup_x=256.0, popup_y=192.0)
+
+        return JudgeResult()
+
+    def _update_active_spinner(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        click_down: bool,
+        dt_ms: float,
+        result: JudgeResult,
+    ) -> None:
+        if self.active_spinner is None:
+            return
+
+        center_x, center_y = 256.0, 192.0
+        angle = math.atan2(cursor_y - center_y, cursor_x - center_x)
+
+        if self.active_spinner["last_angle"] is not None and click_down:
+            delta = angle - self.active_spinner["last_angle"]
+
+            while delta > math.pi:
+                delta -= 2 * math.pi
+            while delta < -math.pi:
+                delta += 2 * math.pi
+
+            delta_abs = abs(delta)
+            self.active_spinner["spin_progress"] += delta_abs
+            result.reward += delta_abs * 0.02
+
+        self.active_spinner["last_angle"] = angle
+
+        if time_ms < self.active_spinner["end_time"]:
+            return
+
+        spins = self.active_spinner["spin_progress"] / (2.0 * math.pi)
+
+        if spins >= 3.0:
+            hit = self._register_scored_hit(300, "spinner_clear", center_x, center_y)
+            result.reward += hit.reward + 0.5
+            result.score_value = hit.score_value
+            result.judgement = hit.judgement
+            result.popup_x = hit.popup_x
+            result.popup_y = hit.popup_y
+        elif spins >= 1.5:
+            hit = self._register_scored_hit(100, "spinner_partial", center_x, center_y)
+            result.reward += hit.reward + 0.2
+            result.score_value = hit.score_value
+            result.judgement = hit.judgement
+            result.popup_x = hit.popup_x
+            result.popup_y = hit.popup_y
+        else:
+            self._register_miss(result, None, center_x, center_y)
+            result.judgement = "spinner_miss"
+
+        self.active_spinner = None
+
+    def _score_value_from_timing_error(self, timing_error: float) -> int:
+        if timing_error <= hit_window_300(self.od):
+            return 300
+        if timing_error <= hit_window_100(self.od):
+            return 100
+        if timing_error <= hit_window_50(self.od):
+            return 50
+        return 0
+
+    def _register_scored_hit(self, value: int, judgement: str, x: float, y: float) -> JudgeResult:
+        self.combo += 1
+        self.max_combo = max(self.max_combo, self.combo)
+        self.hit_count += 1
+        self.score_sum += value
+        self.score_max_sum += 300
+
+        reward = {300: 1.0, 100: 0.5, 50: 0.2, 10: 0.05}.get(value, 0.0)
+        return JudgeResult(
+            reward=reward,
+            score_value=value,
+            judgement=judgement,
+            popup_x=x,
+            popup_y=y,
+        )
+
+    def _register_miss(
+        self,
+        result: JudgeResult,
+        obj: HitObject | None = None,
+        popup_x: float | None = None,
+        popup_y: float | None = None,
+    ) -> None:
+        self.combo = 0
+        self.miss_count += 1
+        self.score_max_sum += 300
+        result.reward -= 1.0
+        result.score_value = 0
+        result.judgement = "miss"
+
+        if obj is not None:
+            x, y = self._object_anchor(obj)
+            result.popup_x = x
+            result.popup_y = y
+        else:
+            result.popup_x = popup_x
+            result.popup_y = popup_y
+
+====================================================================================================
+FILE 0090: src/skills/osu/training/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\training\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0091: src/skills/osu/viewer/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\viewer\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0092: src/skills/osu/viewer/pygame_viewer.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\viewer\pygame_viewer.py
+Size: 38193 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import math
+import sys
+import time
+
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Callable, Optional
+
+import pygame
+import pygame.gfxdraw
+
+from src.skills.osu.domain.math_utils import (
+    OSU_PLAYFIELD_HEIGHT,
+    OSU_PLAYFIELD_WIDTH,
+    distance,
+    osu_circle_radius,
+)
+from src.skills.osu.domain.models import HitObjectType, SliderObject
+from src.skills.osu.domain.osu_rules import ar_to_preempt_ms, slider_duration_ms
+from src.skills.osu.domain.slider_path import build_slider_path, slider_ball_position
+from src.skills.osu.env.osu_env import OsuEnv
+from src.skills.osu.viewer.replay_models import ReplayFrame
+
+
+try:
+    import yaml  # type: ignore
+except Exception:
+    yaml = None
+
+
+@dataclass(slots=True)
+class ViewerConfig:
+    window_width: int = 1600
+    window_height: int = 900
+    fps: int = 60
+    background_dim_alpha: int = 150
+    playfield_pad_x: int = 80
+    playfield_pad_y: int = 60
+    cursor_trail_length: int = 18
+    show_follow_points: bool = True
+    audio_offset_ms: float = 0.0
+
+    combo_colors: list[tuple[int, int, int]] | None = None
+    cursor_color: tuple[int, int, int] = (255, 90, 135)
+    cursor_trail_color: tuple[int, int, int] = (255, 140, 170)
+    slider_inner_color: tuple[int, int, int] = (20, 30, 48)
+    slider_outer_color: tuple[int, int, int] = (248, 248, 252)
+
+    burst_300_color: tuple[int, int, int] = (140, 220, 255)
+    burst_100_color: tuple[int, int, int] = (130, 255, 150)
+    burst_50_color: tuple[int, int, int] = (255, 225, 130)
+    burst_miss_color: tuple[int, int, int] = (255, 110, 110)
+
+
+def _load_viewer_config_from_yaml() -> dict:
+    config_path = Path("configs/osu/viewer.yaml")
+    if yaml is None or not config_path.exists():
+        return {}
+
+    try:
+        data = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+class OsuViewer:
+    def __init__(self, env: OsuEnv, config: ViewerConfig | None = None) -> None:
+        self.env = env
+
+        yaml_cfg = _load_viewer_config_from_yaml()
+        self.config = config or ViewerConfig()
+        self._apply_yaml_config(yaml_cfg)
+
+        pygame.mixer.pre_init(44100, -16, 2, 512)
+        pygame.init()
+        pygame.font.init()
+        pygame.mixer.init()
+
+        self.screen = pygame.display.set_mode((self.config.window_width, self.config.window_height))
+        pygame.display.set_caption("Osu Viewer")
+        self.clock = pygame.time.Clock()
+
+        self.font_small = pygame.font.SysFont("arial", 22)
+        self.font_mid = pygame.font.SysFont("arial", 30, bold=True)
+        self.font_big = pygame.font.SysFont("arial", 42, bold=True)
+        self.font_judge = pygame.font.SysFont("arial", 34, bold=True)
+        self.font_circle = pygame.font.SysFont("arial", 34, bold=True)
+        self.font_burst = pygame.font.SysFont("arial", 34, bold=True)
+        self.font_slider_arrow = pygame.font.SysFont("arial", 24, bold=True)
+
+        self.last_click_flash = 0.0
+        self.combo_pop_timer = 0.0
+        self.playfield_rect = self._compute_playfield_rect()
+        self.background_surface = self._load_background_surface()
+        self.music_loaded = False
+        self.cursor_trail: list[tuple[int, int]] = []
+
+        self.last_music_pos_ms: float | None = None
+
+        self.combo_palette = self.config.combo_colors or [
+            (255, 122, 147),
+            (76, 132, 255),
+            (255, 210, 87),
+            (126, 221, 255),
+        ]
+
+        self.slider_path_cache: dict[int, object] = {}
+        self.live_start_perf: float | None = None
+        self.music_start_perf: float | None = None
+        self.max_env_steps_per_frame: int = 8
+        print("TRAIL LENGTH:", self.config.cursor_trail_length)
+    def _apply_yaml_config(self, data: dict) -> None:
+        for field_name in asdict(self.config).keys():
+            if field_name not in data:
+                continue
+
+            value = data[field_name]
+
+            if field_name in {
+                "cursor_color",
+                "cursor_trail_color",
+                "slider_inner_color",
+                "slider_outer_color",
+                "burst_300_color",
+                "burst_100_color",
+                "burst_50_color",
+                "burst_miss_color",
+            }:
+                if isinstance(value, list) and len(value) == 3:
+                    setattr(self.config, field_name, tuple(int(v) for v in value))
+                continue
+
+            if field_name == "combo_colors":
+                if isinstance(value, list):
+                    parsed = []
+                    for item in value:
+                        if isinstance(item, list) and len(item) == 3:
+                            parsed.append(tuple(int(v) for v in item))
+                    if parsed:
+                        self.config.combo_colors = parsed
+                continue
+
+            setattr(self.config, field_name, value)
+
+    def _get_slider_path_cached(self, slider: SliderObject):
+        key = id(slider)
+        cached = self.slider_path_cache.get(key)
+        if cached is not None:
+            return cached
+
+        path = build_slider_path(slider)
+        self.slider_path_cache[key] = path
+        return path
+
+    def _compute_playfield_rect(self) -> pygame.Rect:
+        avail_w = self.config.window_width - self.config.playfield_pad_x * 2
+        avail_h = self.config.window_height - self.config.playfield_pad_y * 2
+
+        scale = min(avail_w / OSU_PLAYFIELD_WIDTH, avail_h / OSU_PLAYFIELD_HEIGHT)
+        w = int(OSU_PLAYFIELD_WIDTH * scale)
+        h = int(OSU_PLAYFIELD_HEIGHT * scale)
+
+        x = (self.config.window_width - w) // 2
+        y = (self.config.window_height - h) // 2
+        return pygame.Rect(x, y, w, h)
+
+    def _load_background_surface(self) -> Optional[pygame.Surface]:
+        bg_path = self.env.beatmap.background_path
+        if bg_path is None or not bg_path.exists():
+            return None
+
+        image = pygame.image.load(str(bg_path)).convert()
+        return pygame.transform.smoothscale(
+            image,
+            (self.config.window_width, self.config.window_height),
+        )
+
+    def _load_music(self) -> None:
+        if self.music_loaded:
+            return
+
+        audio_path = self.env.beatmap.audio_path
+        if audio_path is None or not audio_path.exists():
+            return
+
+        pygame.mixer.music.load(str(audio_path))
+        self.music_loaded = True
+
+    def _start_music(self) -> None:
+        self._load_music()
+        self.last_music_pos_ms = None
+        if self.music_loaded:
+            pygame.mixer.music.play()
+
+    def _music_frame_dt_ms(self, fallback_dt_ms: float) -> float:
+        if not self.music_loaded:
+            return fallback_dt_ms
+
+        pos = pygame.mixer.music.get_pos()
+        if pos < 0:
+            return fallback_dt_ms
+
+        music_pos = float(pos) + float(self.config.audio_offset_ms)
+
+        if self.last_music_pos_ms is None:
+            self.last_music_pos_ms = music_pos
+            return fallback_dt_ms
+
+        delta = music_pos - self.last_music_pos_ms
+        self.last_music_pos_ms = music_pos
+
+        if delta <= 0.0:
+            return fallback_dt_ms
+
+        return max(1.0, min(40.0, delta))
+
+    def _replay_target_time_ms(self, fallback_time_ms: float) -> float:
+        if not self.music_loaded:
+            return fallback_time_ms
+
+        pos = pygame.mixer.music.get_pos()
+        if pos < 0:
+            return fallback_time_ms
+
+        return float(pos) + float(self.config.audio_offset_ms)
+
+    def _to_screen(self, x: float, y: float) -> tuple[int, int]:
+        px = self.playfield_rect.x + int((x / OSU_PLAYFIELD_WIDTH) * self.playfield_rect.w)
+        py = self.playfield_rect.y + int((y / OSU_PLAYFIELD_HEIGHT) * self.playfield_rect.h)
+        return px, py
+
+    def _scale_radius(self, r: float) -> int:
+        return max(2, int(r * self.playfield_rect.w / OSU_PLAYFIELD_WIDTH))
+
+    def _combo_color(self, combo_index: int) -> tuple[int, int, int]:
+        return self.combo_palette[combo_index % len(self.combo_palette)]
+
+    def _make_alpha_surface(self, w: int, h: int) -> pygame.Surface:
+        return pygame.Surface((max(1, w), max(1, h)), pygame.SRCALPHA)
+
+    def _draw_soft_glow(
+        self,
+        center: tuple[int, int],
+        radius: int,
+        color: tuple[int, int, int],
+        strength: float = 1.0,
+        steps: int = 5,
+    ) -> None:
+        extra = radius + 40
+        surf = self._make_alpha_surface(extra * 2, extra * 2)
+        cx, cy = extra, extra
+
+        for i in range(steps, 0, -1):
+            rr = radius + i * 6
+            alpha = int((10 + i * 6) * strength)
+            pygame.gfxdraw.filled_circle(surf, cx, cy, rr, (*color, alpha))
+
+        self.screen.blit(surf, (center[0] - extra, center[1] - extra))
+
+    def _draw_ring_alpha(
+        self,
+        center: tuple[int, int],
+        radius: int,
+        color: tuple[int, int, int],
+        alpha: int,
+        width: int = 2,
+    ) -> None:
+        surf = self._make_alpha_surface(radius * 2 + width * 6, radius * 2 + width * 6)
+        cx = surf.get_width() // 2
+        cy = surf.get_height() // 2
+        pygame.draw.circle(surf, (*color, alpha), (cx, cy), radius, width=width)
+        self.screen.blit(surf, (center[0] - cx, center[1] - cy))
+
+    def _draw_filled_circle_alpha(
+        self,
+        center: tuple[int, int],
+        radius: int,
+        color: tuple[int, int, int],
+        alpha: int,
+    ) -> None:
+        surf = self._make_alpha_surface(radius * 2 + 8, radius * 2 + 8)
+        cx = surf.get_width() // 2
+        cy = surf.get_height() // 2
+        pygame.gfxdraw.filled_circle(surf, cx, cy, radius, (*color, alpha))
+        pygame.gfxdraw.aacircle(surf, cx, cy, radius, (*color, alpha))
+        self.screen.blit(surf, (center[0] - cx, center[1] - cy))
+
+    def _draw_slider_body(
+        self,
+        screen_points: list[tuple[int, int]],
+        combo_color: tuple[int, int, int],
+        radius_px: int,
+    ) -> None:
+        if len(screen_points) < 2:
+            return
+
+        outer_width = max(8, radius_px * 2)
+        combo_width = max(6, outer_width - 6)
+        inner_width = max(4, int(outer_width * 0.72))
+
+        tint = tuple(min(255, c + 20) for c in combo_color)
+
+        glow_surf = self._make_alpha_surface(self.config.window_width, self.config.window_height)
+        pygame.draw.lines(glow_surf, (*combo_color, 44), False, screen_points, width=outer_width + 14)
+        self.screen.blit(glow_surf, (0, 0))
+
+        pygame.draw.lines(self.screen, self.config.slider_outer_color, False, screen_points, width=outer_width)
+        pygame.draw.lines(self.screen, tint, False, screen_points, width=combo_width)
+        pygame.draw.lines(self.screen, self.config.slider_inner_color, False, screen_points, width=inner_width)
+
+        highlight_width = max(2, inner_width // 4)
+        pygame.draw.lines(self.screen, (70, 95, 135), False, screen_points, width=highlight_width)
+
+        start = screen_points[0]
+        end = screen_points[-1]
+
+        for px, py in (start, end):
+            pygame.draw.circle(self.screen, self.config.slider_outer_color, (px, py), outer_width // 2)
+            pygame.draw.circle(self.screen, tint, (px, py), combo_width // 2)
+            pygame.draw.circle(self.screen, self.config.slider_inner_color, (px, py), inner_width // 2)
+
+    def _draw_cursor(self, cursor_x: float, cursor_y: float) -> None:
+        cx, cy = self._to_screen(cursor_x, cursor_y)
+
+        self.cursor_trail.append((cx, cy))
+        if len(self.cursor_trail) > self.config.cursor_trail_length:
+            self.cursor_trail.pop(0)
+
+        # --- trail snake ---
+        if len(self.cursor_trail) >= 2:
+            trail_surf = self._make_alpha_surface(self.config.window_width, self.config.window_height)
+
+            points = self.cursor_trail[:]
+            total = len(points)
+
+            for i in range(1, total):
+                x1, y1 = points[i - 1]
+                x2, y2 = points[i]
+
+                t = i / max(1, total - 1)
+
+                width = max(2, int(2 + 10 * t))
+                alpha = int(10 + 90 * t)
+
+                color = (*self.config.cursor_trail_color, alpha)
+                pygame.draw.line(trail_surf, color, (x1, y1), (x2, y2), width)
+
+                # мягкие круглые стыки, чтобы линия не ломалась
+                r = max(1, width // 2)
+                pygame.gfxdraw.filled_circle(trail_surf, x2, y2, r, color)
+                pygame.gfxdraw.aacircle(trail_surf, x2, y2, r, color)
+
+            # дополнительный мягкий glow у хвоста
+            for i in range(2, total, 2):
+                tx, ty = points[i]
+                t = i / max(1, total - 1)
+                rr = max(2, int(4 + 8 * t))
+                alpha = int(6 + 28 * t)
+                pygame.gfxdraw.filled_circle(
+                    trail_surf,
+                    tx,
+                    ty,
+                    rr,
+                    (*self.config.cursor_trail_color, alpha),
+                )
+
+            self.screen.blit(trail_surf, (0, 0))
+
+        # --- main cursor glow ---
+        self._draw_soft_glow((cx, cy), 12, self.config.cursor_color, strength=1.2, steps=5)
+
+        # outer white ring
+        pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), 14, width=3)
+
+        # main cursor body
+        pygame.draw.circle(self.screen, self.config.cursor_color, (cx, cy), 9)
+
+        # inner highlight
+        pygame.draw.circle(self.screen, (255, 220, 230), (cx, cy), 5)
+
+        # center white dot
+        pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), 2)
+
+        # --- click flash ---
+        if self.last_click_flash > 0.0:
+            k = self.last_click_flash / 0.12
+
+            # outer expanding ring
+            self._draw_ring_alpha(
+                (cx, cy),
+                int(18 + 42 * k),
+                (255, 255, 255),
+                int(180 * k),
+                width=3,
+            )
+
+            # colored ring
+            self._draw_ring_alpha(
+                (cx, cy),
+                int(10 + 24 * k),
+                self.config.cursor_trail_color,
+                int(140 * k),
+                width=2,
+            )
+
+            # little flash core
+            self._draw_filled_circle_alpha(
+                (cx, cy),
+                int(8 + 8 * k),
+                (255, 255, 255),
+                int(80 * k),
+            )
+
+    def _draw_burst(self, label: str, x: int, y: int, age_ms: float) -> None:
+        life_ms = 680.0
+        if age_ms < 0 or age_ms > life_ms:
+            return
+
+        t = age_ms / life_ms
+        alpha = int(255 * (1.0 - t))
+        scale = 0.72 + 0.42 * (1.0 - math.exp(-5.0 * t))
+        y_offset = int(24 * t)
+
+        if label == "300":
+            color = self.config.burst_300_color
+        elif label == "100":
+            color = self.config.burst_100_color
+        elif label == "50":
+            color = self.config.burst_50_color
+        else:
+            color = self.config.burst_miss_color
+
+        base = self.font_burst.render(label, True, color)
+        shadow = self.font_burst.render(label, True, (16, 18, 22))
+
+        sw = max(1, int(base.get_width() * scale))
+        sh = max(1, int(base.get_height() * scale))
+
+        base = pygame.transform.smoothscale(base, (sw, sh))
+        shadow = pygame.transform.smoothscale(shadow, (sw, sh))
+
+        base.set_alpha(alpha)
+        shadow.set_alpha(max(0, int(alpha * 0.7)))
+
+        rect = base.get_rect(center=(x, y - y_offset))
+        shadow_rect = shadow.get_rect(center=(x + 2, y + 2 - y_offset))
+
+        self.screen.blit(shadow, shadow_rect)
+        self.screen.blit(base, rect)
+
+    def _combo_scale(self) -> float:
+        if self.combo_pop_timer <= 0.0:
+            return 1.0
+        k = self.combo_pop_timer / 0.15
+        return 1.0 + 0.22 * k
+
+    def _draw_hud(self, info: dict) -> None:
+        title = f"{self.env.beatmap.artist} - {self.env.beatmap.title} [{self.env.beatmap.version}]"
+        title_text = self.font_mid.render(title, True, (255, 255, 255))
+        self.screen.blit(title_text, (24, 20))
+
+        combo_value = f"{info.get('combo', 0)}x"
+        combo_surf = self.font_big.render(combo_value, True, (255, 255, 255))
+        combo_scale = self._combo_scale()
+        if abs(combo_scale - 1.0) > 1e-4:
+            combo_surf = pygame.transform.smoothscale(
+                combo_surf,
+                (
+                    max(1, int(combo_surf.get_width() * combo_scale)),
+                    max(1, int(combo_surf.get_height() * combo_scale)),
+                ),
+            )
+        self.screen.blit(combo_surf, (24, 64))
+
+        acc = info.get("accuracy", 1.0) * 100.0
+        acc_text = self.font_mid.render(f"Acc {acc:05.2f}%", True, (255, 255, 255))
+        self.screen.blit(acc_text, (24, 114))
+
+        hit_text = self.font_small.render(
+            f"Hits {info.get('hit_count', 0)} | Miss {info.get('miss_count', 0)}",
+            True,
+            (220, 230, 255),
+        )
+        self.screen.blit(hit_text, (24, 154))
+
+        judge_text = self.font_small.render(
+            f"Last: {info.get('judgement', 'none')}",
+            True,
+            (255, 220, 180),
+        )
+        self.screen.blit(judge_text, (24, 186))
+
+        time_text = self.font_small.render(
+            f"Time {info.get('time_ms', 0.0):8.1f} ms",
+            True,
+            (200, 210, 230),
+        )
+        self.screen.blit(time_text, (24, 218))
+
+    def _draw_judgement_popups(self, now_ms: float) -> None:
+        popups = self.env.consume_recent_judgements(now_ms)
+        for popup in popups:
+            self._draw_single_popup(
+                popup["judgement"],
+                popup["time_ms"],
+                popup.get("score_value", 0),
+                popup.get("popup_x"),
+                popup.get("popup_y"),
+            )
+
+    def _draw_single_popup(
+        self,
+        judgement: str,
+        event_time_ms: float,
+        score_value: int = 0,
+        popup_x: float | None = None,
+        popup_y: float | None = None,
+    ) -> None:
+        age_ms = self.env.time_ms - event_time_ms
+        if age_ms < 0 or age_ms > 680.0:
+            return
+
+        if popup_x is None or popup_y is None:
+            sx, sy = self.playfield_rect.centerx, self.playfield_rect.centery
+        else:
+            sx, sy = self._to_screen(popup_x, popup_y)
+
+        if score_value in (300, 100, 50):
+            label = str(score_value)
+        elif judgement == "miss":
+            label = "miss"
+        else:
+            return
+
+        self._draw_burst(label, sx, sy - 28, age_ms)
+
+    def _draw_follow_points(self, visible_objects) -> None:
+        if not self.config.show_follow_points or len(visible_objects) < 2:
+            return
+
+        circle_radius_px = self._scale_radius(osu_circle_radius(self.env.beatmap.difficulty.cs))
+
+        for a, b in zip(visible_objects[:-1], visible_objects[1:]):
+            ax, ay = self._object_anchor(a)
+            bx, by = self._object_anchor(b)
+
+            start = self._to_screen(ax, ay)
+            end = self._to_screen(bx, by)
+
+            dx = end[0] - start[0]
+            dy = end[1] - start[1]
+            dist_px = math.hypot(dx, dy)
+            if dist_px < circle_radius_px * 2.4:
+                continue
+
+            steps = max(2, int(dist_px / 42))
+            follow_surf = self._make_alpha_surface(self.config.window_width, self.config.window_height)
+
+            for i in range(1, steps):
+                t = i / steps
+                px = int(start[0] + dx * t)
+                py = int(start[1] + dy * t)
+                r = max(2, int(2 + 2 * (1.0 - abs(0.5 - t))))
+                alpha = 70
+                pygame.gfxdraw.filled_circle(follow_surf, px, py, r, (255, 255, 255, alpha))
+                pygame.gfxdraw.aacircle(follow_surf, px, py, r, (255, 255, 255, alpha))
+
+            self.screen.blit(follow_surf, (0, 0))
+
+    def _draw_circle_number(self, sx: int, sy: int, number: int) -> None:
+        text = self.font_circle.render(str(number), True, (255, 255, 255))
+        rect = text.get_rect(center=(sx, sy))
+        shadow = self.font_circle.render(str(number), True, (20, 20, 25))
+        shadow_rect = shadow.get_rect(center=(sx + 2, sy + 2))
+        self.screen.blit(shadow, shadow_rect)
+        self.screen.blit(text, rect)
+
+    def _draw_hit_circle(
+        self,
+        x: float,
+        y: float,
+        time_to_hit: float,
+        radius_px: int,
+        combo_index: int = 0,
+        number: int = 1,
+    ) -> None:
+        sx, sy = self._to_screen(x, y)
+        combo_color = self._combo_color(combo_index)
+
+        preempt_ms = ar_to_preempt_ms(self.env.beatmap.difficulty.ar)
+        clamped = max(0.0, min(1.0, time_to_hit / preempt_ms))
+        approach_scale = 1.0 + clamped * 3.0
+        approach_radius = max(radius_px + 2, int(radius_px * approach_scale))
+        approach_alpha = int(36 + 126 * clamped)
+
+        self._draw_ring_alpha((sx, sy), approach_radius, combo_color, approach_alpha, width=3)
+        self._draw_soft_glow((sx, sy), radius_px, combo_color, strength=0.8, steps=4)
+
+        pygame.draw.circle(self.screen, (248, 248, 250), (sx, sy), radius_px)
+        pygame.draw.circle(self.screen, combo_color, (sx, sy), max(2, radius_px - 4))
+
+        center_color = (
+            max(18, int(combo_color[0] * 0.28)),
+            max(18, int(combo_color[1] * 0.28)),
+            max(22, int(combo_color[2] * 0.28)),
+        )
+        pygame.draw.circle(self.screen, center_color, (sx, sy), max(2, int(radius_px * 0.62)))
+        self._draw_filled_circle_alpha((sx, sy - radius_px // 6), int(radius_px * 0.45), (255, 255, 255), 50)
+        pygame.draw.circle(self.screen, (255, 255, 255), (sx, sy), radius_px, width=2)
+
+        self._draw_circle_number(sx, sy, number)
+
+    def _draw_slider_repeat_arrow(
+        self,
+        x: int,
+        y: int,
+        direction_angle: float,
+    ) -> None:
+        arrow_text = self.font_slider_arrow.render("»", True, (255, 255, 255))
+        arrow_text = pygame.transform.rotate(arrow_text, -math.degrees(direction_angle))
+        rect = arrow_text.get_rect(center=(x, y))
+        self.screen.blit(arrow_text, rect)
+
+    def _draw_slider_ticks(
+        self,
+        path,
+        slider: SliderObject,
+        start_time_ms: float,
+        end_time_ms: float,
+        radius_px: int,
+    ) -> None:
+        total_ticks = max(0, int(math.floor(max(0.0, self.env.beatmap.difficulty.slider_tick_rate - 0.01))))
+        if total_ticks <= 0:
+            return
+
+        span_duration = (end_time_ms - start_time_ms) / max(1, slider.repeats)
+        tick_radius = max(3, radius_px // 8)
+
+        for span_idx in range(slider.repeats):
+            reverse = (span_idx % 2) == 1
+            for i in range(1, total_ticks + 1):
+                frac = i / (total_ticks + 1)
+                local = 1.0 - frac if reverse else frac
+                tx, ty = path.position_at_progress(local)
+                sx, sy = self._to_screen(tx, ty)
+                pygame.draw.circle(self.screen, (255, 232, 160), (sx, sy), tick_radius)
+                pygame.draw.circle(self.screen, (255, 255, 255), (sx, sy), tick_radius, width=1)
+
+    def _draw_slider_follow_circle(self, current_time_ms: float, cursor_x: float, cursor_y: float, click_down: bool) -> None:
+        if self.env.judge.active_slider is None:
+            return
+
+        ball = self.env.judge.current_slider_ball_position(current_time_ms)
+        if ball is None:
+            return
+
+        bx, by = ball
+        sx, sy = self._to_screen(bx, by)
+        follow_radius_osu = self.env.judge.radius * 1.4
+        follow_radius_px = self._scale_radius(follow_radius_osu)
+
+        near = click_down and distance(cursor_x, cursor_y, bx, by) <= follow_radius_osu
+
+        if near:
+            color = (255, 255, 255)
+            alpha = 120
+            glow_color = (255, 255, 255)
+        else:
+            color = (200, 210, 230)
+            alpha = 48
+            glow_color = (150, 180, 220)
+
+        self._draw_soft_glow((sx, sy), max(10, follow_radius_px - 2), glow_color, strength=0.5, steps=3)
+        self._draw_ring_alpha((sx, sy), follow_radius_px, color, alpha, width=3)
+
+    def _draw_slider(
+        self,
+        slider: SliderObject,
+        time_to_hit: float,
+        radius_px: int,
+        current_time_ms: float,
+    ) -> None:
+        path = self._get_slider_path_cached(slider)
+        screen_points = [self._to_screen(x, y) for x, y in path.sampled_points]
+        combo_color = self._combo_color(slider.combo_index)
+
+        if len(screen_points) >= 2:
+            self._draw_slider_body(screen_points, combo_color, radius_px)
+
+        total_duration = slider_duration_ms(self.env.beatmap, slider)
+        start_time = slider.time_ms
+        end_time = slider.time_ms + total_duration
+
+        self._draw_slider_ticks(path, slider, start_time, end_time, radius_px)
+
+        self._draw_hit_circle(
+            x=slider.x,
+            y=slider.y,
+            time_to_hit=time_to_hit,
+            radius_px=radius_px,
+            combo_index=slider.combo_index,
+            number=slider.combo_number,
+        )
+
+        tail_progress = 0.0 if (slider.repeats % 2 == 0) else 1.0
+        tail_x, tail_y = path.position_at_progress(tail_progress)
+        tail_sx, tail_sy = self._to_screen(tail_x, tail_y)
+        pygame.draw.circle(self.screen, (248, 248, 250), (tail_sx, tail_sy), radius_px)
+        pygame.draw.circle(self.screen, combo_color, (tail_sx, tail_sy), max(2, radius_px - 4))
+        pygame.draw.circle(self.screen, self.config.slider_inner_color, (tail_sx, tail_sy), max(2, int(radius_px * 0.62)))
+        pygame.draw.circle(self.screen, (255, 255, 255), (tail_sx, tail_sy), radius_px, width=2)
+
+        if slider.repeats > 1 and len(screen_points) >= 3:
+            prev_x, prev_y = screen_points[-2]
+            angle_tail = math.atan2(tail_sy - prev_y, tail_sx - prev_x)
+            self._draw_slider_repeat_arrow(tail_sx, tail_sy, angle_tail)
+
+            if slider.repeats > 2:
+                head_sx, head_sy = self._to_screen(slider.x, slider.y)
+                next_x, next_y = screen_points[min(1, len(screen_points) - 1)]
+                angle_head = math.atan2(head_sy - next_y, head_sx - next_x)
+                self._draw_slider_repeat_arrow(head_sx, head_sy, angle_head)
+
+        ball_x, ball_y = slider_ball_position(
+            path=path,
+            repeats=slider.repeats,
+            start_time_ms=start_time,
+            end_time_ms=end_time,
+            current_time_ms=current_time_ms,
+        )
+        bx, by = self._to_screen(ball_x, ball_y)
+
+        self._draw_soft_glow((bx, by), max(8, radius_px // 2), (255, 255, 255), strength=0.75, steps=4)
+        pygame.draw.circle(self.screen, (255, 255, 255), (bx, by), max(9, radius_px // 2))
+        pygame.draw.circle(self.screen, combo_color, (bx, by), max(5, radius_px // 3))
+        pygame.draw.circle(self.screen, (255, 255, 255), (bx, by), max(9, radius_px // 2), width=2)
+
+    def _draw_spinner(self, spinner, time_ms: float) -> None:
+        cx, cy = self._to_screen(256.0, 192.0)
+        big_r = self._scale_radius(100)
+
+        self._draw_soft_glow((cx, cy), big_r, (120, 170, 255), strength=0.6, steps=5)
+        pygame.draw.circle(self.screen, (240, 245, 255), (cx, cy), big_r, width=5)
+
+        if spinner.end_time_ms > spinner.time_ms:
+            progress = (time_ms - spinner.time_ms) / (spinner.end_time_ms - spinner.time_ms)
+            progress = max(0.0, min(1.0, progress))
+        else:
+            progress = 0.0
+
+        arc_rect = pygame.Rect(cx - big_r, cy - big_r, big_r * 2, big_r * 2)
+        pygame.draw.arc(
+            self.screen,
+            (255, 210, 120),
+            arc_rect,
+            -math.pi / 2,
+            -math.pi / 2 + 2 * math.pi * progress,
+            width=8,
+        )
+
+        inner_r = int(big_r * 0.5)
+        pygame.draw.circle(self.screen, (40, 55, 84), (cx, cy), inner_r)
+        pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), inner_r, width=3)
+
+    def _draw_background(self) -> None:
+        if self.background_surface is not None:
+            self.screen.blit(self.background_surface, (0, 0))
+        else:
+            self.screen.fill((12, 16, 28))
+
+        dim = pygame.Surface((self.config.window_width, self.config.window_height), pygame.SRCALPHA)
+        dim.fill((0, 0, 0, self.config.background_dim_alpha))
+        self.screen.blit(dim, (0, 0))
+
+    def run(self, policy_fn: Callable) -> None:
+        obs = self.env.reset()
+        self.cursor_trail.clear()
+        self.combo_pop_timer = 0.0
+        self.slider_path_cache.clear()
+
+        self.live_start_perf = time.perf_counter()
+        self._start_music()
+        self.music_start_perf = time.perf_counter()
+
+        final_info: dict | None = None
+
+        while True:
+            dt_ms_fallback = self.clock.tick(self.config.fps)
+            dt_sec = dt_ms_fallback / 1000.0
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit(0)
+
+            if self.env.done:
+                final_info = self.env.last_info or {}
+                break
+
+            if self.live_start_perf is None:
+                target_time_ms = self.env.time_ms + dt_ms_fallback
+            else:
+                elapsed_ms = (time.perf_counter() - self.live_start_perf) * 1000.0
+                target_time_ms = elapsed_ms + float(self.config.audio_offset_ms)
+
+            steps = 0
+            while self.env.time_ms + self.env.dt_ms <= target_time_ms and steps < self.max_env_steps_per_frame:
+                action = policy_fn(obs)
+                step = self.env.step(action)
+                obs = step.observation
+
+                if action.click_strength >= self.env.click_threshold:
+                    self.last_click_flash = 0.12
+
+                if step.info.get("score_value", 0) > 0:
+                    self.combo_pop_timer = 0.15
+
+                steps += 1
+
+                if self.env.done:
+                    break
+
+            self.last_click_flash = max(0.0, self.last_click_flash - dt_sec)
+            self.combo_pop_timer = max(0.0, self.combo_pop_timer - dt_sec)
+
+            self.draw(obs, self.env.last_info or {})
+
+        if self.music_loaded:
+            pygame.mixer.music.stop()
+
+        self._results_loop(final_info or {})
+
+    def play_replay(self, frames: list[ReplayFrame]) -> None:
+        self.cursor_trail.clear()
+        self.combo_pop_timer = 0.0
+        self.slider_path_cache.clear()
+
+        if not frames:
+            return
+
+        self._start_music()
+        replay_start_perf = time.perf_counter()
+
+        idx = 0
+
+        while True:
+            dt_ms = self.clock.tick(self.config.fps)
+            dt_sec = dt_ms / 1000.0
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit(0)
+
+            elapsed_ms = (time.perf_counter() - replay_start_perf) * 1000.0
+            target_time_ms = elapsed_ms + float(self.config.audio_offset_ms)
+
+            while idx + 1 < len(frames) and frames[idx + 1].time_ms <= target_time_ms:
+                idx += 1
+
+            frame = frames[idx]
+            self.env.time_ms = frame.time_ms
+
+            if frame.score_value > 0:
+                self.combo_pop_timer = 0.15
+
+            self.last_click_flash = max(0.0, self.last_click_flash - dt_sec)
+            self.combo_pop_timer = max(0.0, self.combo_pop_timer - dt_sec)
+
+            self.draw_replay_frame(frame)
+
+            if idx >= len(frames) - 1 and target_time_ms >= frames[-1].time_ms:
+                break
+
+        if self.music_loaded:
+            pygame.mixer.music.stop()
+
+        final_info = {
+            "accuracy": frames[-1].accuracy if frames else 1.0,
+            "max_combo": max((f.combo for f in frames), default=0),
+        }
+        self._results_loop(final_info)
+
+    def _object_anchor(self, obj) -> tuple[float, float]:
+        if obj.kind == HitObjectType.CIRCLE:
+            return obj.circle.x, obj.circle.y
+        if obj.kind == HitObjectType.SLIDER:
+            return obj.slider.x, obj.slider.y
+        return obj.spinner.x, obj.spinner.y
+
+    def draw(self, obs, info: dict) -> None:
+        self._draw_background()
+
+        radius_osu = osu_circle_radius(self.env.beatmap.difficulty.cs)
+        radius_px = self._scale_radius(radius_osu)
+
+        visible_objects = self.env.get_visible_objects()
+        self._draw_follow_points(visible_objects)
+
+        for obj in visible_objects:
+            if obj.kind == HitObjectType.CIRCLE:
+                time_to_hit = obj.circle.time_ms - obs.time_ms
+                self._draw_hit_circle(
+                    x=obj.circle.x,
+                    y=obj.circle.y,
+                    time_to_hit=time_to_hit,
+                    radius_px=radius_px,
+                    combo_index=obj.circle.combo_index,
+                    number=obj.circle.combo_number,
+                )
+            elif obj.kind == HitObjectType.SLIDER:
+                time_to_hit = obj.slider.time_ms - obs.time_ms
+                self._draw_slider(
+                    slider=obj.slider,
+                    time_to_hit=time_to_hit,
+                    radius_px=radius_px,
+                    current_time_ms=obs.time_ms,
+                )
+            elif obj.kind == HitObjectType.SPINNER:
+                self._draw_spinner(obj.spinner, obs.time_ms)
+
+        self._draw_slider_follow_circle(obs.time_ms, obs.cursor_x, obs.cursor_y, info.get("click_down", False))
+        self._draw_cursor(obs.cursor_x, obs.cursor_y)
+        self._draw_judgement_popups(obs.time_ms)
+        self._draw_hud(info)
+        pygame.display.flip()
+
+    def draw_replay_frame(self, frame: ReplayFrame) -> None:
+        self._draw_background()
+
+        radius_osu = osu_circle_radius(self.env.beatmap.difficulty.cs)
+        radius_px = self._scale_radius(radius_osu)
+
+        visible_objects = self.env.get_visible_objects()
+        self._draw_follow_points(visible_objects)
+
+        for obj in visible_objects:
+            if obj.kind == HitObjectType.CIRCLE:
+                time_to_hit = obj.circle.time_ms - frame.time_ms
+                self._draw_hit_circle(
+                    obj.circle.x,
+                    obj.circle.y,
+                    time_to_hit,
+                    radius_px,
+                    combo_index=obj.circle.combo_index,
+                    number=obj.circle.combo_number,
+                )
+            elif obj.kind == HitObjectType.SLIDER:
+                time_to_hit = obj.slider.time_ms - frame.time_ms
+                self._draw_slider(obj.slider, time_to_hit, radius_px, frame.time_ms)
+            elif obj.kind == HitObjectType.SPINNER:
+                self._draw_spinner(obj.spinner, frame.time_ms)
+
+        self._draw_slider_follow_circle(frame.time_ms, frame.cursor_x, frame.cursor_y, frame.click_down)
+        self._draw_cursor(frame.cursor_x, frame.cursor_y)
+
+        info = {
+            "combo": frame.combo,
+            "accuracy": frame.accuracy,
+            "hit_count": 0,
+            "miss_count": 0,
+            "judgement": frame.judgement,
+            "time_ms": frame.time_ms,
+        }
+        self._draw_hud(info)
+
+        if frame.judgement != "none":
+            self._draw_single_popup(
+                frame.judgement,
+                frame.time_ms,
+                frame.score_value,
+                frame.popup_x,
+                frame.popup_y,
+            )
+
+        pygame.display.flip()
+
+    def _results_loop(self, info: dict) -> None:
+        while True:
+            self.clock.tick(self.config.fps)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit(0)
+
+            self._draw_background()
+            self.draw_done(info)
+            pygame.display.flip()
+
+    def draw_done(self, info: dict) -> None:
+        overlay = pygame.Surface((self.config.window_width, self.config.window_height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 185))
+        self.screen.blit(overlay, (0, 0))
+
+        title = self.font_big.render("Replay ended!", True, (255, 255, 255))
+        acc = self.font_mid.render(
+            f"Final Acc: {info.get('accuracy', 1.0) * 100.0:05.2f}%",
+            True,
+            (255, 255, 255),
+        )
+        combo = self.font_mid.render(
+            f"Max Combo: {info.get('max_combo', 0)}x",
+            True,
+            (255, 255, 255),
+        )
+
+        title_rect = title.get_rect(center=(self.config.window_width // 2, self.config.window_height // 2 - 40))
+        acc_rect = acc.get_rect(center=(self.config.window_width // 2, self.config.window_height // 2 + 10))
+        combo_rect = combo.get_rect(center=(self.config.window_width // 2, self.config.window_height // 2 + 50))
+
+        self.screen.blit(title, title_rect)
+        self.screen.blit(acc, acc_rect)
+        self.screen.blit(combo, combo_rect)
+
+====================================================================================================
+FILE 0093: src/skills/osu/viewer/replay_models.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\skills\osu\viewer\replay_models.py
+Size: 940 bytes
+----------------------------------------------------------------------------------------------------
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import List
+
+
+@dataclass(slots=True)
+class ReplayFrame:
+    time_ms: float
+    cursor_x: float
+    cursor_y: float
+    click_down: bool
+    judgement: str
+    combo: int
+    accuracy: float
+    reward: float = 0.0
+    score_value: int = 0
+    popup_x: float | None = None
+    popup_y: float | None = None
+
+
+def save_replay(frames: List[ReplayFrame], path: str | Path) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = [asdict(frame) for frame in frames]
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_replay(path: str | Path) -> List[ReplayFrame]:
+    path = Path(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return [ReplayFrame(**item) for item in payload]
+
+====================================================================================================
+FILE 0094: src/storage/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\storage\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+
+
+====================================================================================================
+FILE 0095: src/world/__init__.py
+====================================================================================================
+Absolute path: D:\Projects\digital_agent_osu_project\src\world\__init__.py
+Size: 0 bytes
+----------------------------------------------------------------------------------------------------
+

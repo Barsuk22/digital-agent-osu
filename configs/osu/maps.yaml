@@ -1,0 +1,13 @@
+# osu maps registry
+# train/eval splits, pools, active maps by phase
+
+maps: []
+
+train_pools:
+  phase0: []
+  phase1: []
+  phase2: []
+  phase3: []
+
+eval_pools:
+  default: []

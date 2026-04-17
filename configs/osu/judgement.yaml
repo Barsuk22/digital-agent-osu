@@ -1,0 +1,23 @@
+# osu judgement configuration
+# timing windows, hit radius logic, slider/spinner thresholds
+
+timing:
+  use_od: true
+
+hit_windows:
+  great_ms: null
+  good_ms: null
+  meh_ms: null
+
+radius:
+  use_circle_size: true
+  scale: 1.0
+
+slider:
+  head_only_phase4: true
+  require_follow: false
+  tick_reward_enabled: false
+
+spinner:
+  enabled: true
+  min_spin_rate: 0.0

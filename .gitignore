@@ -25,3 +25,24 @@ Thumbs.db
 
 .vscode/
 .idea/
+
+# OSU data
+
+data/raw/
+data/processed/
+
+# Exports
+
+exports/
+
+# Docs binaries
+
+projectDocs/
+
+# Audio / media
+
+*.mp3
+*.wav
+*.jpg
+*.png
+

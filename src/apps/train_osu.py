@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -20,20 +20,21 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 @dataclass(slots=True)
 class TrainConfig:
     beatmap_path: str = str(PATHS.active_map)
+    phase_name: str = "phase3_5_post_hit_motion_smoothing"
 
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 535
+    updates: int = 180
     gamma: float = 0.99
     gae_lambda: float = 0.95
-    clip_ratio: float = 0.20
+    clip_ratio: float = 0.10
 
     # Чуть сильнее держим исследование, чтобы не схлопывалась политика
-    entropy_coef: float = 0.020
+    entropy_coef: float = 0.003
     value_coef: float = 0.5
-    learning_rate: float = 3e-4
-    epochs_per_update: int = 8
+    learning_rate: float = 5e-5
+    epochs_per_update: int = 3
     minibatch_size: int = 256
     hidden_dim: int = 256
 
@@ -42,9 +43,15 @@ class TrainConfig:
     cursor_speed_scale: float = 11.0
     click_threshold: float = 0.75
 
-    checkpoint_dir: str = str(PATHS.checkpoints_dir)
-    latest_ckpt_name: str = "latest_recoil.pt"
-    best_ckpt_name: str = "best_recoil.pt"
+    source_checkpoint_path: str = str(PATHS.phase2_best_checkpoint)
+    run_dir: str = str(PATHS.osu_phase3_motion_smoothing_run_dir)
+    checkpoint_dir: str = str(PATHS.phase3_smooth_checkpoints_dir)
+    logs_dir: str = str(PATHS.phase3_smooth_logs_dir)
+    metrics_dir: str = str(PATHS.phase3_smooth_metrics_dir)
+    replays_dir: str = str(PATHS.phase3_smooth_replays_dir)
+    eval_dir: str = str(PATHS.phase3_smooth_eval_dir)
+    latest_ckpt_name: str = "latest_smooth.pt"
+    best_ckpt_name: str = "best_smooth.pt"
     save_every: int = 10
 
     # ------------------------------------------------------------
@@ -58,6 +65,19 @@ class TrainConfig:
     empty_click_penalty: float = 0.07
     far_click_penalty: float = 0.05
     off_window_click_penalty: float = 0.04
+
+    # ------------------------------------------------------------
+    # Phase 2: timing refinement
+    # ------------------------------------------------------------
+    timing_good_window_ms: float = 55.0
+    timing_ok_window_ms: float = 105.0
+    timing_focus_window_ms: float = 165.0
+    timing_good_bonus: float = 0.030
+    timing_ok_bonus: float = 0.012
+    timing_near_miss_penalty: float = 0.012
+    timing_early_penalty_scale: float = 0.00012
+    timing_late_penalty_scale: float = 0.00012
+    timing_off_window_penalty: float = 0.035
 
     # ------------------------------------------------------------
     # Approach shaping
@@ -102,28 +122,51 @@ class TrainConfig:
     prehit_distance_px: float = 56.0
     prehit_position_bonus: float = 0.020
     hold_near_target_bonus: float = 0.010
+    prehit_stable_distance_px: float = 46.0
+    prehit_settled_speed: float = 0.22
+    prehit_flythrough_speed: float = 0.82
+    prehit_flythrough_penalty: float = 0.012
+    micro_stability_bonus: float = 0.006
+    micro_jitter_penalty_scale: float = 0.010
 
     post_hit_flow_bonus: float = 0.060
     post_hit_bad_exit_penalty: float = 0.020
     post_hit_good_direction_bonus: float = 0.020
+    post_hit_excellent_exit_bonus: float = 0.018
+    post_hit_break_penalty: float = 0.018
 
     # ------------------------------------------------------------
     # Click discipline
     # ------------------------------------------------------------
     click_focus_time_window_ms: float = 160.0
     click_focus_distance_px: float = 72.0
-
-    resume_from_best: bool = True
+    click_near_distance_px: float = 58.0
+    click_far_distance_px: float = 110.0
+    click_settled_speed: float = 0.36
+    click_unstable_speed: float = 0.92
+    near_click_bonus: float = 0.014
+    settled_click_bonus: float = 0.012
+    unstable_click_penalty: float = 0.018
 
     # ------------------------------------------------------------
     # Anti-recoil fine-tune
     # ------------------------------------------------------------
-    recoil_window_steps: int = 2
-    recoil_distance_penalty_scale: float = 0.004
-    recoil_direction_penalty_scale: float = 0.005
-    recoil_soft_distance_px: float = 52.0
-    recoil_jerk_penalty_scale: float = 0.0025
-    recoil_good_exit_bonus: float = 0.008
+    recoil_window_steps: int = 6
+    recoil_distance_penalty_scale: float = 0.003
+    recoil_direction_penalty_scale: float = 0.006
+    recoil_soft_distance_px: float = 44.0
+    recoil_jerk_penalty_scale: float = 0.006
+    recoil_good_exit_bonus: float = 0.010
+
+    # ------------------------------------------------------------
+    # Phase 3.5: post-hit motion smoothing
+    # ------------------------------------------------------------
+    recoil_hard_distance_px: float = 88.0
+    recoil_bad_step_penalty: float = 0.020
+    smooth_exit_bonus: float = 0.014
+    smooth_hold_bonus: float = 0.004
+    smooth_exit_min_speed: float = 0.08
+    smooth_exit_max_speed: float = 0.72
 
 @dataclass(slots=True)
 class EpisodeStats:
@@ -144,6 +187,29 @@ class EpisodeStats:
     useless_motion_penalty_total: float = 0.0
     flow_reward_total: float = 0.0
     approach_reward_total: float = 0.0
+    timing_bonus_total: float = 0.0
+    timing_penalty_total: float = 0.0
+    aim_reward_total: float = 0.0
+    post_hit_exit_reward_total: float = 0.0
+    smoothing_reward_total: float = 0.0
+    recoil_distance_total_px: float = 0.0
+    recoil_samples: int = 0
+    recoil_bad_steps: int = 0
+    smooth_exit_steps: int = 0
+    post_hit_jerk_total: float = 0.0
+
+    timing_errors_ms: list[float] = field(default_factory=list)
+    click_distances_px: list[float] = field(default_factory=list)
+    early_clicks: int = 0
+    late_clicks: int = 0
+    off_window_clicks: int = 0
+    good_window_clicks: int = 0
+    near_clicks: int = 0
+    far_clicks: int = 0
+    stable_prehit_steps: int = 0
+    prehit_steps: int = 0
+    post_hit_good_exits: int = 0
+    post_hit_breaks: int = 0
 
     @property
     def hit_rate(self) -> float:
@@ -158,13 +224,67 @@ class EpisodeStats:
     def idle_ratio(self) -> float:
         return 0.0 if self.steps <= 0 else self.idle_steps / self.steps
 
+    @property
+    def timing_error_mean_ms(self) -> float:
+        return 0.0 if not self.timing_errors_ms else float(np.mean([abs(v) for v in self.timing_errors_ms]))
+
+    @property
+    def timing_error_median_ms(self) -> float:
+        return 0.0 if not self.timing_errors_ms else float(np.median([abs(v) for v in self.timing_errors_ms]))
+
+    @property
+    def good_timing_ratio(self) -> float:
+        return 0.0 if self.total_clicks <= 0 else self.good_window_clicks / self.total_clicks
+
+    @property
+    def distance_at_click_mean_px(self) -> float:
+        return 0.0 if not self.click_distances_px else float(np.mean(self.click_distances_px))
+
+    @property
+    def near_click_ratio(self) -> float:
+        return 0.0 if self.total_clicks <= 0 else self.near_clicks / self.total_clicks
+
+    @property
+    def far_click_ratio(self) -> float:
+        return 0.0 if self.total_clicks <= 0 else self.far_clicks / self.total_clicks
+
+    @property
+    def stable_prehit_ratio(self) -> float:
+        return 0.0 if self.prehit_steps <= 0 else self.stable_prehit_steps / self.prehit_steps
+
+    @property
+    def post_hit_good_exit_ratio(self) -> float:
+        denom = self.post_hit_good_exits + self.post_hit_breaks
+        return 0.0 if denom <= 0 else self.post_hit_good_exits / denom
+
+    @property
+    def recoil_distance_mean_px(self) -> float:
+        return 0.0 if self.recoil_samples <= 0 else self.recoil_distance_total_px / self.recoil_samples
+
+    @property
+    def bad_recoil_ratio(self) -> float:
+        return 0.0 if self.recoil_samples <= 0 else self.recoil_bad_steps / self.recoil_samples
+
+    @property
+    def smooth_exit_ratio(self) -> float:
+        return 0.0 if self.recoil_samples <= 0 else self.smooth_exit_steps / self.recoil_samples
+
+    @property
+    def post_hit_jerk_mean(self) -> float:
+        return 0.0 if self.recoil_samples <= 0 else self.post_hit_jerk_total / self.recoil_samples
+
 
 @dataclass(slots=True)
 class RewardBreakdown:
     total: float = 0.0
     approach: float = 0.0
     prehit: float = 0.0
+    timing_bonus: float = 0.0
+    timing_penalty: float = 0.0
+    aim: float = 0.0
     flow: float = 0.0
+    post_hit_exit: float = 0.0
+    smoothing: float = 0.0
     click: float = 0.0
     outcome: float = 0.0
     calm: float = 0.0
@@ -172,6 +292,11 @@ class RewardBreakdown:
     overspeed_penalty: float = 0.0
     idle_penalty: float = 0.0
     useless_motion_penalty: float = 0.0
+    recoil_distance_px: float = 0.0
+    recoil_sample: int = 0
+    bad_recoil_step: int = 0
+    smooth_exit_step: int = 0
+    post_hit_jerk: float = 0.0
 
 
 @dataclass(slots=True)
@@ -291,6 +416,20 @@ def scaled_distance_delta(
     return clamp(scaled, -cfg.approach_clip_abs, cfg.approach_clip_abs)
 
 
+def timing_error_ms(target: UpcomingObjectView | None) -> float | None:
+    if target is None:
+        return None
+    return target.time_to_hit_ms
+
+
+def is_near_click(cfg: TrainConfig, target: UpcomingObjectView | None) -> bool:
+    return target is not None and target.distance_to_cursor <= cfg.click_near_distance_px
+
+
+def is_far_click(cfg: TrainConfig, target: UpcomingObjectView | None) -> bool:
+    return target is None or target.distance_to_cursor >= cfg.click_far_distance_px
+
+
 class ActorCritic(nn.Module):
     def __init__(self, obs_dim: int, hidden_dim: int = 256, action_dim: int = 3) -> None:
         super().__init__()
@@ -392,7 +531,7 @@ def compute_gae(
     return advantages, returns
 
 
-def phase1_shaping_reward(
+def phase23_shaping_reward(
     cfg: TrainConfig,
     prev_obs: OsuObservation,
     next_obs: OsuObservation,
@@ -409,6 +548,8 @@ def phase1_shaping_reward(
 
     move_mag = movement_magnitude(action)
     urgency = compute_urgency(cfg, prev_primary)
+    click_timing_error = timing_error_ms(prev_primary)
+    click_abs_timing_error = abs(click_timing_error) if click_timing_error is not None else None
 
     # ---------------------------------------------------------
     # 1) Approach reward
@@ -436,13 +577,64 @@ def phase1_shaping_reward(
     # ---------------------------------------------------------
     if prev_primary is not None:
         abs_t = abs(prev_primary.time_to_hit_ms)
+        if abs_t <= cfg.prehit_time_window_ms:
+            is_stable_near = (
+                prev_primary.distance_to_cursor <= cfg.prehit_stable_distance_px
+                and move_mag <= cfg.prehit_settled_speed
+            )
+            if is_stable_near:
+                breakdown.prehit += cfg.micro_stability_bonus
+            elif prev_primary.distance_to_cursor <= cfg.prehit_stable_distance_px and move_mag > cfg.prehit_flythrough_speed:
+                breakdown.prehit -= cfg.prehit_flythrough_penalty
+
         if abs_t <= cfg.prehit_time_window_ms and prev_primary.distance_to_cursor <= cfg.prehit_distance_px:
             breakdown.prehit += cfg.prehit_position_bonus
-            if move_mag <= 0.24:
+            if move_mag <= cfg.prehit_settled_speed:
                 breakdown.prehit += cfg.hold_near_target_bonus
+            elif move_mag > cfg.prehit_flythrough_speed:
+                breakdown.prehit -= cfg.prehit_flythrough_penalty
+
+        if abs_t <= cfg.urgent_time_window_ms and prev_primary.distance_to_cursor <= cfg.click_near_distance_px:
+            jitter = max(0.0, move_mag - cfg.click_settled_speed)
+            breakdown.aim -= jitter * cfg.micro_jitter_penalty_scale
 
     # ---------------------------------------------------------
-    # 3) Outcome shaping
+    # 3) Phase 2: timing refinement
+    # ---------------------------------------------------------
+    if just_pressed and click_timing_error is not None and click_abs_timing_error is not None:
+        if click_abs_timing_error <= cfg.timing_good_window_ms:
+            closeness = 1.0 - (click_abs_timing_error / max(1.0, cfg.timing_good_window_ms))
+            breakdown.timing_bonus += cfg.timing_good_bonus * (0.35 + 0.65 * closeness)
+        elif click_abs_timing_error <= cfg.timing_ok_window_ms:
+            closeness = 1.0 - (
+                (click_abs_timing_error - cfg.timing_good_window_ms)
+                / max(1.0, cfg.timing_ok_window_ms - cfg.timing_good_window_ms)
+            )
+            closeness = max(0.0, closeness)
+            breakdown.timing_bonus += cfg.timing_ok_bonus * closeness
+            breakdown.timing_penalty -= cfg.timing_near_miss_penalty * (1.0 - closeness)
+        elif click_abs_timing_error <= cfg.timing_focus_window_ms:
+            normalized = (
+                (click_abs_timing_error - cfg.timing_ok_window_ms)
+                / max(1.0, cfg.timing_focus_window_ms - cfg.timing_ok_window_ms)
+            )
+            breakdown.timing_penalty -= cfg.timing_near_miss_penalty * (0.5 + 0.5 * normalized)
+        else:
+            breakdown.timing_penalty -= cfg.timing_off_window_penalty
+
+        if click_timing_error > cfg.timing_good_window_ms:
+            breakdown.timing_penalty -= min(
+                0.035,
+                (click_timing_error - cfg.timing_good_window_ms) * cfg.timing_early_penalty_scale,
+            )
+        elif click_timing_error < -cfg.timing_good_window_ms:
+            breakdown.timing_penalty -= min(
+                0.035,
+                (abs(click_timing_error) - cfg.timing_good_window_ms) * cfg.timing_late_penalty_scale,
+            )
+
+    # ---------------------------------------------------------
+    # 4) Outcome shaping
     # ---------------------------------------------------------
     score_value = int(info.get("score_value", 0))
     judgement = str(info.get("judgement", "none"))
@@ -460,40 +652,49 @@ def phase1_shaping_reward(
         breakdown.outcome -= cfg.miss_penalty
 
     # ---------------------------------------------------------
-    # 4) Click discipline
+    # 5) Click discipline + Phase 3 aim stability
     # ---------------------------------------------------------
     if just_pressed:
-        if next_primary is None:
+        if prev_primary is None:
             breakdown.click -= cfg.empty_click_penalty
         else:
-            if abs(next_primary.time_to_hit_ms) > cfg.click_focus_time_window_ms:
+            if abs(prev_primary.time_to_hit_ms) > cfg.click_focus_time_window_ms:
                 breakdown.click -= cfg.off_window_click_penalty
 
-            if next_primary.distance_to_cursor > cfg.click_focus_distance_px:
+            if prev_primary.distance_to_cursor > cfg.click_focus_distance_px:
                 breakdown.click -= cfg.far_click_penalty
 
             if (
-                abs(next_primary.time_to_hit_ms) <= cfg.click_focus_time_window_ms
-                and next_primary.distance_to_cursor <= cfg.click_focus_distance_px
+                abs(prev_primary.time_to_hit_ms) <= cfg.click_focus_time_window_ms
+                and prev_primary.distance_to_cursor <= cfg.click_focus_distance_px
             ):
                 useful_click = useful_click or (score_value > 0)
 
+            if prev_primary.distance_to_cursor <= cfg.click_near_distance_px:
+                breakdown.aim += cfg.near_click_bonus
+                if move_mag <= cfg.click_settled_speed:
+                    breakdown.aim += cfg.settled_click_bonus
+                elif move_mag >= cfg.click_unstable_speed:
+                    breakdown.aim -= cfg.unstable_click_penalty
+            elif prev_primary.distance_to_cursor >= cfg.click_far_distance_px:
+                breakdown.aim -= cfg.far_click_penalty
+
     # ---------------------------------------------------------
-    # 5) Anti-jerk penalty
+    # 6) Anti-jerk penalty
     # ---------------------------------------------------------
     jerk = abs(action.dx - motion_state.prev_dx) + abs(action.dy - motion_state.prev_dy)
     jerk_excess = max(0.0, jerk - cfg.jerk_deadzone)
     breakdown.jerk_penalty -= jerk_excess * cfg.jerk_penalty_scale
 
     # ---------------------------------------------------------
-    # 6) Overspeed penalty
+    # 7) Overspeed penalty
     # ---------------------------------------------------------
     speed_soft_cap = cfg.speed_soft_cap_urgent if urgency >= 0.6 else cfg.speed_soft_cap_relaxed
     speed_excess = max(0.0, move_mag - speed_soft_cap)
     breakdown.overspeed_penalty -= speed_excess * cfg.overspeed_penalty_scale
 
     # ---------------------------------------------------------
-    # 7) Idle vs useless motion
+    # 8) Idle vs useless motion
     # ---------------------------------------------------------
     if prev_primary is not None and abs(prev_primary.time_to_hit_ms) <= cfg.urgent_time_window_ms:
         if move_mag < cfg.urgent_idle_threshold and prev_primary.distance_to_cursor > 16.0:
@@ -505,7 +706,7 @@ def phase1_shaping_reward(
             breakdown.calm += cfg.calm_bonus
 
     # ---------------------------------------------------------
-    # 8) Post-hit flow reward
+    # 9) Post-hit flow and exit quality
     # ---------------------------------------------------------
     if score_value > 0:
         if next_primary is not None:
@@ -513,6 +714,7 @@ def phase1_shaping_reward(
                 breakdown.flow += cfg.post_hit_flow_bonus
             elif next_primary.distance_to_cursor >= 210.0:
                 breakdown.flow -= cfg.post_hit_bad_exit_penalty
+                breakdown.post_hit_exit -= cfg.post_hit_break_penalty
 
             next_dir_x, next_dir_y = normalized_vec_to_target(next_obs, next_primary)
             act_dir_x, act_dir_y = action_unit_vector(action)
@@ -520,11 +722,14 @@ def phase1_shaping_reward(
 
             if post_hit_alignment > 0.30:
                 breakdown.flow += cfg.post_hit_good_direction_bonus
+                if move_mag <= cfg.speed_soft_cap_urgent:
+                    breakdown.post_hit_exit += cfg.post_hit_excellent_exit_bonus
             elif post_hit_alignment < -0.25:
                 breakdown.flow -= cfg.post_hit_bad_exit_penalty * 0.5
+                breakdown.post_hit_exit -= cfg.post_hit_break_penalty * 0.5
 
     # ---------------------------------------------------------
-    # 9) Anti-recoil fine-tune
+    # 10) Anti-recoil fine-tune
     # ---------------------------------------------------------
     if motion_state.recoil_steps_left > 0:
         # расстояние от точки недавнего попадания
@@ -534,12 +739,22 @@ def phase1_shaping_reward(
             motion_state.recoil_anchor_x,
             motion_state.recoil_anchor_y,
         )
+        breakdown.recoil_distance_px = recoil_dist
+        breakdown.recoil_sample = 1
         recoil_excess = max(0.0, recoil_dist - cfg.recoil_soft_distance_px)
-        breakdown.flow -= recoil_excess * cfg.recoil_distance_penalty_scale
+        breakdown.smoothing -= recoil_excess * cfg.recoil_distance_penalty_scale
 
         # штраф за резкий импульс сразу после клика/хита
         recoil_jerk = abs(action.dx - motion_state.prev_dx) + abs(action.dy - motion_state.prev_dy)
-        breakdown.flow -= recoil_jerk * cfg.recoil_jerk_penalty_scale
+        breakdown.post_hit_jerk = recoil_jerk
+        breakdown.smoothing -= recoil_jerk * cfg.recoil_jerk_penalty_scale
+
+        if recoil_dist <= cfg.recoil_soft_distance_px and move_mag <= cfg.smooth_exit_max_speed:
+            breakdown.smoothing += cfg.smooth_hold_bonus
+
+        if recoil_dist > cfg.recoil_hard_distance_px:
+            breakdown.bad_recoil_step = 1
+            breakdown.smoothing -= cfg.recoil_bad_step_penalty
 
         # штраф, если прямо летит от точки попадания
         away_x = next_obs.cursor_x - motion_state.recoil_anchor_x
@@ -551,20 +766,28 @@ def phase1_shaping_reward(
             act_dir_x, act_dir_y = action_unit_vector(action)
             away_alignment = away_x * act_dir_x + away_y * act_dir_y
             if away_alignment > 0.55:
-                breakdown.flow -= away_alignment * cfg.recoil_direction_penalty_scale
+                breakdown.smoothing -= away_alignment * cfg.recoil_direction_penalty_scale
 
         # маленький бонус за мягкий выход в сторону следующей ноты
         if next_primary is not None:
             next_dir_x, next_dir_y = normalized_vec_to_target(next_obs, next_primary)
             act_dir_x, act_dir_y = action_unit_vector(action)
             exit_alignment = next_dir_x * act_dir_x + next_dir_y * act_dir_y
-            if 0.20 < exit_alignment < 0.85:
-                breakdown.flow += cfg.recoil_good_exit_bonus
+            smooth_speed = cfg.smooth_exit_min_speed <= move_mag <= cfg.smooth_exit_max_speed
+            if 0.20 < exit_alignment < 0.90 and smooth_speed:
+                breakdown.smooth_exit_step = 1
+                breakdown.post_hit_exit += cfg.recoil_good_exit_bonus
+                breakdown.smoothing += cfg.smooth_exit_bonus * exit_alignment
 
     breakdown.total = (
         breakdown.approach
         + breakdown.prehit
+        + breakdown.timing_bonus
+        + breakdown.timing_penalty
+        + breakdown.aim
         + breakdown.flow
+        + breakdown.post_hit_exit
+        + breakdown.smoothing
         + breakdown.click
         + breakdown.outcome
         + breakdown.calm
@@ -688,11 +911,13 @@ def run_episode(
 
         click_down = osu_action.click_strength >= env.click_threshold
         just_pressed = click_down and not prev_click_down
+        prev_primary, _ = find_circle_targets(obs)
+        click_timing_error = timing_error_ms(prev_primary)
 
         step = env.step(osu_action)
         next_obs = step.observation
 
-        shaping_reward, useful_click, breakdown = phase1_shaping_reward(
+        shaping_reward, useful_click, breakdown = phase23_shaping_reward(
             cfg=cfg,
             prev_obs=obs,
             next_obs=next_obs,
@@ -723,14 +948,55 @@ def run_episode(
         stats.useless_motion_penalty_total += -breakdown.useless_motion_penalty
         stats.flow_reward_total += breakdown.flow
         stats.approach_reward_total += breakdown.approach
+        stats.timing_bonus_total += breakdown.timing_bonus
+        stats.timing_penalty_total += -breakdown.timing_penalty
+        stats.aim_reward_total += breakdown.aim
+        stats.post_hit_exit_reward_total += breakdown.post_hit_exit
+        stats.smoothing_reward_total += breakdown.smoothing
+        stats.recoil_distance_total_px += breakdown.recoil_distance_px
+        stats.recoil_samples += breakdown.recoil_sample
+        stats.recoil_bad_steps += breakdown.bad_recoil_step
+        stats.smooth_exit_steps += breakdown.smooth_exit_step
+        stats.post_hit_jerk_total += breakdown.post_hit_jerk
+
+        if prev_primary is not None and abs(prev_primary.time_to_hit_ms) <= cfg.prehit_time_window_ms:
+            stats.prehit_steps += 1
+            if (
+                prev_primary.distance_to_cursor <= cfg.prehit_stable_distance_px
+                and movement_magnitude(osu_action) <= cfg.prehit_settled_speed
+            ):
+                stats.stable_prehit_steps += 1
 
         if just_pressed:
             stats.total_clicks += 1
+            if click_timing_error is not None:
+                abs_timing_error = abs(click_timing_error)
+                stats.timing_errors_ms.append(click_timing_error)
+                if click_timing_error > cfg.timing_good_window_ms:
+                    stats.early_clicks += 1
+                elif click_timing_error < -cfg.timing_good_window_ms:
+                    stats.late_clicks += 1
+                if abs_timing_error > cfg.timing_focus_window_ms:
+                    stats.off_window_clicks += 1
+                if abs_timing_error <= cfg.timing_good_window_ms:
+                    stats.good_window_clicks += 1
+
+            if prev_primary is not None:
+                stats.click_distances_px.append(prev_primary.distance_to_cursor)
+                if prev_primary.distance_to_cursor <= cfg.click_near_distance_px:
+                    stats.near_clicks += 1
+                elif prev_primary.distance_to_cursor >= cfg.click_far_distance_px:
+                    stats.far_clicks += 1
+
         if useful_click:
             stats.useful_clicks += 1
 
         if step.info.get("score_value", 0) > 0:
             stats.hit_count += 1
+            if breakdown.post_hit_exit >= 0.0:
+                stats.post_hit_good_exits += 1
+            else:
+                stats.post_hit_breaks += 1
         if step.info.get("judgement") == "miss":
             stats.miss_count += 1
 
@@ -780,22 +1046,39 @@ def maybe_load_checkpoint(
     optimizer: optim.Optimizer,
     path: Path,
     device: torch.device,
+    reset_training_state: bool = False,
 ) -> tuple[int, float]:
     if not path.exists():
         return 0, -1e18
 
     payload = torch.load(path, map_location=device)
     model.load_state_dict(payload["model_state_dict"])
-    optimizer.load_state_dict(payload["optimizer_state_dict"])
+    if "optimizer_state_dict" in payload:
+        optimizer.load_state_dict(payload["optimizer_state_dict"])
     update_idx = int(payload.get("update_idx", 0))
     best_reward = float(payload.get("best_reward", -1e18))
     print(f"LOADED CHECKPOINT: {path}")
+    if reset_training_state:
+        return 0, -1e18
     return update_idx, best_reward
+
+
+def ensure_run_dirs(cfg: TrainConfig) -> None:
+    for path in (
+        cfg.run_dir,
+        cfg.checkpoint_dir,
+        cfg.logs_dir,
+        cfg.metrics_dir,
+        cfg.replays_dir,
+        cfg.eval_dir,
+    ):
+        Path(path).mkdir(parents=True, exist_ok=True)
 
 
 def main() -> None:
     cfg = TrainConfig()
     set_seed(cfg.seed)
+    ensure_run_dirs(cfg)
 
     device = torch.device(cfg.device)
     env = build_env(cfg)
@@ -807,23 +1090,35 @@ def main() -> None:
     ckpt_dir = Path(cfg.checkpoint_dir)
 
     # старые базовые чекпоинты, от которых стартуем
-    base_best_ckpt = ckpt_dir / "best.pt"
-    base_latest_ckpt = ckpt_dir / "latest.pt"
-
     # новые recoil-чекпоинты, в которые сохраняем fine-tune
     latest_ckpt = ckpt_dir / cfg.latest_ckpt_name
     best_ckpt = ckpt_dir / cfg.best_ckpt_name
 
-    resume_path = base_best_ckpt if cfg.resume_from_best else base_latest_ckpt
-    start_update, best_reward = maybe_load_checkpoint(model, optimizer, resume_path, device)
+    source_ckpt = Path(cfg.source_checkpoint_path)
+    if not source_ckpt.exists():
+        raise FileNotFoundError(
+            f"Phase 3.5 motion smoothing fine-tuning requires source checkpoint: {source_ckpt}"
+        )
+
+    start_update, best_reward = maybe_load_checkpoint(
+        model,
+        optimizer,
+        source_ckpt,
+        device,
+        reset_training_state=True,
+    )
 
     # для fine-tune лучше не тащить старый абсолютный рекорд,
     # а начать свою отдельную "лучшую" линию
-    best_reward = -1e18
 
     print("=" * 100)
-    print("PHASE 1.5 PPO TRAINING STARTED")
+    print("PHASE 3.5 POST-HIT MOTION SMOOTHING FINE-TUNING STARTED")
+    print(f"Phase: {cfg.phase_name}")
     print(f"Map: {env.beatmap.artist} - {env.beatmap.title} [{env.beatmap.version}]")
+    print(f"Source checkpoint: {source_ckpt}")
+    print(f"Run dir: {Path(cfg.run_dir)}")
+    print(f"Save latest: {latest_ckpt}")
+    print(f"Save best: {best_ckpt}")
     print(f"Observation dim: {obs_dim}")
     print("Action dim: 3")
     print(f"Objects: {len(env.beatmap.hit_objects)}")
@@ -866,11 +1161,31 @@ def main() -> None:
             f"hit_rate={stats.hit_rate:.3f} "
             f"clicks={stats.total_clicks:4d} "
             f"useful={stats.useful_click_ratio:.3f} "
+            f"tmean={stats.timing_error_mean_ms:5.1f} "
+            f"tmed={stats.timing_error_median_ms:5.1f} "
+            f"good_t={stats.good_timing_ratio:.3f} "
+            f"early={stats.early_clicks:3d} "
+            f"late={stats.late_clicks:3d} "
+            f"off={stats.off_window_clicks:3d} "
+            f"dclick={stats.distance_at_click_mean_px:6.1f} "
+            f"near={stats.near_click_ratio:.3f} "
+            f"far={stats.far_click_ratio:.3f} "
+            f"stable={stats.stable_prehit_ratio:.3f} "
+            f"exit={stats.post_hit_good_exit_ratio:.3f} "
             f"idle={stats.idle_ratio:.3f} "
             f"hits={stats.hit_count:3d} "
             f"miss={stats.miss_count:3d} "
             f"approach={stats.approach_reward_total:7.3f} "
+            f"time+={stats.timing_bonus_total:7.3f} "
+            f"time-={stats.timing_penalty_total:7.3f} "
+            f"aim={stats.aim_reward_total:7.3f} "
             f"flow={stats.flow_reward_total:7.3f} "
+            f"exit_r={stats.post_hit_exit_reward_total:7.3f} "
+            f"smooth_r={stats.smoothing_reward_total:7.3f} "
+            f"rpx={stats.recoil_distance_mean_px:5.1f} "
+            f"rjerk={stats.post_hit_jerk_mean:5.3f} "
+            f"badrec={stats.bad_recoil_ratio:.3f} "
+            f"smooth={stats.smooth_exit_ratio:.3f} "
             f"jerk={stats.jerk_penalty_total:7.3f} "
             f"over={stats.overspeed_penalty_total:7.3f} "
             f"drift={stats.useless_motion_penalty_total:7.3f} "

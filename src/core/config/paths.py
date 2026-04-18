@@ -72,12 +72,60 @@ class OsuPaths:
         return self.runs_dir / "osu_phase1_ppo"
 
     @property
+    def osu_phase2_timing_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase2_timing"
+
+    @property
+    def osu_phase3_motion_smoothing_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase3_motion_smoothing"
+
+    @property
     def checkpoints_dir(self) -> Path:
         return self.osu_phase1_run_dir / "checkpoints"
 
     @property
     def replays_dir(self) -> Path:
         return self.osu_phase1_run_dir / "replays"
+
+    @property
+    def phase2_checkpoints_dir(self) -> Path:
+        return self.osu_phase2_timing_run_dir / "checkpoints"
+
+    @property
+    def phase2_logs_dir(self) -> Path:
+        return self.osu_phase2_timing_run_dir / "logs"
+
+    @property
+    def phase2_metrics_dir(self) -> Path:
+        return self.osu_phase2_timing_run_dir / "metrics"
+
+    @property
+    def phase2_replays_dir(self) -> Path:
+        return self.osu_phase2_timing_run_dir / "replays"
+
+    @property
+    def phase2_eval_dir(self) -> Path:
+        return self.osu_phase2_timing_run_dir / "eval"
+
+    @property
+    def phase3_smooth_checkpoints_dir(self) -> Path:
+        return self.osu_phase3_motion_smoothing_run_dir / "checkpoints"
+
+    @property
+    def phase3_smooth_logs_dir(self) -> Path:
+        return self.osu_phase3_motion_smoothing_run_dir / "logs"
+
+    @property
+    def phase3_smooth_metrics_dir(self) -> Path:
+        return self.osu_phase3_motion_smoothing_run_dir / "metrics"
+
+    @property
+    def phase3_smooth_replays_dir(self) -> Path:
+        return self.osu_phase3_motion_smoothing_run_dir / "replays"
+
+    @property
+    def phase3_smooth_eval_dir(self) -> Path:
+        return self.osu_phase3_motion_smoothing_run_dir / "eval"
 
     @property
     def latest_checkpoint(self) -> Path:
@@ -88,12 +136,36 @@ class OsuPaths:
         return self.checkpoints_dir / "best_recoil.pt"
 
     @property
+    def phase2_latest_checkpoint(self) -> Path:
+        return self.phase2_checkpoints_dir / "latest_timing.pt"
+
+    @property
+    def phase2_best_checkpoint(self) -> Path:
+        return self.phase2_checkpoints_dir / "best_timing.pt"
+
+    @property
+    def phase3_smooth_latest_checkpoint(self) -> Path:
+        return self.phase3_smooth_checkpoints_dir / "latest_smooth.pt"
+
+    @property
+    def phase3_smooth_best_checkpoint(self) -> Path:
+        return self.phase3_smooth_checkpoints_dir / "best_smooth.pt"
+
+    @property
     def latest_live_replay(self) -> Path:
         return self.replays_dir / "latest_live_replay.json"
 
     @property
     def best_eval_replay(self) -> Path:
         return self.replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase2_best_eval_replay(self) -> Path:
+        return self.phase2_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase3_smooth_best_eval_replay(self) -> Path:
+        return self.phase3_smooth_replays_dir / "best_eval_replay.json"
 
 
 PATHS = OsuPaths()

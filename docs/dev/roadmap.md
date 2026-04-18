@@ -41,23 +41,40 @@ osu skill module уже вышел за пределы черновой foundati
 
 ## Активная стадия
 
-### Phase 1.5 / Movement Polishing
+### Phase 3.5 / Post-hit Motion Smoothing
 
-Это текущая зона работы.
+Это текущая зона работы после получения `best_timing.pt`.
 
 Фокус:
 
-- плавность движения;
-- снижение jerk и overspeed;
-- anti-recoil после попаданий;
-- мягкий выход от текущего объекта к следующему;
-- улучшение useful click ratio;
-- сохранение fine-tune checkpoint-ветки отдельно от базового checkpoint;
-- развитие reward shaping без превращения агента в scripted bot.
+- загрузка из `artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt`;
+- сохранение в `artifacts/runs/osu_phase3_motion_smoothing/`;
+- уменьшение резкого отскока после hit;
+- снижение post-hit jerk;
+- сохранение полезного выхода к следующей цели;
+- отдельные метрики `smooth_r`, `rpx`, `rjerk`, `badrec`, `smooth`.
+
+## Закрытая refinement-ветка
+
+### Phase 2 / Timing Refinement + Phase 3 / Aim Stability Refinement
+
+Эта ветка реализована и считается рабочей базой для Phase 3.5.
+
+Фокус:
+
+- загрузка из `best_recoil.pt`;
+- сохранение в `artifacts/runs/osu_phase2_timing/`;
+- timing metrics и timing reward breakdown;
+- near/far/settled/unstable click distinction;
+- pre-hit stability;
+- post-hit exit quality;
+- сохранение старых Phase 1 checkpoints без перезаписи.
 
 ## Дальше
 
 ### Phase 2 / Timing Quality
+
+Статус: реализована и закрыта как часть Phase 2/3 refinement ветки.
 
 Цель: улучшить точность кликов во времени и уменьшить ранние/поздние нажатия.
 
@@ -69,6 +86,8 @@ osu skill module уже вышел за пределы черновой foundati
 - сравнение deterministic eval между checkpoint-ветками.
 
 ### Phase 3 / Aim Stability
+
+Статус: реализована и закрыта как часть Phase 2/3 refinement ветки.
 
 Цель: связать позицию курсора и клик более стабильно.
 

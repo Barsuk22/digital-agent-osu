@@ -10,8 +10,10 @@ osu skill module — часть более широкой архитектуры
 
 - Phase 0 / Foundation закрыта;
 - Phase 1 / Initial Learning / Base PPO Learning закрыта по смыслу;
-- активная стадия — Phase 1.5 / Movement Polishing;
-- дальнейшие фазы связаны с качеством timing, aim stability, sliders, multi-map generalization и skill memory.
+- Phase 1.5 / Movement Polishing стала базой для следующего этапа;
+- Phase 2 / Timing Refinement и Phase 3 / Aim Stability Refinement закрыты как рабочая timing/aim ветка;
+- активная стадия — Phase 3.5 / Post-hit Motion Smoothing;
+- дальнейшие фазы связаны со sliders, multi-map generalization и skill memory.
 
 ## Phase 0 / Core Foundation
 
@@ -56,7 +58,7 @@ osu skill module — часть более широкой архитектуры
 
 ## Phase 1.5 / Movement Polishing
 
-Статус: активная стадия.
+Статус: закрыта как recoil/movement база для Phase 2/3.
 
 Цель: улучшить качество моторики уже обучаемого агента.
 
@@ -74,29 +76,67 @@ osu skill module — часть более широкой архитектуры
 
 ## Phase 2 / Timing Quality
 
-Статус: следующая крупная зона после стабилизации movement polishing.
+Статус: реализована и закрыта как рабочая timing-refinement ветка.
 
 Цель: улучшить точность кликов во времени.
 
-Направления:
+Реализовано:
 
 - явные timing-метрики;
 - усиление reward вокруг hit window;
 - штрафы за ранние и поздние клики;
 - уменьшение off-window clicking.
+- отдельные `timing_bonus` и `timing_penalty` в breakdown;
+- сохранение в `artifacts/runs/osu_phase2_timing/`.
+
+База загрузки:
+
+```text
+artifacts/runs/osu_phase1_ppo/checkpoints/best_recoil.pt
+```
 
 ## Phase 3 / Aim Stability
 
-Статус: планируется.
+Статус: реализована и закрыта вместе с Phase 2 как рабочая aim-stability ветка.
 
 Цель: сделать связь позиции курсора и клика более устойчивой.
 
-Направления:
+Реализовано:
 
 - штрафы за click далеко от цели;
 - удержание около объекта в pre-hit окне;
 - анализ post-hit движения;
 - снижение случайных отскоков и лишних микродвижений.
+- distinction между near/far/settled/unstable click;
+- micro-stability около актуальной цели;
+- отдельный `post_hit_exit` вклад для anti-recoil/exit quality;
+- aim-related метрики в train/eval.
+
+## Phase 3.5 / Post-hit Motion Smoothing
+
+Статус: активная стадия.
+
+Цель: убрать остаточную "отдачу" после попадания, не ломая уже сильный timing/aim checkpoint.
+
+База обучения:
+
+```text
+artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt
+```
+
+Новая ветка сохранения:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/
+```
+
+Реализуемый фокус:
+
+- короткое post-hit recoil-window;
+- штраф за слишком резкий отлёт от точки попадания;
+- штраф за post-hit jerk;
+- мягкий bonus за плавный выход к следующей цели;
+- отдельные метрики `smooth_r`, `rpx`, `rjerk`, `badrec`, `smooth`.
 
 ## Phase 4 / Slider Intro
 

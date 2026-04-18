@@ -1,12 +1,37 @@
 # Текущий статус проекта
 
+## Актуализация: Phase 3.5
+
+Phase 2 / Timing Refinement и Phase 3 / Aim Stability Refinement теперь считаются реализованной рабочей веткой refinement: она стартовала от `best_recoil.pt`, сохранялась отдельно в `artifacts/runs/osu_phase2_timing/` и дала checkpoint `best_timing.pt`, который можно использовать как сильную базу для следующей полировки.
+
+Текущая активная стадия — **Phase 3.5 / Post-hit Motion Smoothing**. Это не новая попытка обучить агента играть с нуля. Это короткий и осторожный fine-tuning от:
+
+```text
+artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt
+```
+
+Результаты сохраняются в отдельную ветку:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/
+```
+
+Новые checkpoints:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
+artifacts/runs/osu_phase3_motion_smoothing/checkpoints/latest_smooth.pt
+```
+
+Цель Phase 3.5 — убрать остаточный post-hit recoil: резкий отскок после клика, лишний jerk в первые кадры после попадания и случайную болтанку вместо мягкого выхода к следующей цели. У агента уже есть базовая обучаемость, timing refinement и aim stability; сейчас фокус именно на качестве моторики.
+
 ## Кратко
 
 `digital_agent_osu_project` — модульный проект цифрового агента. osu-навык является отдельным skill module внутри более широкой архитектуры, где в будущем должны появляться память, skill memory, orchestration, world interfaces и другие навыки.
 
 osu skill module уже не находится на уровне черновой песочницы. Базовая обучаемость достигнута: PPO-агент обучается на настоящей osu-карте, взаимодействует с объектами, сохраняет checkpoints, проходит eval и даёт replay для просмотра.
 
-Текущая стадия разработки — полировка поведения и моторики.
+Текущая стадия разработки — Phase 3.5 / Post-hit Motion Smoothing поверх уже сильной timing/aim policy `best_timing.pt`.
 
 ## Статус фаз
 
@@ -38,7 +63,7 @@ osu skill module уже не находится на уровне черново
 
 ### Phase 1.5 / Movement Polishing
 
-Статус: активная стадия.
+Статус: базовая recoil/movement polishing ветка закрыта как стартовая база для следующего refinement.
 
 Фокус:
 
@@ -49,6 +74,30 @@ osu skill module уже не находится на уровне черново
 - развитие flow между объектами;
 - humanlike movement polishing;
 - дальнейшее reward shaping.
+
+### Phase 2 / Timing Refinement
+
+Статус: реализована и закрыта как рабочая timing-refinement база.
+
+Фокус:
+
+- загрузка весов из `best_recoil.pt`;
+- отдельный run folder `artifacts/runs/osu_phase2_timing/`;
+- timing metrics в train/eval;
+- мягкий timing bonus/penalty;
+- отдельный reward breakdown для timing.
+
+### Phase 3 / Aim Stability Refinement
+
+Статус: реализована и закрыта вместе с Phase 2 как рабочая aim-stability база.
+
+Фокус:
+
+- pre-hit positioning;
+- near/far/settled/unstable click distinction;
+- micro-stability около цели;
+- post-hit exit quality;
+- отдельные aim и exit metrics.
 
 ## Состояние osu skill module
 
@@ -93,11 +142,12 @@ osu skill module уже не находится на уровне черново
 - PPO update;
 - reward shaping;
 - checkpoint save/load;
-- fine-tuning ветку для anti-recoil/motion polishing.
+- fine-tuning ветку Phase 2/3 для timing и aim stability refinement;
+- текущую Phase 3.5 ветку для post-hit motion smoothing.
 
 ### Eval и replay
 
-`src/apps/eval_osu.py` загружает checkpoint, выполняет deterministic rollout, сохраняет replay и показывает его через viewer.
+`src/apps/eval_osu.py` сначала загружает phase3 smoothing checkpoint, выполняет deterministic rollout, сохраняет replay, печатает timing/aim summary и показывает результат через viewer. Если `best_smooth.pt` ещё не создан, eval откатывается к `best_timing.pt`, затем к `best_recoil.pt`.
 
 `src/apps/replay_osu.py` открывает сохранённый eval replay.
 
@@ -110,12 +160,17 @@ osu skill module уже не находится на уровне черново
 - `best.pt`;
 - `latest.pt`.
 
-Fine-tune ветка:
+Recoil fine-tune ветка:
 
 - `best_recoil.pt`;
 - `latest_recoil.pt`.
 
-Разделение важно: fine-tuning на плавность и anti-recoil может развиваться отдельно от базового лучшего checkpoint. Это позволяет экспериментировать с моторикой, не затирая исходную Phase 1 policy.
+Phase 2/3 ветка:
+
+- `artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt`;
+- `artifacts/runs/osu_phase2_timing/checkpoints/latest_timing.pt`.
+
+Разделение важно: timing/aim refinement стартует от `best_recoil.pt`, но сохраняется отдельно и не затирает ни `best.pt`, ни `best_recoil.pt`.
 
 ## Активные ограничения
 
@@ -129,10 +184,10 @@ Fine-tune ветка:
 
 ## Ближайшие направления
 
-- стабилизировать fine-tune ветку;
-- расширить eval-метрики;
-- сравнивать базовые и recoil checkpoints;
-- улучшить reward shaping для timing и click discipline;
+- стабилизировать Phase 3.5 smoothing fine-tune ветку;
+- сравнить `best_timing.pt` и `best_smooth.pt` на eval/replay;
+- расширить eval-метрики и сохранить их в metrics/logs;
+- аккуратно вынести параметры Phase 2/3 и Phase 3.5 в конфиги;
 - аккуратно вынести часть параметров в конфиги;
 - добавить тесты для parser, judgement и replay;
 - перейти к нескольким easy-картам;

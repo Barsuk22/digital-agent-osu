@@ -1,64 +1,58 @@
-Phase 0 — Core Foundation (Status)
-Цель
+# Phase 0 / Foundation — статус
 
-Создать честную osu-like среду, где агент действительно играет, а не симулирует.
+Статус: закрыта.
 
-Что реализовано
-Parser
-чтение .osu
-circles / sliders / spinners
-timing points
-difficulty (CS, OD, AR)
-Environment
-время (time_ms)
-курсор (cursor_x, cursor_y)
-upcoming objects
-distance / timing до цели
-Action space
-dx, dy — движение
-click_strength — клик
-Hit system
-300 / 100 / 50 / miss
-проверка радиуса
-timing окна (OD)
-Sliders
-head hit
-follow логика
-ticks (базово)
-завершение
-Spinner
-вращение через изменение угла
-накопление прогресса
-оценка по количеству оборотов
-Viewer (pygame)
-отображение карты
-курсор с хвостом
-клики
-эффекты попаданий
-combo / accuracy
-replay
-Что упрощено
-slider path не идеально соответствует osu (особенно passthrough)
-follow circle упрощён
-нет полной точности lazer renderer
-нет input lag модели
-нет human-like ограничений
-Итог
+Phase 0 была стадией построения честной osu-like среды, в которой агент может действовать, получать judgement и reward, а результат можно просмотреть через replay/viewer.
 
-Среда:
-✔ честная
-✔ замкнутая
-✔ подходит для RL
+## Реализовано
 
-Агент:
-✔ может действовать
-✔ получает reward
-❗ пока действует хаотично
+### Parser
 
-Следующий шаг
+- чтение `.osu`;
+- metadata и difficulty settings;
+- timing points;
+- circles;
+- sliders;
+- spinners;
+- combo index и combo number;
+- поиск audio/background рядом с картой.
 
-👉 Phase 1 — Initial Contact
+### Environment
 
-Задача:
+- текущее время `time_ms`;
+- курсор `cursor_x`, `cursor_y`;
+- action space `dx, dy, click_strength`;
+- upcoming objects;
+- distance и time-to-hit для observation;
+- завершение эпизода после обработки объектов;
+- запись replay frames.
 
-научить агента вообще взаимодействовать с объектами
+### Judgement и reward
+
+- `300 / 100 / 50 / miss`;
+- проверка радиуса через CircleSize;
+- timing windows через OD;
+- combo и accuracy;
+- miss expiration;
+- базовая slider-логика;
+- базовая spinner-логика.
+
+### Viewer и replay
+
+- pygame viewer;
+- отображение карты, объектов, курсора и хвоста;
+- эффекты кликов и judgement popups;
+- combo/accuracy HUD;
+- сохранение и загрузка replay JSON.
+
+## Упрощения
+
+- slider path приближённый, не 1:1 с osu! lazer;
+- passthrough sliders пока обрабатываются упрощённо;
+- viewer не является точным renderer osu! lazer;
+- нет модели input lag;
+- нет полной human-like моторной модели на уровне среды.
+
+## Итог
+
+Foundation-слой достаточно готов для RL-обучения и уже используется в PPO pipeline. Phase 0 не является активной стадией проекта, кроме точечных исправлений и уточнений.

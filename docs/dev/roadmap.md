@@ -1,55 +1,96 @@
-# Development Roadmap
+# Roadmap разработки
 
-## Текущее состояние
+Этот roadmap описывает текущее положение проекта по состоянию кода, а не идеальный долгосрочный план.
 
-✔ Phase 0 — завершена
+## Где проект сейчас
 
----
+osu skill module уже вышел за пределы черновой foundation-стадии. Базовый цикл обучения через PPO работает: агент взаимодействует с реальной `.osu` картой, получает reward, сохраняет checkpoints и может быть оценён через eval/replay.
 
-## Phase 1 — Initial Contact
+Текущий фокус: полировка поведения и моторики.
 
-Цель:
+## Закрыто
 
-* агент начинает понимать "есть цель"
+### Phase 0 / Foundation
 
-Задачи:
+Статус: закрыта.
 
-* reward за приближение
-* reward за попадание
-* штраф за miss
-* уменьшить random clicking
+Сделано:
 
----
+- `.osu` parser;
+- osu-like environment;
+- action space `dx, dy, click_strength`;
+- observation с текущим временем, курсором и upcoming objects;
+- judgement для circles, sliders и spinners;
+- replay frames;
+- pygame viewer.
 
-## Phase 2 — Timing
+### Phase 1 / Initial Learning / Base PPO Learning
 
-* обучение времени
-* штраф за ранние/поздние клики
+Статус: закрыта по смыслу как этап достижения базовой обучаемости.
 
----
+Сделано:
 
-## Phase 3 — Aim
+- PPO training loop;
+- Actor-Critic policy;
+- rollout buffer и GAE;
+- reward shaping для приближения, попаданий, дисциплины кликов и базовой моторики;
+- загрузка базового checkpoint;
+- сохранение `best.pt` / `latest.pt` на базовой ветке и отдельной fine-tune ветки;
+- eval через deterministic policy;
+- сохранение replay после eval.
 
-* клик только на цели
-* штраф за клик мимо
+## Активная стадия
 
----
+### Phase 1.5 / Movement Polishing
+
+Это текущая зона работы.
+
+Фокус:
+
+- плавность движения;
+- снижение jerk и overspeed;
+- anti-recoil после попаданий;
+- мягкий выход от текущего объекта к следующему;
+- улучшение useful click ratio;
+- сохранение fine-tune checkpoint-ветки отдельно от базового checkpoint;
+- развитие reward shaping без превращения агента в scripted bot.
 
 ## Дальше
 
-* sliders
-* spinner
-* multi-map
-* skill memory
+### Phase 2 / Timing Quality
 
----
+Цель: улучшить точность кликов во времени и уменьшить ранние/поздние нажатия.
 
-## Принцип
+Планируемые направления:
 
-Агент должен:
+- более явные timing-метрики;
+- reward вокруг hit window;
+- штрафы за off-window click;
+- сравнение deterministic eval между checkpoint-ветками.
 
-* учиться сам
-* не получать “магических знаний”
-* развивать поведение через reward
+### Phase 3 / Aim Stability
 
----
+Цель: связать позицию курсора и клик более стабильно.
+
+Планируемые направления:
+
+- штрафы за click вне радиуса;
+- устойчивое удержание около цели перед hit;
+- анализ движения сразу после попаданий;
+- снижение случайных микродвижений.
+
+### Phase 4+ / Skills и Generalization
+
+Дальнейшие этапы:
+
+- более полная slider-поддержка;
+- spinner behavior;
+- обучение на нескольких картах;
+- pattern formation;
+- stability gate;
+- skill extraction;
+- skill memory и выбор навыков.
+
+## Принцип проекта
+
+Агент должен учиться через среду, reward и policy update. Документация не должна описывать его как scripted bot или как уже готового универсального osu-игрока.

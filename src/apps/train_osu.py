@@ -24,7 +24,7 @@ class TrainConfig:
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 650
+    updates: int = 535
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_ratio: float = 0.20

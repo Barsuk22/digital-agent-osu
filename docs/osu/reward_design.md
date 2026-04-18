@@ -164,3 +164,97 @@ artifacts/runs/osu_phase2_timing/checkpoints/latest_timing.pt
 - нет отдельного YAML-конфига для Phase 2/3;
 - multi-map reward validation ещё не сделан;
 - slider-specific refinement требует отдельной стадии.
+# Update 2026-04-18: Phase 4.1 slider-follow shaping
+
+Текущая активная ветка обучения sliders:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/
+```
+
+Она продолжает policy из:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
+```
+
+Причина обновления: прежняя slider-intro логика давала head hit, но почти не давала обучаемого состояния и reward для удержания slider ball. Теперь observation содержит отдельный slider state block, а shaping добавляет мягкие компоненты:
+
+- удержание follow после `slider_head`;
+- близость к текущей slider ball;
+- уменьшение distance до slider target;
+- progress во время активного slider;
+- tick/finish signal;
+- penalty за release, lost follow, jerk и premature escape.
+
+Важное ограничение: это intro/fix stage, не final slider mastery. Вес slider shaping намеренно умеренный, чтобы не разрушить уже рабочие circles/timing/aim.
+
+После первых PPO-логов стало видно, что slider shaping был слишком наказующим до появления follow-навыка: `slider_r` стабильно уходил примерно в `-80..-100`, а `sl_inside_ratio` оставался около нуля. Поэтому активный slider больше не считается ошибкой по умолчанию. Теперь до входа в follow radius есть acquisition ladder: reward за сокращение distance до slider ball, небольшой signal за удержание click и мягкие penalties только за явный release/lost follow/escape.
+
+Deterministic debug-policy `python -m src.apps.debug_slider_follow` подтверждает, что env/judge могут выдавать ненулевые `slider_follow`, `slider_finish` и `slider_tick`, если курсор едет за ball.
+
+Следующая узкая диагностика разделяет click и movement:
+
+- `sl_post_head_hold_ratio` показывает, удерживает ли policy click после head;
+- `sl_click_release_count` показывает premature release transitions;
+- `sl_geom_inside_ratio` показывает, входит ли курсор в follow circle даже без учета click;
+- `sl_target_align` показывает, направлено ли движение к текущей slider ball.
+
+Дополнительный shaping применяется только во время active slider: небольшой early-hold reward после head, penalty за ранний release и мягкий direction reward к slider target.
+
+После следующего диагностического прогона стало видно, что курсор уже часто бывает геометрически рядом с follow zone (`sl_geom_inside_ratio` заметно выше нуля), но `sl_click_hold_steps` почти всегда оставался 0-3. Поэтому click semantics разделены: обычный `click_threshold=0.75` по-прежнему определяет новое нажатие для circles/head hit, а active-slider hold принимает более мягкий `slider_hold_threshold=0.45`. Это не делает circle clicks более свободными, но дает PPO непрерывный мост от tap к hold во время уже активного slider.
+
+Новые диагностические метрики: `sl_head`, `sl_follow`, `sl_drop`, `sl_fin`, `sl_tick`, `sl_dpx`, `sl_active_steps`, `sl_inside_ratio`, `sl_follow_dist_mean`, `sl_follow_gain`, `sl_progress_gain`, `sl_lost_follow_count`, `sl_finish_rate`, `sl_tick_hit_rate`.
+
+Для head-to-hold перехода дополнительно логируются `sl_head_to_hold`, `sl_release_after_head`, `sl_hold_steps_mean`, `sl_first_hold_delay`, `sl_near_hold_ratio` и `sl_near_released_ratio`.
+
+Следующая правка не меняет input dim и не трогает circle clicks. После оживления hold стало видно, что policy часто держит click без настоящего tracking: `sl_follow_gain` остается отрицательным, а distance до ball большой. Поэтому slider shaping теперь сильнее различает:
+
+- good tracking: hold + сокращение distance или движение в сторону текущей slider ball;
+- fake hold: hold далеко от ball без улучшения distance;
+- stall: hold при почти нулевом полезном движении;
+- wrong direction: движение от текущего follow target.
+
+Generic reward за сам факт hold уменьшен, а reward за path delta и direction alignment усилен. Цель: не поощрять “держу кнопку где-то рядом”, а сделать выгодным именно ехать за slider ball.
+
+# Update 2026-04-18: Phase 5 slider-control shaping
+
+Phase 5 continues from:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+and writes to:
+
+```text
+artifacts/runs/osu_phase5_slider_control/
+```
+
+The reward focus changes from Phase 4.1 acquisition to full slider segment control.
+
+Important changes:
+
+- isolated `slider_head` receives a small Phase 5 deemphasis penalty in training shaping;
+- `slider_tick` receives an extra consistency bonus;
+- `slider_finish` receives an extra control bonus, scaled by recent inside-follow chain;
+- `slider_drop` receives a moderate control penalty;
+- sustained inside-follow chains receive more value;
+- movement aligned with the slider tangent is rewarded near the follow target;
+- movement against the tangent/target is penalized;
+- curved/path-change steps are detected from tangent changes and rewarded only when inside-follow is maintained;
+- reverse events are detected from sharp tangent flips and tracked in a short reverse window.
+
+This is still shaping, not scripted autoplay. Phase 5 does not add a new observation dimension and does not hardcode a trajectory. It uses existing slider target/tangent/progress signals to make PPO prefer stable segment control over head-tap success.
+
+New training/eval metrics:
+
+- `sl_seg_q`;
+- `sl_full`;
+- `sl_partial`;
+- `sl_rev`;
+- `sl_rev_follow`;
+- `sl_curve`;
+- `sl_curve_good`.
+
+The expected direction is: `sl_seg_q`, `sl_inside_ratio`, `sl_tick_hit_rate`, `sl_finish_rate`, `sl_chain_mean`, and `sl_chain_max` should rise together. If only `sl_head` rises, Phase 5 is not learning the intended behavior.

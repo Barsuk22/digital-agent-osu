@@ -6,7 +6,7 @@ from typing import List
 from src.skills.osu.domain.math_utils import clamp_position, distance
 from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap
 from src.skills.osu.domain.osu_rules import ar_to_preempt_ms, slider_duration_ms
-from src.skills.osu.env.types import OsuAction, OsuObservation, UpcomingObjectView
+from src.skills.osu.env.types import OsuAction, OsuObservation, SliderStateView, UpcomingObjectView
 from src.skills.osu.reward.judgement import OsuJudge
 from src.skills.osu.viewer.replay_models import ReplayFrame
 
@@ -28,12 +28,14 @@ class OsuEnv:
         cursor_start_x: float = 256.0,
         cursor_start_y: float = 192.0,
         click_threshold: float = 0.75,
+        slider_hold_threshold: float = 0.45,
         cursor_speed_scale: float = 14.0,
     ) -> None:
         self.beatmap = beatmap
         self.dt_ms = dt_ms
         self.upcoming_count = upcoming_count
         self.click_threshold = click_threshold
+        self.slider_hold_threshold = slider_hold_threshold
         self.cursor_speed_scale = cursor_speed_scale
         self.judge = OsuJudge(beatmap)
 
@@ -45,6 +47,7 @@ class OsuEnv:
         self.cursor_y = cursor_start_y
         self.done = False
         self.last_click_down = False
+        self.last_raw_click_down = False
         self.current_click_down = False
         self.last_info: dict = {}
         self.replay_frames: list[ReplayFrame] = []
@@ -56,6 +59,7 @@ class OsuEnv:
         self.cursor_y = self.cursor_start_y
         self.done = False
         self.last_click_down = False
+        self.last_raw_click_down = False
         self.current_click_down = False
         self.last_info = {}
         self.replay_frames = []
@@ -79,8 +83,10 @@ class OsuEnv:
         new_y = self.cursor_y + action.dy * self.cursor_speed_scale
         self.cursor_x, self.cursor_y = clamp_position(new_x, new_y)
 
-        click_down = action.click_strength >= self.click_threshold
-        just_pressed = click_down and not self.last_click_down
+        raw_click_down = action.click_strength >= self.click_threshold
+        slider_hold_down = self.judge.active_slider is not None and action.click_strength >= self.slider_hold_threshold
+        click_down = raw_click_down or slider_hold_down
+        just_pressed = raw_click_down and not self.last_raw_click_down
         self.current_click_down = click_down
 
         judge_result = self.judge.update(
@@ -93,12 +99,14 @@ class OsuEnv:
         )
 
         self.last_click_down = click_down
+        self.last_raw_click_down = raw_click_down
         self.time_ms += dt_step
 
         if self.judge.is_finished(self.time_ms):
             self.done = True
 
         obs = self._build_observation()
+        slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
 
         info = {
             "score_value": judge_result.score_value,
@@ -112,8 +120,14 @@ class OsuEnv:
             "cursor_x": self.cursor_x,
             "cursor_y": self.cursor_y,
             "click_down": click_down,
+            "raw_click_down": raw_click_down,
+            "slider_hold_down": slider_hold_down,
+            "click_strength": action.click_strength,
+            "click_threshold": self.click_threshold,
+            "slider_hold_threshold": self.slider_hold_threshold,
             "popup_x": judge_result.popup_x,
             "popup_y": judge_result.popup_y,
+            "slider_state": slider_state,
         }
         self.last_info = info
 
@@ -183,6 +197,7 @@ class OsuEnv:
 
     def _build_observation(self) -> OsuObservation:
         upcoming = self.judge.peek_upcoming_objects(self.time_ms, self.upcoming_count)
+        primary_is_slider = 1.0 if upcoming and upcoming[0].kind == HitObjectType.SLIDER else 0.0
 
         views: List[UpcomingObjectView] = []
         for obj in upcoming:
@@ -219,11 +234,28 @@ class OsuEnv:
                 )
             )
 
+        slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
+
         return OsuObservation(
             time_ms=self.time_ms,
             cursor_x=self.cursor_x,
             cursor_y=self.cursor_y,
             upcoming=views,
+            slider=SliderStateView(
+                active_slider=1.0 if slider_state["active_slider"] else 0.0,
+                primary_is_slider=primary_is_slider,
+                progress=float(slider_state["progress"]),
+                target_x=float(slider_state["target_x"]),
+                target_y=float(slider_state["target_y"]),
+                distance_to_target=float(slider_state["distance_to_target"]),
+                distance_to_ball=float(slider_state["distance_to_ball"]),
+                inside_follow=1.0 if slider_state["inside_follow"] else 0.0,
+                head_hit=1.0 if slider_state["head_hit"] else 0.0,
+                time_to_end_ms=float(slider_state["time_to_end_ms"]),
+                tangent_x=float(slider_state["tangent_x"]),
+                tangent_y=float(slider_state["tangent_y"]),
+                follow_radius=float(slider_state["follow_radius"]),
+            ),
         )
 
     @staticmethod

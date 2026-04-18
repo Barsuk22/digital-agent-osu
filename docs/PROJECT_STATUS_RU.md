@@ -192,3 +192,42 @@ Phase 2/3 ветка:
 - добавить тесты для parser, judgement и replay;
 - перейти к нескольким easy-картам;
 - подготовить stability gate для будущего skill extraction.
+# Обновление 2026-04-18: Phase 4.1 / Slider Follow Fix
+
+Текущий osu-этап переведен на отдельную ветку slider-follow fine-tuning:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/
+```
+
+Стартовый checkpoint:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
+```
+
+Причина: предыдущая slider-intro попытка показывала хороший `sl_head`, но почти нулевой follow и finish. Теперь observation расширен явным состоянием активного slider, reward учит удерживать follow circle и идти по slider ball, а train/eval печатают отдельные slider-метрики.
+
+Статус честный: это intro/fix стадия, не финальная mastery по всем slider cases. Circle/timing/aim pipeline сохраняется и не должен перезаписываться.
+
+# Обновление 2026-04-18: Phase 5 / Slider Control
+
+Активная slider-ветка переведена на Phase 5 / Slider Control.
+
+Phase 5 стартует из:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+и сохраняется отдельно:
+
+```text
+artifacts/runs/osu_phase5_slider_control/
+```
+
+Статус: новая полноценная фаза реализована, но еще требует train/eval прогонов для подбора устойчивых весов. Цель фазы - не просто оживить sliders, а научить policy стабильнее вести slider segments: дольше держаться внутри follow, собирать ticks, чаще доходить до finish, лучше переживать curved path changes и reverse windows.
+
+Новые ключевые метрики: `sl_seg_q`, `sl_full`, `sl_partial`, `sl_rev`, `sl_rev_follow`, `sl_curve`, `sl_curve_good`.
+
+Подробности: `docs/osu/phase5_slider_control_status.md`.

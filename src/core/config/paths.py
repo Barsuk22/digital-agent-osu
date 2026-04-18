@@ -80,6 +80,14 @@ class OsuPaths:
         return self.runs_dir / "osu_phase3_motion_smoothing"
 
     @property
+    def osu_phase4_slider_intro_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase4_slider_follow_fix"
+
+    @property
+    def osu_phase5_slider_control_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase5_slider_control"
+
+    @property
     def checkpoints_dir(self) -> Path:
         return self.osu_phase1_run_dir / "checkpoints"
 
@@ -128,6 +136,46 @@ class OsuPaths:
         return self.osu_phase3_motion_smoothing_run_dir / "eval"
 
     @property
+    def phase4_slider_checkpoints_dir(self) -> Path:
+        return self.osu_phase4_slider_intro_run_dir / "checkpoints"
+
+    @property
+    def phase4_slider_logs_dir(self) -> Path:
+        return self.osu_phase4_slider_intro_run_dir / "logs"
+
+    @property
+    def phase4_slider_metrics_dir(self) -> Path:
+        return self.osu_phase4_slider_intro_run_dir / "metrics"
+
+    @property
+    def phase4_slider_replays_dir(self) -> Path:
+        return self.osu_phase4_slider_intro_run_dir / "replays"
+
+    @property
+    def phase4_slider_eval_dir(self) -> Path:
+        return self.osu_phase4_slider_intro_run_dir / "eval"
+
+    @property
+    def phase5_slider_checkpoints_dir(self) -> Path:
+        return self.osu_phase5_slider_control_run_dir / "checkpoints"
+
+    @property
+    def phase5_slider_logs_dir(self) -> Path:
+        return self.osu_phase5_slider_control_run_dir / "logs"
+
+    @property
+    def phase5_slider_metrics_dir(self) -> Path:
+        return self.osu_phase5_slider_control_run_dir / "metrics"
+
+    @property
+    def phase5_slider_replays_dir(self) -> Path:
+        return self.osu_phase5_slider_control_run_dir / "replays"
+
+    @property
+    def phase5_slider_eval_dir(self) -> Path:
+        return self.osu_phase5_slider_control_run_dir / "eval"
+
+    @property
     def latest_checkpoint(self) -> Path:
         return self.checkpoints_dir / "latest_recoil.pt"
 
@@ -152,6 +200,22 @@ class OsuPaths:
         return self.phase3_smooth_checkpoints_dir / "best_smooth.pt"
 
     @property
+    def phase4_slider_latest_checkpoint(self) -> Path:
+        return self.phase4_slider_checkpoints_dir / "latest_slider_follow.pt"
+
+    @property
+    def phase4_slider_best_checkpoint(self) -> Path:
+        return self.phase4_slider_checkpoints_dir / "best_slider_follow.pt"
+
+    @property
+    def phase5_slider_latest_checkpoint(self) -> Path:
+        return self.phase5_slider_checkpoints_dir / "latest_slider_control.pt"
+
+    @property
+    def phase5_slider_best_checkpoint(self) -> Path:
+        return self.phase5_slider_checkpoints_dir / "best_slider_control.pt"
+
+    @property
     def latest_live_replay(self) -> Path:
         return self.replays_dir / "latest_live_replay.json"
 
@@ -166,6 +230,14 @@ class OsuPaths:
     @property
     def phase3_smooth_best_eval_replay(self) -> Path:
         return self.phase3_smooth_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase4_slider_best_eval_replay(self) -> Path:
+        return self.phase4_slider_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase5_slider_best_eval_replay(self) -> Path:
+        return self.phase5_slider_replays_dir / "best_eval_replay.json"
 
 
 PATHS = OsuPaths()

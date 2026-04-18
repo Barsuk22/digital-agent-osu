@@ -20,12 +20,12 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 @dataclass(slots=True)
 class TrainConfig:
     beatmap_path: str = str(PATHS.active_map)
-    phase_name: str = "phase3_5_post_hit_motion_smoothing"
+    phase_name: str = "phase5_slider_control"
 
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 180
+    updates: int = 200
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_ratio: float = 0.10
@@ -42,16 +42,17 @@ class TrainConfig:
     upcoming_count: int = 5
     cursor_speed_scale: float = 11.0
     click_threshold: float = 0.75
+    slider_hold_threshold: float = 0.45
 
-    source_checkpoint_path: str = str(PATHS.phase2_best_checkpoint)
-    run_dir: str = str(PATHS.osu_phase3_motion_smoothing_run_dir)
-    checkpoint_dir: str = str(PATHS.phase3_smooth_checkpoints_dir)
-    logs_dir: str = str(PATHS.phase3_smooth_logs_dir)
-    metrics_dir: str = str(PATHS.phase3_smooth_metrics_dir)
-    replays_dir: str = str(PATHS.phase3_smooth_replays_dir)
-    eval_dir: str = str(PATHS.phase3_smooth_eval_dir)
-    latest_ckpt_name: str = "latest_smooth.pt"
-    best_ckpt_name: str = "best_smooth.pt"
+    source_checkpoint_path: str = str(PATHS.phase4_slider_best_checkpoint)
+    run_dir: str = str(PATHS.osu_phase5_slider_control_run_dir)
+    checkpoint_dir: str = str(PATHS.phase5_slider_checkpoints_dir)
+    logs_dir: str = str(PATHS.phase5_slider_logs_dir)
+    metrics_dir: str = str(PATHS.phase5_slider_metrics_dir)
+    replays_dir: str = str(PATHS.phase5_slider_replays_dir)
+    eval_dir: str = str(PATHS.phase5_slider_eval_dir)
+    latest_ckpt_name: str = "latest_slider_control.pt"
+    best_ckpt_name: str = "best_slider_control.pt"
     save_every: int = 10
 
     # ------------------------------------------------------------
@@ -168,6 +169,49 @@ class TrainConfig:
     smooth_exit_min_speed: float = 0.08
     smooth_exit_max_speed: float = 0.72
 
+    # ------------------------------------------------------------
+    # Phase 5: slider control
+    # ------------------------------------------------------------
+    slider_follow_hold_bonus: float = 0.020
+    slider_follow_close_bonus: float = 0.014
+    slider_path_delta_scale: float = 0.060
+    slider_path_negative_scale: float = 0.008
+    slider_progress_scale: float = 0.035
+    slider_acquire_bonus: float = 0.010
+    slider_hold_click_bonus: float = 0.006
+    slider_early_hold_bonus: float = 0.022
+    slider_lost_follow_penalty: float = 0.006
+    slider_escape_penalty: float = 0.004
+    slider_jerk_penalty_scale: float = 0.002
+    slider_click_release_penalty: float = 0.010
+    slider_early_release_penalty: float = 0.018
+    slider_post_head_hold_window_steps: int = 24
+    slider_near_hold_bonus: float = 0.012
+    slider_target_direction_bonus: float = 0.030
+    slider_target_wrong_direction_penalty: float = 0.010
+    slider_track_good_gain_threshold: float = 0.020
+    slider_track_good_alignment: float = 0.35
+    slider_stall_gain_threshold: float = 0.004
+    slider_stall_speed_threshold: float = 0.10
+    slider_far_hold_radius_mult: float = 2.6
+    slider_far_hold_penalty: float = 0.012
+    slider_stall_penalty: float = 0.010
+    slider_wrong_dir_hold_penalty: float = 0.010
+    slider_inside_sustain_bonus: float = 0.010
+    slider_head_deemphasis_penalty: float = 0.080
+    slider_tick_consistency_bonus: float = 0.045
+    slider_finish_control_bonus: float = 0.280
+    slider_drop_control_penalty: float = 0.035
+    slider_long_chain_bonus: float = 0.018
+    slider_tangent_direction_bonus: float = 0.022
+    slider_tangent_wrong_penalty: float = 0.014
+    slider_curve_control_bonus: float = 0.016
+    slider_curve_loss_penalty: float = 0.012
+    slider_reverse_window_steps: int = 18
+    slider_reverse_detect_dot: float = -0.35
+    slider_reverse_follow_bonus: float = 0.030
+    slider_reverse_wrong_penalty: float = 0.018
+
 @dataclass(slots=True)
 class EpisodeStats:
     reward_total: float = 0.0
@@ -197,6 +241,57 @@ class EpisodeStats:
     recoil_bad_steps: int = 0
     smooth_exit_steps: int = 0
     post_hit_jerk_total: float = 0.0
+    slider_reward_total: float = 0.0
+    slider_head_hits: int = 0
+    slider_drops: int = 0
+    slider_finishes: int = 0
+    slider_tick_hits: int = 0
+    slider_tick_misses: int = 0
+    slider_active_steps: int = 0
+    slider_inside_steps: int = 0
+    slider_follow_dist_total: float = 0.0
+    slider_lost_follow_count: int = 0
+    slider_follow_gain_total: float = 0.0
+    slider_progress_gain_total: float = 0.0
+    slider_click_hold_steps: int = 0
+    slider_click_release_count: int = 0
+    slider_click_released_steps: int = 0
+    slider_post_head_steps: int = 0
+    slider_geom_inside_steps: int = 0
+    slider_time_to_first_inside_total: int = 0
+    slider_time_to_first_inside_count: int = 0
+    slider_time_to_first_inside_missed: int = 0
+    slider_target_alignment_total: float = 0.0
+    slider_target_alignment_samples: int = 0
+    slider_post_head_segments: int = 0
+    slider_head_to_hold_successes: int = 0
+    slider_first_hold_delay_total: int = 0
+    slider_first_hold_delay_count: int = 0
+    slider_first_hold_delay_missed: int = 0
+    slider_near_hold_steps: int = 0
+    slider_near_released_steps: int = 0
+    slider_track_good_steps: int = 0
+    slider_track_bad_steps: int = 0
+    slider_stall_steps: int = 0
+    slider_wrong_dir_steps: int = 0
+    slider_good_follow_chain_total: int = 0
+    slider_good_follow_chain_count: int = 0
+    slider_good_follow_chain_max: int = 0
+    slider_progress_while_hold_total: float = 0.0
+    slider_progress_while_inside_total: float = 0.0
+    slider_dist_when_hold_total: float = 0.0
+    slider_dist_when_hold_samples: int = 0
+    slider_dist_when_inside_total: float = 0.0
+    slider_dist_when_inside_samples: int = 0
+    slider_full_control_segments: int = 0
+    slider_partial_control_segments: int = 0
+    slider_segment_quality_total: float = 0.0
+    slider_segment_quality_count: int = 0
+    slider_reverse_events: int = 0
+    slider_reverse_follow_steps: int = 0
+    slider_reverse_drop_steps: int = 0
+    slider_curve_steps: int = 0
+    slider_curve_good_steps: int = 0
 
     timing_errors_ms: list[float] = field(default_factory=list)
     click_distances_px: list[float] = field(default_factory=list)
@@ -273,6 +368,123 @@ class EpisodeStats:
     def post_hit_jerk_mean(self) -> float:
         return 0.0 if self.recoil_samples <= 0 else self.post_hit_jerk_total / self.recoil_samples
 
+    @property
+    def slider_inside_ratio(self) -> float:
+        return 0.0 if self.slider_active_steps <= 0 else self.slider_inside_steps / self.slider_active_steps
+
+    @property
+    def slider_follow_distance_mean_px(self) -> float:
+        return 0.0 if self.slider_active_steps <= 0 else self.slider_follow_dist_total / self.slider_active_steps
+
+    @property
+    def slider_finish_rate(self) -> float:
+        denom = self.slider_finishes + self.slider_drops
+        return 0.0 if denom <= 0 else self.slider_finishes / denom
+
+    @property
+    def slider_tick_hit_rate(self) -> float:
+        denom = self.slider_tick_hits + self.slider_tick_misses
+        return 0.0 if denom <= 0 else self.slider_tick_hits / denom
+
+    @property
+    def slider_post_head_hold_ratio(self) -> float:
+        return 0.0 if self.slider_post_head_steps <= 0 else self.slider_click_hold_steps / self.slider_post_head_steps
+
+    @property
+    def slider_click_released_ratio(self) -> float:
+        return 0.0 if self.slider_post_head_steps <= 0 else self.slider_click_released_steps / self.slider_post_head_steps
+
+    @property
+    def slider_geom_inside_ratio(self) -> float:
+        return 0.0 if self.slider_active_steps <= 0 else self.slider_geom_inside_steps / self.slider_active_steps
+
+    @property
+    def slider_time_to_first_inside_mean(self) -> float:
+        if self.slider_time_to_first_inside_count <= 0:
+            return -1.0
+        return self.slider_time_to_first_inside_total / self.slider_time_to_first_inside_count
+
+    @property
+    def slider_target_alignment_mean(self) -> float:
+        if self.slider_target_alignment_samples <= 0:
+            return 0.0
+        return self.slider_target_alignment_total / self.slider_target_alignment_samples
+
+    @property
+    def slider_head_to_hold_success_rate(self) -> float:
+        if self.slider_post_head_segments <= 0:
+            return 0.0
+        return self.slider_head_to_hold_successes / self.slider_post_head_segments
+
+    @property
+    def slider_release_after_head_ratio(self) -> float:
+        if self.slider_post_head_steps <= 0:
+            return 0.0
+        return self.slider_click_release_count / self.slider_post_head_steps
+
+    @property
+    def slider_hold_steps_after_head_mean(self) -> float:
+        if self.slider_post_head_segments <= 0:
+            return 0.0
+        return self.slider_click_hold_steps / self.slider_post_head_segments
+
+    @property
+    def slider_first_hold_delay_mean(self) -> float:
+        if self.slider_first_hold_delay_count <= 0:
+            return -1.0
+        return self.slider_first_hold_delay_total / self.slider_first_hold_delay_count
+
+    @property
+    def slider_near_hold_ratio(self) -> float:
+        denom = self.slider_near_hold_steps + self.slider_near_released_steps
+        return 0.0 if denom <= 0 else self.slider_near_hold_steps / denom
+
+    @property
+    def slider_near_but_released_ratio(self) -> float:
+        denom = self.slider_near_hold_steps + self.slider_near_released_steps
+        return 0.0 if denom <= 0 else self.slider_near_released_steps / denom
+
+    @property
+    def slider_good_follow_chain_mean(self) -> float:
+        if self.slider_good_follow_chain_count <= 0:
+            return 0.0
+        return self.slider_good_follow_chain_total / self.slider_good_follow_chain_count
+
+    @property
+    def slider_progress_while_hold(self) -> float:
+        return self.slider_progress_while_hold_total
+
+    @property
+    def slider_progress_while_inside(self) -> float:
+        return self.slider_progress_while_inside_total
+
+    @property
+    def slider_dist_when_hold_mean_px(self) -> float:
+        if self.slider_dist_when_hold_samples <= 0:
+            return 0.0
+        return self.slider_dist_when_hold_total / self.slider_dist_when_hold_samples
+
+    @property
+    def slider_dist_when_inside_mean_px(self) -> float:
+        if self.slider_dist_when_inside_samples <= 0:
+            return 0.0
+        return self.slider_dist_when_inside_total / self.slider_dist_when_inside_samples
+
+    @property
+    def slider_segment_quality_mean(self) -> float:
+        if self.slider_segment_quality_count <= 0:
+            return 0.0
+        return self.slider_segment_quality_total / self.slider_segment_quality_count
+
+    @property
+    def slider_reverse_follow_ratio(self) -> float:
+        denom = self.slider_reverse_follow_steps + self.slider_reverse_drop_steps
+        return 0.0 if denom <= 0 else self.slider_reverse_follow_steps / denom
+
+    @property
+    def slider_curve_good_ratio(self) -> float:
+        return 0.0 if self.slider_curve_steps <= 0 else self.slider_curve_good_steps / self.slider_curve_steps
+
 
 @dataclass(slots=True)
 class RewardBreakdown:
@@ -297,6 +509,29 @@ class RewardBreakdown:
     bad_recoil_step: int = 0
     smooth_exit_step: int = 0
     post_hit_jerk: float = 0.0
+    slider: float = 0.0
+    slider_follow_gain: float = 0.0
+    slider_progress_gain: float = 0.0
+    slider_lost_follow: int = 0
+    slider_click_hold_step: int = 0
+    slider_click_release_step: int = 0
+    slider_target_alignment: float = 0.0
+    slider_target_alignment_sample: int = 0
+    slider_track_good_step: int = 0
+    slider_track_bad_step: int = 0
+    slider_stall_step: int = 0
+    slider_wrong_dir_step: int = 0
+    slider_progress_while_hold: float = 0.0
+    slider_progress_while_inside: float = 0.0
+    slider_dist_when_hold: float = 0.0
+    slider_dist_when_inside: float = 0.0
+    slider_hold_sample: int = 0
+    slider_inside_sample: int = 0
+    slider_reverse_event: int = 0
+    slider_reverse_follow_step: int = 0
+    slider_reverse_drop_step: int = 0
+    slider_curve_step: int = 0
+    slider_curve_good_step: int = 0
 
 
 @dataclass(slots=True)
@@ -307,6 +542,11 @@ class MotionState:
     recoil_steps_left: int = 0
     recoil_anchor_x: float = 0.0
     recoil_anchor_y: float = 0.0
+    slider_active_steps: int = 0
+    slider_inside_chain: int = 0
+    prev_slider_tangent_x: float = 0.0
+    prev_slider_tangent_y: float = 0.0
+    slider_reverse_steps_left: int = 0
 
 
 def set_seed(seed: int) -> None:
@@ -336,6 +576,24 @@ def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
             ]
         )
 
+    values.extend(
+        [
+            obs.slider.active_slider,
+            obs.slider.primary_is_slider,
+            obs.slider.progress,
+            obs.slider.target_x / 512.0,
+            obs.slider.target_y / 384.0,
+            obs.slider.distance_to_target / 512.0,
+            obs.slider.distance_to_ball / 512.0,
+            obs.slider.inside_follow,
+            obs.slider.head_hit,
+            obs.slider.time_to_end_ms / 1000.0,
+            obs.slider.tangent_x,
+            obs.slider.tangent_y,
+            obs.slider.follow_radius / 512.0,
+        ]
+    )
+
     return np.asarray(values, dtype=np.float32)
 
 
@@ -347,6 +605,7 @@ def build_env(cfg: TrainConfig) -> OsuEnv:
         upcoming_count=cfg.upcoming_count,
         cursor_speed_scale=cfg.cursor_speed_scale,
         click_threshold=cfg.click_threshold,
+        slider_hold_threshold=cfg.slider_hold_threshold,
     )
     return env
 
@@ -363,6 +622,13 @@ def find_circle_targets(obs: OsuObservation) -> tuple[UpcomingObjectView | None,
     circles = [item for item in obs.upcoming if item.kind_id == 0]
     primary = circles[0] if len(circles) >= 1 else None
     secondary = circles[1] if len(circles) >= 2 else None
+    return primary, secondary
+
+
+def find_hit_targets(obs: OsuObservation) -> tuple[UpcomingObjectView | None, UpcomingObjectView | None]:
+    targets = [item for item in obs.upcoming if item.kind_id in (0, 1)]
+    primary = targets[0] if len(targets) >= 1 else None
+    secondary = targets[1] if len(targets) >= 2 else None
     return primary, secondary
 
 
@@ -543,13 +809,14 @@ def phase23_shaping_reward(
     breakdown = RewardBreakdown()
     useful_click = False
 
-    prev_primary, prev_secondary = find_circle_targets(prev_obs)
-    next_primary, next_secondary = find_circle_targets(next_obs)
+    prev_primary, prev_secondary = find_hit_targets(prev_obs)
+    next_primary, next_secondary = find_hit_targets(next_obs)
 
     move_mag = movement_magnitude(action)
     urgency = compute_urgency(cfg, prev_primary)
     click_timing_error = timing_error_ms(prev_primary)
     click_abs_timing_error = abs(click_timing_error) if click_timing_error is not None else None
+    judgement = str(info.get("judgement", "none"))
 
     # ---------------------------------------------------------
     # 1) Approach reward
@@ -708,7 +975,7 @@ def phase23_shaping_reward(
     # ---------------------------------------------------------
     # 9) Post-hit flow and exit quality
     # ---------------------------------------------------------
-    if score_value > 0:
+    if score_value > 0 and next_obs.slider.active_slider <= 0.0:
         if next_primary is not None:
             if next_primary.distance_to_cursor <= 120.0:
                 breakdown.flow += cfg.post_hit_flow_bonus
@@ -779,6 +1046,174 @@ def phase23_shaping_reward(
                 breakdown.post_hit_exit += cfg.recoil_good_exit_bonus
                 breakdown.smoothing += cfg.smooth_exit_bonus * exit_alignment
 
+    # ---------------------------------------------------------
+    # 11) Phase 5 slider control
+    # ---------------------------------------------------------
+    if judgement == "slider_head":
+        breakdown.slider -= cfg.slider_head_deemphasis_penalty
+    elif judgement == "slider_tick":
+        chain_factor = min(1.0, motion_state.slider_inside_chain / 8.0)
+        breakdown.slider += cfg.slider_tick_consistency_bonus * (0.65 + 0.35 * chain_factor)
+    elif judgement == "slider_finish":
+        chain_factor = min(1.0, motion_state.slider_inside_chain / 10.0)
+        breakdown.slider += cfg.slider_finish_control_bonus * (0.55 + 0.45 * chain_factor)
+    elif judgement == "slider_drop":
+        breakdown.slider -= cfg.slider_drop_control_penalty
+
+    if prev_obs.slider.active_slider > 0.5 and prev_obs.slider.head_hit > 0.5:
+        step_scale = 1.0
+        prev_dist = prev_obs.slider.distance_to_target
+        next_dist = next_obs.slider.distance_to_target
+        follow_radius = max(1.0, prev_obs.slider.follow_radius)
+        geom_inside = prev_obs.slider.inside_follow > 0.5
+        click_held = action.click_strength >= cfg.slider_hold_threshold
+        inside = geom_inside and click_held
+        active_step_idx = motion_state.slider_active_steps
+        in_post_head_window = active_step_idx < cfg.slider_post_head_hold_window_steps
+        near_follow = prev_dist <= follow_radius * 2.0
+        far_hold = prev_dist > follow_radius * cfg.slider_far_hold_radius_mult
+        target_alignment = 0.0
+        has_alignment = False
+        tangent_alignment = 0.0
+        has_tangent_alignment = False
+        tangent_dot = (
+            prev_obs.slider.tangent_x * motion_state.prev_slider_tangent_x
+            + prev_obs.slider.tangent_y * motion_state.prev_slider_tangent_y
+        )
+        curved_step = motion_state.slider_active_steps > 0 and tangent_dot < 0.92
+        reverse_event = motion_state.slider_active_steps > 0 and tangent_dot < cfg.slider_reverse_detect_dot
+        reverse_window = motion_state.slider_reverse_steps_left > 0 or reverse_event
+
+        if curved_step:
+            breakdown.slider_curve_step = 1
+        if reverse_event:
+            breakdown.slider_reverse_event = 1
+
+        if click_held:
+            breakdown.slider_click_hold_step = 1
+            breakdown.slider_hold_sample = 1
+            breakdown.slider_dist_when_hold = prev_dist
+            breakdown.slider_progress_while_hold = max(0.0, next_obs.slider.progress - prev_obs.slider.progress)
+            if in_post_head_window:
+                breakdown.slider += cfg.slider_early_hold_bonus * (0.35 if far_hold else 1.0)
+            if near_follow:
+                near_closeness = 1.0 - min(1.0, prev_dist / (follow_radius * 2.0))
+                breakdown.slider += cfg.slider_near_hold_bonus * near_closeness
+
+        breakdown.slider_follow_gain = max(-1.0, min(1.0, (prev_dist - next_dist) / follow_radius))
+        breakdown.slider_progress_gain = max(0.0, next_obs.slider.progress - prev_obs.slider.progress)
+
+        if move_mag > 0.05:
+            target_dx = prev_obs.slider.target_x - prev_obs.cursor_x
+            target_dy = prev_obs.slider.target_y - prev_obs.cursor_y
+            target_norm = math.hypot(target_dx, target_dy)
+            if target_norm > 1e-6:
+                target_dx /= target_norm
+                target_dy /= target_norm
+                act_dir_x, act_dir_y = action_unit_vector(action)
+                target_alignment = target_dx * act_dir_x + target_dy * act_dir_y
+                has_alignment = True
+                breakdown.slider_target_alignment = target_alignment
+                breakdown.slider_target_alignment_sample = 1
+                if target_alignment > 0.0:
+                    breakdown.slider += target_alignment * cfg.slider_target_direction_bonus
+                else:
+                    breakdown.slider += target_alignment * cfg.slider_target_wrong_direction_penalty
+
+            tangent_norm = math.hypot(prev_obs.slider.tangent_x, prev_obs.slider.tangent_y)
+            if tangent_norm > 1e-6:
+                tangent_x = prev_obs.slider.tangent_x / tangent_norm
+                tangent_y = prev_obs.slider.tangent_y / tangent_norm
+                tangent_alignment = tangent_x * act_dir_x + tangent_y * act_dir_y
+                has_tangent_alignment = True
+                if click_held and near_follow:
+                    if tangent_alignment > 0.0:
+                        breakdown.slider += tangent_alignment * cfg.slider_tangent_direction_bonus
+                    else:
+                        breakdown.slider += tangent_alignment * cfg.slider_tangent_wrong_penalty
+
+        if inside:
+            closeness = max(0.0, 1.0 - prev_dist / follow_radius)
+            breakdown.slider += cfg.slider_follow_hold_bonus * step_scale
+            breakdown.slider += cfg.slider_follow_close_bonus * closeness * step_scale
+            breakdown.slider += cfg.slider_inside_sustain_bonus * min(1.0, motion_state.slider_inside_chain / 6.0)
+            breakdown.slider += cfg.slider_long_chain_bonus * min(1.0, motion_state.slider_inside_chain / 12.0)
+            breakdown.slider_inside_sample = 1
+            breakdown.slider_dist_when_inside = prev_dist
+            breakdown.slider_progress_while_inside = breakdown.slider_progress_while_hold
+            if curved_step:
+                breakdown.slider_curve_good_step = 1
+                breakdown.slider += cfg.slider_curve_control_bonus * min(1.0, motion_state.slider_inside_chain / 8.0)
+            if reverse_window:
+                breakdown.slider_reverse_follow_step = 1
+                breakdown.slider += cfg.slider_reverse_follow_bonus * (0.5 + 0.5 * closeness)
+        else:
+            if breakdown.slider_follow_gain > 0.0:
+                breakdown.slider += breakdown.slider_follow_gain * cfg.slider_path_delta_scale
+            elif prev_dist > follow_radius * 3.0:
+                breakdown.slider += breakdown.slider_follow_gain * cfg.slider_path_negative_scale
+
+            if near_follow:
+                proximity = 1.0 - min(1.0, prev_dist / (follow_radius * 2.0))
+                breakdown.slider += cfg.slider_acquire_bonus * proximity
+
+            if click_held:
+                breakdown.slider += cfg.slider_hold_click_bonus
+                good_tracking = (
+                    breakdown.slider_follow_gain >= cfg.slider_track_good_gain_threshold
+                    or (has_alignment and target_alignment >= cfg.slider_track_good_alignment)
+                )
+                bad_tracking = (
+                    far_hold
+                    and breakdown.slider_follow_gain <= cfg.slider_stall_gain_threshold
+                    and (not has_alignment or target_alignment < 0.15)
+                )
+                stalled = move_mag <= cfg.slider_stall_speed_threshold and not near_follow
+                wrong_dir = has_alignment and target_alignment < -0.20
+                tangent_wrong = has_tangent_alignment and tangent_alignment < -0.30 and near_follow
+
+                if good_tracking:
+                    breakdown.slider_track_good_step = 1
+                    distance_weight = min(1.0, prev_dist / max(1.0, follow_radius * 3.0))
+                    breakdown.slider += 0.010 + cfg.slider_path_delta_scale * max(0.0, breakdown.slider_follow_gain) * distance_weight
+                if bad_tracking:
+                    breakdown.slider_track_bad_step = 1
+                    breakdown.slider -= cfg.slider_far_hold_penalty
+                if stalled:
+                    breakdown.slider_stall_step = 1
+                    breakdown.slider -= cfg.slider_stall_penalty
+                if wrong_dir:
+                    breakdown.slider_wrong_dir_step = 1
+                    breakdown.slider -= cfg.slider_wrong_dir_hold_penalty * min(1.0, -target_alignment)
+                if tangent_wrong:
+                    breakdown.slider_wrong_dir_step = 1
+                    breakdown.slider -= cfg.slider_tangent_wrong_penalty * min(1.0, -tangent_alignment)
+                if curved_step and (bad_tracking or tangent_wrong or not click_held):
+                    breakdown.slider -= cfg.slider_curve_loss_penalty
+                if reverse_window and (bad_tracking or tangent_wrong or not near_follow):
+                    breakdown.slider_reverse_drop_step = 1
+                    breakdown.slider -= cfg.slider_reverse_wrong_penalty
+            else:
+                breakdown.slider -= cfg.slider_click_release_penalty
+                breakdown.slider_click_release_step = 1
+                if in_post_head_window:
+                    breakdown.slider -= cfg.slider_early_release_penalty
+                if reverse_window:
+                    breakdown.slider_reverse_drop_step = 1
+                    breakdown.slider -= cfg.slider_reverse_wrong_penalty
+
+            if geom_inside:
+                breakdown.slider_lost_follow = 1
+                breakdown.slider -= cfg.slider_lost_follow_penalty * step_scale
+
+        breakdown.slider += min(0.035, breakdown.slider_progress_gain * cfg.slider_progress_scale)
+
+        jerk = abs(action.dx - motion_state.prev_dx) + abs(action.dy - motion_state.prev_dy)
+        breakdown.slider -= max(0.0, jerk - cfg.jerk_deadzone) * cfg.slider_jerk_penalty_scale
+
+        if prev_dist > follow_radius * 3.0:
+            breakdown.slider -= cfg.slider_escape_penalty
+
     breakdown.total = (
         breakdown.approach
         + breakdown.prehit
@@ -795,6 +1230,7 @@ def phase23_shaping_reward(
         + breakdown.overspeed_penalty
         + breakdown.idle_penalty
         + breakdown.useless_motion_penalty
+        + breakdown.slider
     )
 
     return breakdown.total, useful_click, breakdown
@@ -892,7 +1328,17 @@ def run_episode(
 
     obs = env.reset()
     prev_click_down = False
+    prev_raw_click_down = False
     motion_state = MotionState()
+    prev_slider_active = False
+    slider_segment_steps = 0
+    slider_first_inside_step: int | None = None
+    slider_segment_had_hold = False
+    slider_first_hold_step: int | None = None
+    slider_good_follow_chain = 0
+    slider_segment_inside_steps = 0
+    slider_segment_best_chain = 0
+    slider_segment_finished = False
 
     while not env.done:
         obs_np = obs_to_numpy(obs)
@@ -909,9 +1355,11 @@ def run_episode(
             click_strength=float((action_np[2] + 1.0) * 0.5),
         )
 
-        click_down = osu_action.click_strength >= env.click_threshold
-        just_pressed = click_down and not prev_click_down
-        prev_primary, _ = find_circle_targets(obs)
+        raw_click_down = osu_action.click_strength >= env.click_threshold
+        slider_hold_down = obs.slider.active_slider > 0.5 and osu_action.click_strength >= env.slider_hold_threshold
+        click_down = raw_click_down or slider_hold_down
+        just_pressed = raw_click_down and not prev_raw_click_down
+        prev_primary, _ = find_hit_targets(obs)
         click_timing_error = timing_error_ms(prev_primary)
 
         step = env.step(osu_action)
@@ -958,6 +1406,98 @@ def run_episode(
         stats.recoil_bad_steps += breakdown.bad_recoil_step
         stats.smooth_exit_steps += breakdown.smooth_exit_step
         stats.post_hit_jerk_total += breakdown.post_hit_jerk
+        stats.slider_reward_total += breakdown.slider
+        stats.slider_follow_gain_total += breakdown.slider_follow_gain
+        stats.slider_progress_gain_total += breakdown.slider_progress_gain
+        stats.slider_lost_follow_count += breakdown.slider_lost_follow
+        stats.slider_click_hold_steps += breakdown.slider_click_hold_step
+        stats.slider_click_released_steps += breakdown.slider_click_release_step
+        stats.slider_target_alignment_total += breakdown.slider_target_alignment
+        stats.slider_target_alignment_samples += breakdown.slider_target_alignment_sample
+        stats.slider_track_good_steps += breakdown.slider_track_good_step
+        stats.slider_track_bad_steps += breakdown.slider_track_bad_step
+        stats.slider_stall_steps += breakdown.slider_stall_step
+        stats.slider_wrong_dir_steps += breakdown.slider_wrong_dir_step
+        stats.slider_progress_while_hold_total += breakdown.slider_progress_while_hold
+        stats.slider_progress_while_inside_total += breakdown.slider_progress_while_inside
+        stats.slider_reverse_events += breakdown.slider_reverse_event
+        stats.slider_reverse_follow_steps += breakdown.slider_reverse_follow_step
+        stats.slider_reverse_drop_steps += breakdown.slider_reverse_drop_step
+        stats.slider_curve_steps += breakdown.slider_curve_step
+        stats.slider_curve_good_steps += breakdown.slider_curve_good_step
+        if breakdown.slider_hold_sample:
+            stats.slider_dist_when_hold_total += breakdown.slider_dist_when_hold
+            stats.slider_dist_when_hold_samples += 1
+        if breakdown.slider_inside_sample:
+            stats.slider_dist_when_inside_total += breakdown.slider_dist_when_inside
+            stats.slider_dist_when_inside_samples += 1
+
+        if obs.slider.active_slider > 0.5:
+            if not prev_slider_active:
+                slider_segment_steps = 0
+                slider_first_inside_step = None
+                slider_segment_had_hold = False
+                slider_first_hold_step = None
+                slider_good_follow_chain = 0
+                slider_segment_inside_steps = 0
+                slider_segment_best_chain = 0
+                slider_segment_finished = False
+            stats.slider_active_steps += 1
+            stats.slider_post_head_steps += 1
+            stats.slider_follow_dist_total += obs.slider.distance_to_target
+            near_follow = obs.slider.distance_to_target <= max(1.0, obs.slider.follow_radius) * 2.0
+            if obs.slider.inside_follow > 0.5:
+                stats.slider_geom_inside_steps += 1
+                if slider_first_inside_step is None:
+                    slider_first_inside_step = slider_segment_steps
+            if obs.slider.inside_follow > 0.5 and click_down:
+                stats.slider_inside_steps += 1
+                slider_segment_inside_steps += 1
+                slider_good_follow_chain += 1
+                slider_segment_best_chain = max(slider_segment_best_chain, slider_good_follow_chain)
+                stats.slider_good_follow_chain_max = max(stats.slider_good_follow_chain_max, slider_good_follow_chain)
+            else:
+                if slider_good_follow_chain > 0:
+                    stats.slider_good_follow_chain_total += slider_good_follow_chain
+                    stats.slider_good_follow_chain_count += 1
+                slider_good_follow_chain = 0
+            if near_follow and click_down:
+                stats.slider_near_hold_steps += 1
+            elif near_follow:
+                stats.slider_near_released_steps += 1
+            if click_down:
+                slider_segment_had_hold = True
+                if slider_first_hold_step is None:
+                    slider_first_hold_step = slider_segment_steps
+            if prev_click_down and not click_down:
+                stats.slider_click_release_count += 1
+            slider_segment_steps += 1
+        elif prev_slider_active:
+            stats.slider_post_head_segments += 1
+            if slider_segment_steps > 0:
+                segment_quality = slider_segment_inside_steps / slider_segment_steps
+                stats.slider_segment_quality_total += segment_quality
+                stats.slider_segment_quality_count += 1
+                if slider_segment_finished and segment_quality >= 0.55:
+                    stats.slider_full_control_segments += 1
+                elif slider_segment_inside_steps > 0 or slider_segment_finished:
+                    stats.slider_partial_control_segments += 1
+            if slider_good_follow_chain > 0:
+                stats.slider_good_follow_chain_total += slider_good_follow_chain
+                stats.slider_good_follow_chain_count += 1
+                slider_good_follow_chain = 0
+            if slider_segment_had_hold:
+                stats.slider_head_to_hold_successes += 1
+            if slider_first_hold_step is None:
+                stats.slider_first_hold_delay_missed += 1
+            else:
+                stats.slider_first_hold_delay_total += slider_first_hold_step
+                stats.slider_first_hold_delay_count += 1
+            if slider_first_inside_step is None:
+                stats.slider_time_to_first_inside_missed += 1
+            else:
+                stats.slider_time_to_first_inside_total += slider_first_inside_step
+                stats.slider_time_to_first_inside_count += 1
 
         if prev_primary is not None and abs(prev_primary.time_to_hit_ms) <= cfg.prehit_time_window_ms:
             stats.prehit_steps += 1
@@ -1000,11 +1540,24 @@ def run_episode(
         if step.info.get("judgement") == "miss":
             stats.miss_count += 1
 
+        judgement = str(step.info.get("judgement", "none"))
+        if judgement == "slider_head":
+            stats.slider_head_hits += 1
+        elif judgement == "slider_drop":
+            stats.slider_drops += 1
+        elif judgement == "slider_finish":
+            stats.slider_finishes += 1
+            slider_segment_finished = True
+        elif judgement == "slider_tick":
+            stats.slider_tick_hits += 1
+        elif judgement == "slider_tick_miss":
+            stats.slider_tick_misses += 1
+
         if movement_magnitude(osu_action) < cfg.urgent_idle_threshold:
             stats.idle_steps += 1
 
         # если был успешный скоринг — открываем короткое окно anti-recoil
-        if step.info.get("score_value", 0) > 0:
+        if step.info.get("score_value", 0) > 0 and not str(step.info.get("judgement", "")).startswith("slider_"):
             motion_state.recoil_steps_left = cfg.recoil_window_steps
             motion_state.recoil_anchor_x = next_obs.cursor_x
             motion_state.recoil_anchor_y = next_obs.cursor_y
@@ -1013,9 +1566,52 @@ def run_episode(
 
         motion_state.prev_dx = osu_action.dx
         motion_state.prev_dy = osu_action.dy
+        if next_obs.slider.active_slider > 0.5:
+            motion_state.slider_active_steps = motion_state.slider_active_steps + 1 if obs.slider.active_slider > 0.5 else 0
+            motion_state.slider_inside_chain = slider_good_follow_chain
+            motion_state.prev_slider_tangent_x = next_obs.slider.tangent_x
+            motion_state.prev_slider_tangent_y = next_obs.slider.tangent_y
+            if breakdown.slider_reverse_event:
+                motion_state.slider_reverse_steps_left = cfg.slider_reverse_window_steps
+            elif motion_state.slider_reverse_steps_left > 0:
+                motion_state.slider_reverse_steps_left -= 1
+        else:
+            motion_state.slider_active_steps = 0
+            motion_state.slider_inside_chain = 0
+            motion_state.prev_slider_tangent_x = 0.0
+            motion_state.prev_slider_tangent_y = 0.0
+            motion_state.slider_reverse_steps_left = 0
 
         prev_click_down = click_down
+        prev_raw_click_down = raw_click_down
+        prev_slider_active = obs.slider.active_slider > 0.5
         obs = next_obs
+
+    if prev_slider_active:
+        stats.slider_post_head_segments += 1
+        if slider_segment_steps > 0:
+            segment_quality = slider_segment_inside_steps / slider_segment_steps
+            stats.slider_segment_quality_total += segment_quality
+            stats.slider_segment_quality_count += 1
+            if slider_segment_finished and segment_quality >= 0.55:
+                stats.slider_full_control_segments += 1
+            elif slider_segment_inside_steps > 0 or slider_segment_finished:
+                stats.slider_partial_control_segments += 1
+        if slider_good_follow_chain > 0:
+            stats.slider_good_follow_chain_total += slider_good_follow_chain
+            stats.slider_good_follow_chain_count += 1
+        if slider_segment_had_hold:
+            stats.slider_head_to_hold_successes += 1
+        if slider_first_hold_step is None:
+            stats.slider_first_hold_delay_missed += 1
+        else:
+            stats.slider_first_hold_delay_total += slider_first_hold_step
+            stats.slider_first_hold_delay_count += 1
+        if slider_first_inside_step is None:
+            stats.slider_time_to_first_inside_missed += 1
+        else:
+            stats.slider_time_to_first_inside_total += slider_first_inside_step
+            stats.slider_time_to_first_inside_count += 1
 
     return stats
 
@@ -1052,8 +1648,31 @@ def maybe_load_checkpoint(
         return 0, -1e18
 
     payload = torch.load(path, map_location=device)
-    model.load_state_dict(payload["model_state_dict"])
-    if "optimizer_state_dict" in payload:
+    loaded_state = payload["model_state_dict"]
+    model_state = model.state_dict()
+    compatible_state = {}
+    partial_keys: list[str] = []
+
+    for key, value in loaded_state.items():
+        if key not in model_state:
+            continue
+        if model_state[key].shape == value.shape:
+            compatible_state[key] = value
+            continue
+        if key == "backbone.0.weight" and value.ndim == 2 and model_state[key].ndim == 2:
+            expanded = model_state[key].clone()
+            shared_cols = min(expanded.shape[1], value.shape[1])
+            shared_rows = min(expanded.shape[0], value.shape[0])
+            expanded[:shared_rows, :shared_cols] = value[:shared_rows, :shared_cols]
+            compatible_state[key] = expanded
+            partial_keys.append(key)
+
+    model_state.update(compatible_state)
+    model.load_state_dict(model_state)
+    if partial_keys:
+        print(f"[partial checkpoint load] expanded keys: {', '.join(partial_keys)}")
+
+    if "optimizer_state_dict" in payload and not partial_keys:
         optimizer.load_state_dict(payload["optimizer_state_dict"])
     update_idx = int(payload.get("update_idx", 0))
     best_reward = float(payload.get("best_reward", -1e18))
@@ -1097,7 +1716,7 @@ def main() -> None:
     source_ckpt = Path(cfg.source_checkpoint_path)
     if not source_ckpt.exists():
         raise FileNotFoundError(
-            f"Phase 3.5 motion smoothing fine-tuning requires source checkpoint: {source_ckpt}"
+            f"Phase 5 slider control fine-tuning requires source checkpoint: {source_ckpt}"
         )
 
     start_update, best_reward = maybe_load_checkpoint(
@@ -1112,7 +1731,7 @@ def main() -> None:
     # а начать свою отдельную "лучшую" линию
 
     print("=" * 100)
-    print("PHASE 3.5 POST-HIT MOTION SMOOTHING FINE-TUNING STARTED")
+    print("PHASE 5 SLIDER CONTROL FINE-TUNING STARTED")
     print(f"Phase: {cfg.phase_name}")
     print(f"Map: {env.beatmap.artist} - {env.beatmap.title} [{env.beatmap.version}]")
     print(f"Source checkpoint: {source_ckpt}")
@@ -1182,6 +1801,52 @@ def main() -> None:
             f"flow={stats.flow_reward_total:7.3f} "
             f"exit_r={stats.post_hit_exit_reward_total:7.3f} "
             f"smooth_r={stats.smoothing_reward_total:7.3f} "
+            f"slider_r={stats.slider_reward_total:7.3f} "
+            f"sl_head={stats.slider_head_hits:3d} "
+            f"sl_follow={stats.slider_inside_ratio:.3f} "
+            f"sl_drop={stats.slider_drops:3d} "
+            f"sl_fin={stats.slider_finishes:3d} "
+            f"sl_tick={stats.slider_tick_hit_rate:.3f} "
+            f"sl_dpx={stats.slider_follow_distance_mean_px:5.1f} "
+            f"sl_active_steps={stats.slider_active_steps:4d} "
+            f"sl_inside_ratio={stats.slider_inside_ratio:.3f} "
+            f"sl_follow_dist_mean={stats.slider_follow_distance_mean_px:5.1f} "
+            f"sl_follow_gain={stats.slider_follow_gain_total:6.3f} "
+            f"sl_progress_gain={stats.slider_progress_gain_total:6.3f} "
+            f"sl_lost_follow_count={stats.slider_lost_follow_count:3d} "
+            f"sl_finish_rate={stats.slider_finish_rate:.3f} "
+            f"sl_tick_hit_rate={stats.slider_tick_hit_rate:.3f} "
+            f"sl_click_hold_steps={stats.slider_click_hold_steps:4d} "
+            f"sl_click_release_count={stats.slider_click_release_count:3d} "
+            f"sl_post_head_hold_ratio={stats.slider_post_head_hold_ratio:.3f} "
+            f"sl_click_released_ratio={stats.slider_click_released_ratio:.3f} "
+            f"sl_head_to_hold={stats.slider_head_to_hold_success_rate:.3f} "
+            f"sl_release_after_head={stats.slider_release_after_head_ratio:.3f} "
+            f"sl_hold_steps_mean={stats.slider_hold_steps_after_head_mean:5.1f} "
+            f"sl_first_hold_delay={stats.slider_first_hold_delay_mean:5.1f} "
+            f"sl_near_hold_ratio={stats.slider_near_hold_ratio:.3f} "
+            f"sl_near_released_ratio={stats.slider_near_but_released_ratio:.3f} "
+            f"sl_track_good={stats.slider_track_good_steps:4d} "
+            f"sl_track_bad={stats.slider_track_bad_steps:4d} "
+            f"sl_stall={stats.slider_stall_steps:4d} "
+            f"sl_wrong_dir={stats.slider_wrong_dir_steps:4d} "
+            f"sl_chain_mean={stats.slider_good_follow_chain_mean:4.1f} "
+            f"sl_chain_max={stats.slider_good_follow_chain_max:3d} "
+            f"sl_prog_hold={stats.slider_progress_while_hold:.3f} "
+            f"sl_prog_inside={stats.slider_progress_while_inside:.3f} "
+            f"sl_d_hold={stats.slider_dist_when_hold_mean_px:5.1f} "
+            f"sl_d_inside={stats.slider_dist_when_inside_mean_px:5.1f} "
+            f"sl_seg_q={stats.slider_segment_quality_mean:.3f} "
+            f"sl_full={stats.slider_full_control_segments:3d} "
+            f"sl_partial={stats.slider_partial_control_segments:3d} "
+            f"sl_rev={stats.slider_reverse_events:3d} "
+            f"sl_rev_follow={stats.slider_reverse_follow_ratio:.3f} "
+            f"sl_curve={stats.slider_curve_steps:4d} "
+            f"sl_curve_good={stats.slider_curve_good_ratio:.3f} "
+            f"sl_geom_inside_ratio={stats.slider_geom_inside_ratio:.3f} "
+            f"sl_time_to_first_inside={stats.slider_time_to_first_inside_mean:5.1f} "
+            f"sl_first_inside_miss={stats.slider_time_to_first_inside_missed:3d} "
+            f"sl_target_align={stats.slider_target_alignment_mean:5.3f} "
             f"rpx={stats.recoil_distance_mean_px:5.1f} "
             f"rjerk={stats.post_hit_jerk_mean:5.3f} "
             f"badrec={stats.bad_recoil_ratio:.3f} "

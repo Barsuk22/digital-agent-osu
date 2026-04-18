@@ -267,3 +267,32 @@ artifacts/runs/osu_phase3_motion_smoothing/
 - стабильность;
 - перенос навыка;
 - качество моторики.
+# Update 2026-04-18: Phase 4.1 / Slider Follow Fix
+
+Проект не перезапускает osu RL pipeline с нуля. Новая активная ветка для sliders — `artifacts/runs/osu_phase4_slider_follow_fix/`, fine-tuning от `artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt`.
+
+Причина изменения: предыдущий Slider Intro научил policy стабильно брать slider head, но не сформировал follow behavior (`sl_drop ~= sl_head`, `sl_follow ~= 0`, `sl_fin = 0`). Phase 4.1 закрывает именно архитектурный gap: policy теперь получает явное состояние активного slider и отдельный мягкий reward за удержание follow, path tracking, ticks и finish.
+
+Это не финальный slider mastery. Цель этапа — начальное устойчивое slider-follow поведение без разрушения уже сильных circles/timing/aim. Подробности: `docs/osu/phase4_slider_follow_fix_status.md`.
+
+# Update 2026-04-18: Phase 5 / Slider Control
+
+Phase 5 is now implemented as a separate active fine-tuning branch after Phase 4.1.
+
+Start checkpoint:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+Run folder:
+
+```text
+artifacts/runs/osu_phase5_slider_control/
+```
+
+The phase shifts slider training from "hit the head and briefly hold" to "control the full slider segment". It reduces the relative value of isolated `slider_head` and increases shaping around sustained inside-follow, path/tangent tracking, tick consistency, finish, long good-follow chains, curved segment control, and reverse-window recovery.
+
+New segment metrics include `sl_seg_q`, `sl_full`, `sl_partial`, `sl_rev`, `sl_rev_follow`, `sl_curve`, and `sl_curve_good`.
+
+Detailed status: `docs/osu/phase5_slider_control_status.md`.

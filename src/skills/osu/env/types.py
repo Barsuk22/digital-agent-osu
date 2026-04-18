@@ -15,11 +15,29 @@ class UpcomingObjectView:
 
 
 @dataclass(slots=True)
+class SliderStateView:
+    active_slider: float
+    primary_is_slider: float
+    progress: float
+    target_x: float
+    target_y: float
+    distance_to_target: float
+    distance_to_ball: float
+    inside_follow: float
+    head_hit: float
+    time_to_end_ms: float
+    tangent_x: float
+    tangent_y: float
+    follow_radius: float
+
+
+@dataclass(slots=True)
 class OsuObservation:
     time_ms: float
     cursor_x: float
     cursor_y: float
     upcoming: List[UpcomingObjectView]
+    slider: SliderStateView
 
 
 @dataclass(slots=True)

@@ -11,7 +11,11 @@ from src.core.config.paths import PATHS
 
 def main() -> None:
     beatmap_path = PATHS.active_map
-    replay_path = PATHS.phase3_smooth_best_eval_replay
+    replay_path = PATHS.phase5_slider_best_eval_replay
+    if not replay_path.exists() and PATHS.phase4_slider_best_eval_replay.exists():
+        replay_path = PATHS.phase4_slider_best_eval_replay
+    if not replay_path.exists() and PATHS.phase3_smooth_best_eval_replay.exists():
+        replay_path = PATHS.phase3_smooth_best_eval_replay
     if not replay_path.exists() and PATHS.phase2_best_eval_replay.exists():
         replay_path = PATHS.phase2_best_eval_replay
     if not replay_path.exists() and PATHS.best_eval_replay.exists():

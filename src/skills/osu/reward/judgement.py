@@ -13,7 +13,12 @@ from src.skills.osu.domain.osu_rules import (
     slider_duration_ms,
     slider_span_duration_ms,
 )
-from src.skills.osu.domain.slider_path import build_slider_path, slider_ball_position
+from src.skills.osu.domain.slider_path import (
+    build_slider_path,
+    slider_ball_position,
+    slider_local_progress,
+    slider_progress_at_time,
+)
 
 
 @dataclass(slots=True)
@@ -119,6 +124,52 @@ class OsuJudge:
             end_time_ms=self.active_slider["end_time"],
             current_time_ms=time_ms,
         )
+
+    def active_slider_state(self, time_ms: float, cursor_x: float, cursor_y: float) -> dict:
+        if self.active_slider is None:
+            return {
+                "active_slider": False,
+                "progress": 0.0,
+                "target_x": 0.0,
+                "target_y": 0.0,
+                "distance_to_target": 0.0,
+                "distance_to_ball": 0.0,
+                "inside_follow": False,
+                "head_hit": False,
+                "time_to_end_ms": 0.0,
+                "tangent_x": 0.0,
+                "tangent_y": 0.0,
+                "follow_radius": self.radius * 1.65,
+            }
+
+        slider: SliderObject = self.active_slider["slider"]
+        path = self.active_slider["path"]
+        start_time = self.active_slider["start_time"]
+        end_time = self.active_slider["end_time"]
+        progress = slider_progress_at_time(start_time, end_time, time_ms)
+        local_progress, _ = slider_local_progress(progress, slider.repeats)
+        ball_x, ball_y = path.position_at_progress(local_progress)
+        tangent_x, tangent_y = path.tangent_at_progress(local_progress)
+        if slider.repeats > 0 and int(min(slider.repeats - 1, progress * slider.repeats)) % 2 == 1:
+            tangent_x = -tangent_x
+            tangent_y = -tangent_y
+        follow_radius = self.radius * 1.65
+        dist = distance(cursor_x, cursor_y, ball_x, ball_y)
+
+        return {
+            "active_slider": True,
+            "progress": progress,
+            "target_x": ball_x,
+            "target_y": ball_y,
+            "distance_to_target": dist,
+            "distance_to_ball": dist,
+            "inside_follow": dist <= follow_radius,
+            "head_hit": bool(self.active_slider.get("head_hit", False)),
+            "time_to_end_ms": max(0.0, end_time - time_ms),
+            "tangent_x": tangent_x,
+            "tangent_y": tangent_y,
+            "follow_radius": follow_radius,
+        }
 
     def _object_anchor(self, obj: HitObject) -> tuple[float, float]:
         if obj.kind == HitObjectType.CIRCLE:
@@ -229,6 +280,13 @@ class OsuJudge:
             "next_tick_index": 0,
             "tick_hits": 0,
             "tick_misses": 0,
+            "head_hit": True,
+            "follow_samples": 0,
+            "inside_samples": 0,
+            "follow_dist_total": 0.0,
+            "lost_follow_count": 0,
+            "last_inside": True,
+            "last_progress": 0.0,
         }
 
         self.object_index += 1
@@ -245,15 +303,27 @@ class OsuJudge:
         if tick_rate <= 0.0:
             return tick_times
 
-        ticks_per_span = max(0, int(math.floor((tick_rate - 0.01))))
+        base_tp = self.beatmap.timing_points[0]
+        for tp in self.beatmap.timing_points:
+            if tp.time_ms > slider.time_ms:
+                break
+            if tp.uninherited:
+                base_tp = tp
+
+        tick_interval = abs(base_tp.beat_length) / tick_rate
+        if tick_interval <= 1e-6:
+            return tick_times
+
+        ticks_per_span = max(0, int(math.floor((span_duration_ms - 1.0) / tick_interval)))
         if ticks_per_span <= 0:
             return tick_times
 
         for span_idx in range(slider.repeats):
             span_start = slider.time_ms + span_idx * span_duration_ms
             for i in range(1, ticks_per_span + 1):
-                frac = i / (ticks_per_span + 1)
-                tick_times.append(span_start + frac * span_duration_ms)
+                tick_time = span_start + i * tick_interval
+                if tick_time < span_start + span_duration_ms - 1.0:
+                    tick_times.append(tick_time)
 
         return tick_times
 
@@ -283,17 +353,35 @@ class OsuJudge:
         )
 
         dist = distance(cursor_x, cursor_y, ball_x, ball_y)
-        follow_radius = self.radius * 1.4
+        follow_radius = self.radius * 1.65
+        progress = slider_progress_at_time(start_time, end_time, time_ms)
+        inside = click_down and dist <= follow_radius
+
+        self.active_slider["follow_samples"] += 1
+        self.active_slider["follow_dist_total"] += dist
+        if inside:
+            self.active_slider["inside_samples"] += 1
+        elif self.active_slider.get("last_inside", True) and time_ms > start_time + dt_ms * 0.5:
+            self.active_slider["lost_follow_count"] += 1
+        self.active_slider["last_inside"] = inside
 
         if time_ms < end_time:
-            if click_down and dist <= follow_radius:
-                result.reward += 0.014 * (dt_ms / 16.6667)
+            step_scale = dt_ms / 16.6667
+            closeness = max(0.0, 1.0 - dist / max(1.0, follow_radius))
+            progress_gain = max(0.0, progress - float(self.active_slider.get("last_progress", 0.0)))
+            if inside:
+                result.reward += (0.018 + 0.016 * closeness) * step_scale
+                result.reward += min(0.035, progress_gain * 0.45)
                 if result.judgement == "none":
                     result.judgement = "slider_follow"
                     result.popup_x = ball_x
                     result.popup_y = ball_y
             else:
-                result.reward -= 0.002 * (dt_ms / 16.6667)
+                result.reward -= 0.0015 * step_scale
+                if dist > follow_radius * 3.0:
+                    result.reward -= 0.0025 * step_scale
+
+            self.active_slider["last_progress"] = progress
 
         tick_times = self.active_slider["tick_times"]
         while self.active_slider["next_tick_index"] < len(tick_times):
@@ -312,14 +400,14 @@ class OsuJudge:
             tick_dist = distance(cursor_x, cursor_y, tick_x, tick_y)
 
             if click_down and tick_dist <= follow_radius:
-                result.reward += 0.08
+                result.reward += 0.14
                 result.score_value = max(result.score_value, 10)
                 result.judgement = "slider_tick"
                 result.popup_x = tick_x
                 result.popup_y = tick_y
                 self.active_slider["tick_hits"] += 1
             else:
-                result.reward -= 0.04
+                result.reward -= 0.015
                 if result.judgement == "none":
                     result.judgement = "slider_tick_miss"
                     result.popup_x = tick_x
@@ -332,13 +420,13 @@ class OsuJudge:
             return
 
         if click_down and dist <= follow_radius:
-            result.reward += 0.35
+            result.reward += 0.55
             if result.judgement == "none":
                 result.judgement = "slider_finish"
                 result.popup_x = ball_x
                 result.popup_y = ball_y
         else:
-            result.reward -= 0.20
+            result.reward -= 0.12
             if result.judgement == "none":
                 result.judgement = "slider_drop"
                 result.popup_x = ball_x

@@ -233,3 +233,146 @@ artifacts/runs/osu_phase1_ppo/replays/latest_live_replay.json
 - `artifacts/`, `data/raw/`, `exports/`, аудио и изображения игнорируются git.
 - Для запуска нужны локальные зависимости Python, включая `torch`, `numpy` и `pygame`.
 - Если активной карты нет на диске, parser не сможет запустить train/eval/viewer.
+# Phase 4.1 / Slider Follow Fix
+
+Запуск обучения:
+
+```powershell
+python -m src.apps.train_osu
+```
+
+По умолчанию обучение стартует не с нуля, а из:
+
+```text
+artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
+```
+
+Новые checkpoint сохраняются сюда:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/latest_slider_follow.pt
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+Запуск eval:
+
+```powershell
+python -m src.apps.eval_osu
+```
+
+Eval сначала ищет:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+Если его еще нет, явно откатывается на phase3/phase2 fallback. Replay для новой ветки сохраняется в:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/replays/best_eval_replay.json
+```
+
+Открыть replay:
+
+```powershell
+python -m src.apps.replay_osu
+```
+
+Проверить, что slider-follow достижим в env/judge без PPO:
+
+```powershell
+python -m src.apps.debug_slider_follow
+```
+
+Команда сохраняет компактный trace первого slider в:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/metrics/slider_follow_debug_trace.json
+```
+
+В логах Phase 4.1 нужно смотреть не только hit rate, но и `sl_inside_ratio`, `sl_follow_dist_mean`, `sl_follow_gain`, `sl_progress_gain`, `sl_finish_rate`, `sl_tick_hit_rate`.
+
+Для диагностики tap-vs-hold поведения смотри:
+
+- `sl_click_hold_steps`;
+- `sl_click_release_count`;
+- `sl_post_head_hold_ratio`;
+- `sl_click_released_ratio`;
+- `sl_geom_inside_ratio`;
+- `sl_time_to_first_inside`;
+- `sl_target_align`.
+
+После head-to-hold диагностики добавлены:
+
+- `sl_head_to_hold`;
+- `sl_release_after_head`;
+- `sl_hold_steps_mean`;
+- `sl_first_hold_delay`;
+- `sl_near_hold_ratio`;
+- `sl_near_released_ratio`.
+
+В Phase 4.1 обычный click/head/circle threshold остается строгим (`0.75`), а hold во время уже активного slider использует отдельный более мягкий порог (`0.45`). Это нужно только для обучения sustained hold и не должно менять circle timing.
+
+Для диагностики path-tracking после того, как hold начал оживать, смотри:
+
+- `sl_track_good`;
+- `sl_track_bad`;
+- `sl_stall`;
+- `sl_wrong_dir`;
+- `sl_chain_mean`;
+- `sl_chain_max`;
+- `sl_prog_hold`;
+- `sl_prog_inside`;
+- `sl_d_hold`;
+- `sl_d_inside`.
+
+# Phase 5 / Slider Control
+
+`python -m src.apps.train_osu` теперь запускает Phase 5 / Slider Control.
+
+Это отдельная фаза после Phase 4.1. Она стартует не с нуля, а из:
+
+```text
+artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
+```
+
+Новые артефакты сохраняются отдельно:
+
+```text
+artifacts/runs/osu_phase5_slider_control/
+artifacts/runs/osu_phase5_slider_control/checkpoints/latest_slider_control.pt
+artifacts/runs/osu_phase5_slider_control/checkpoints/best_slider_control.pt
+artifacts/runs/osu_phase5_slider_control/replays/best_eval_replay.json
+```
+
+Eval теперь сначала ищет:
+
+```text
+artifacts/runs/osu_phase5_slider_control/checkpoints/best_slider_control.pt
+```
+
+Если Phase 5 checkpoint еще не создан, eval откатывается на Phase 4.1, затем phase3/phase2/base fallback.
+
+Debug sanity:
+
+```powershell
+python -m src.apps.debug_slider_follow
+```
+
+Trace сохраняется в:
+
+```text
+artifacts/runs/osu_phase5_slider_control/metrics/slider_control_debug_trace.json
+```
+
+В логах Phase 5 дополнительно смотри:
+
+- `sl_seg_q` - качество ведения slider segments;
+- `sl_full` - full-quality slider completions;
+- `sl_partial` - частичные completions;
+- `sl_rev` - detected reverse events;
+- `sl_rev_follow` - follow ratio во время reverse window;
+- `sl_curve` - curved/path-change steps;
+- `sl_curve_good` - quality на curved/path-change steps.
+
+Главная цель Phase 5: не просто высокий `sl_head`, а рост `sl_inside_ratio`, `sl_tick_hit_rate`, `sl_finish_rate`, `sl_chain_mean`, `sl_chain_max` и `sl_seg_q` без разрушения circle timing.

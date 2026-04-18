@@ -81,11 +81,11 @@ class OsuPaths:
 
     @property
     def latest_checkpoint(self) -> Path:
-        return self.checkpoints_dir / "latest.pt"
+        return self.checkpoints_dir / "latest_recoil.pt"
 
     @property
     def best_checkpoint(self) -> Path:
-        return self.checkpoints_dir / "best.pt"
+        return self.checkpoints_dir / "best_recoil.pt"
 
     @property
     def latest_live_replay(self) -> Path:

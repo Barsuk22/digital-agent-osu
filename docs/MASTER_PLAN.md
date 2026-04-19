@@ -2,31 +2,35 @@
 
 Актуально на 2026-04-19.
 
-Этот документ фиксирует общий план развития osu skill module. Статусы отражают текущее состояние проекта, а не первоначальный замысел.
+Этот документ фиксирует общий план развития osu skill module. Статусы отражают текущее состояние проекта.
 
 ## Текущая рамка
 
 osu skill module - часть более широкой архитектуры цифрового агента. Его задача не в scripted-автоматизации osu!, а в формировании обучаемого моторного навыка через RL.
 
-Текущий главный milestone: **Phase 7 / Multi-Map Generalization закрыта**.
+Текущий milestone:
 
-Текущий golden checkpoint:
+```text
+Phase 10 / Skill Memory Init
+```
+
+Golden baseline:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Следующий планируемый milestone:
+Последняя закрытая training ветка:
 
 ```text
-Phase 8 / Easy Generalization & Pattern Formation
+artifacts/runs/osu_phase8_easy_generalization/
 ```
 
-## Phase 0 / Core Foundation
+## Закрытые фазы
+
+### Phase 0 / Core Foundation
 
 Статус: закрыта.
-
-Цель: создать osu-like среду, где агент действует в карте, получает judgement и reward.
 
 Реализовано:
 
@@ -38,11 +42,9 @@ Phase 8 / Easy Generalization & Pattern Formation
 - replay frames;
 - pygame viewer.
 
-## Phase 1 / Initial Learning / Base PPO Learning
+### Phase 1 / Base PPO Learning
 
 Статус: закрыта.
-
-Цель: доказать, что агент может обучаться и взаимодействовать с реальной картой через PPO.
 
 Реализовано:
 
@@ -52,14 +54,12 @@ Phase 8 / Easy Generalization & Pattern Formation
 - GAE;
 - reward shaping;
 - checkpoint save/load;
-- eval через deterministic policy;
+- deterministic eval;
 - replay после eval.
 
-## Phase 1.5 / Movement Polishing
+### Phase 1.5 / Movement Polishing
 
 Статус: закрыта как recoil/movement база.
-
-Цель: улучшить качество моторики уже обучаемого агента.
 
 Фокус:
 
@@ -69,11 +69,9 @@ Phase 8 / Easy Generalization & Pattern Formation
 - мягкий выход к следующей цели;
 - useful click ratio.
 
-## Phase 2 / Timing Quality
+### Phase 2 / Timing Quality
 
 Статус: закрыта.
-
-Цель: улучшить точность кликов во времени.
 
 Реализовано:
 
@@ -82,45 +80,37 @@ Phase 8 / Easy Generalization & Pattern Formation
 - штрафы за ранние/поздние клики;
 - off-window click discipline.
 
-## Phase 3 / Aim Stability
+### Phase 3 / Aim Stability
 
 Статус: закрыта.
-
-Цель: сделать связь позиции курсора и клика более устойчивой.
 
 Реализовано:
 
 - near/far click distinction;
 - pre-hit stability;
 - post-hit exit quality;
-- aim-related train/eval метрики.
+- aim-related train/eval metrics.
 
-## Phase 3.5 / Post-hit Motion Smoothing
+### Phase 3.5 / Post-hit Motion Smoothing
 
 Статус: закрыта.
-
-Цель: убрать остаточную отдачу после hit и снизить лишний jerk.
 
 Результат: checkpoint стал пригодной базой для slider/spinner веток.
 
-## Phase 4.1 / Slider Follow Fix
+### Phase 4.1 / Slider Follow Fix
 
 Статус: закрыта.
 
-Цель: исправить поведение, при котором policy берет slider head, но не держит slider-follow.
-
 Реализовано:
 
-- активное состояние slider в observation;
+- active slider state в observation;
 - reward за удержание follow;
 - диагностика hold/release/follow/drop;
 - первые устойчивые slider-follow прогоны.
 
-## Phase 5 / Slider Control
+### Phase 5 / Slider Control
 
 Статус: закрыта.
-
-Цель: перейти от "попасть в head и держать click" к контролю полного slider segment.
 
 Реализовано:
 
@@ -130,11 +120,9 @@ Phase 8 / Easy Generalization & Pattern Formation
 - reverse/curve diagnostics;
 - reward для sustained path tracking.
 
-## Phase 6 / Spinner Control
+### Phase 6 / Spinner Control
 
 Статус: закрыта.
-
-Цель: обучить устойчивое spinner behavior и не ломать sliders/circles.
 
 Реализовано:
 
@@ -142,11 +130,9 @@ Phase 8 / Easy Generalization & Pattern Formation
 - spinner diagnostics;
 - spinner-capable checkpoint line.
 
-## Spica Main Fine-Tune
+### Spica Main Fine-Tune
 
 Статус: закрыта.
-
-Цель: вернуть spinner-capable policy на основную Spica-карту и получить сильный single-map baseline.
 
 Результат:
 
@@ -154,11 +140,9 @@ Phase 8 / Easy Generalization & Pattern Formation
 artifacts/runs/osu_spica_main_finetune/checkpoints/golden_spica_main.pt
 ```
 
-## Phase 7 / Multi-Map Generalization
+### Phase 7 / Multi-Map Generalization
 
 Статус: закрыта 2026-04-19.
-
-Цель: перенос поведения на несколько nearby easy/beginner карт.
 
 Результат:
 
@@ -169,8 +153,8 @@ best cycle score = 12.342
 
 Закрывающие признаки:
 
-- несколько train-карт проходят почти идеально;
-- held-out `Chikatto` проходит почти идеально;
+- несколько train-карт проходятся почти идеально;
+- held-out `Chikatto` проходится почти идеально;
 - Spica baseline не потерян;
 - sliders восстановлены после multi-map degradation;
 - best checkpoint выбирается по полному циклу;
@@ -182,9 +166,9 @@ best cycle score = 12.342
 docs/osu/phase7_multimap_generalization_status.md
 ```
 
-## Phase 8 / Easy Generalization & Pattern Formation
+### Phase 8.1 / Easy Generalization + Stability Gate
 
-Статус: следующая планируемая стадия.
+Статус: закрыта 2026-04-19.
 
 Старт:
 
@@ -192,15 +176,43 @@ docs/osu/phase7_multimap_generalization_status.md
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Цель: расширить easy/generalization curriculum и начать формировать короткие паттерны, не прыгая сразу в hard-карты.
+Выход:
 
-Направления:
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/latest_easy_generalization.pt
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
 
-- добавить held-out easy карты в curriculum;
+Best mode:
+
+```text
+cycle_easy_generalization_gate_v1
+```
+
+Цель:
+
+- расширить easy/generalization curriculum;
 - довести `Sentimental Love` до стабильного slider-follow;
 - сохранить старый Phase 7 pool как regression gate;
 - начать doubles/triples/short chains;
 - hard/dense карты держать как stress-only eval.
+
+Phase 9 / Stability Gate встроена в Phase 8.1: best checkpoint получает штрафы за регресс старого gate pool, плохой `Sentimental Love`, рост `dpx` и нестабильный slider-follow.
+
+Результат:
+
+```text
+best cycle score = 12.486
+best checkpoint = artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Закрывающие признаки:
+
+- `Sentimental Love` поднялась до уверенного slider-follow;
+- `Chikatto` как held-out easy карта проходит почти идеально;
+- старый Phase 7 gate pool удержан без критического регресса;
+- новая held-out easy карта `YOASOBI - Yasashii Suisei` прошла без misses;
+- hard/dense карты остаются stress-only eval, а не критерием закрытия.
 
 Подробности:
 
@@ -208,9 +220,9 @@ artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 docs/osu/phase8_easy_generalization_plan.md
 ```
 
-## Phase 9 / Stability Gate
+### Phase 9 / Gate Report
 
-Статус: планируется.
+Статус: пройдена 2026-04-19.
 
 Цель: проверить, что агент играет повторяемо, а не случайно.
 
@@ -220,11 +232,30 @@ docs/osu/phase8_easy_generalization_plan.md
 - useful clicks;
 - timing drift;
 - стабильность между eval-запусками;
-- отсутствие регресса на старых gate-картах.
+- отсутствие регресса на старых gate-картах;
+- `Sentimental Love` как target;
+- `Chikatto` как heldout.
 
-## Phase 10 / Skill Memory Init
+Итоговый gate-report:
 
-Статус: планируется.
+```text
+Chikatto:          hits=133 miss=0 sl_inside=0.997 dpx=23.2 sl_seg_q=0.997
+Sentimental Love:  hits=124 miss=3 sl_inside=0.951 dpx=32.5 sl_seg_q=0.961
+Spica:             hits=84  miss=4 sl_inside=0.985 dpx=22.8 sl_seg_q=0.980
+Suzuki:            hits=85  miss=1 sl_inside=1.000 dpx=26.7 sl_seg_q=1.000
+MIMiNARI:          hits=91  miss=0 sl_inside=1.000 dpx=23.4 sl_seg_q=1.000
+noa:               hits=120 miss=0 sl_inside=0.983 dpx=20.5 sl_seg_q=0.993
+ONMYO-ZA:          hits=359 miss=2 sl_inside=0.980 dpx=28.4 sl_seg_q=0.981
+YOASOBI held-out:  hits=129 miss=0 sl_inside=0.923 dpx=40.0 sl_seg_q=0.952
+```
+
+Вывод: checkpoint принят как стабильная основа для Phase 10. Главная техническая заметка: timing drift часто ранний, но slider-follow и aim stability достаточны для перехода.
+
+## Текущая фаза
+
+### Phase 10 / Skill Memory Init
+
+Статус: следующая планируемая стадия.
 
 Цель: сохранять устойчивые успешные паттерны.
 
@@ -236,7 +267,7 @@ docs/osu/phase8_easy_generalization_plan.md
 - spinner control;
 - simple jump/double.
 
-## Phase 11 / Skill System + Selection
+### Phase 11 / Skill System + Selection
 
 Статус: планируется.
 
@@ -249,7 +280,7 @@ docs/osu/phase8_easy_generalization_plan.md
 - fallback на основную policy;
 - проверка, что skill usage действительно улучшает игру.
 
-## Phase 12 / Speed & Complexity
+### Phase 12 / Speed & Complexity
 
 Статус: долгосрочный план.
 
@@ -263,7 +294,7 @@ docs/osu/phase8_easy_generalization_plan.md
 - temporal model;
 - curriculum по сложности.
 
-## Phase 13 / Final Generalization
+### Phase 13 / Final Generalization
 
 Статус: долгосрочный план.
 

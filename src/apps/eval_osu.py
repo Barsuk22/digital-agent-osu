@@ -22,14 +22,14 @@ def default_eval_beatmap_path() -> str:
 
 
 def default_eval_checkpoint_path() -> str:
-    return os.environ.get("OSU_EVAL_CHECKPOINT", str(PATHS.phase7_multimap_best_checkpoint))
+    return os.environ.get("OSU_EVAL_CHECKPOINT", str(PATHS.phase8_easy_best_checkpoint))
 
 
 @dataclass(slots=True)
 class EvalConfig:
     beatmap_path: str = field(default_factory=default_eval_beatmap_path)
     checkpoint_path: str = field(default_factory=default_eval_checkpoint_path)
-    replay_path: str = str(PATHS.phase7_multimap_best_eval_replay)
+    replay_path: str = str(PATHS.phase8_easy_best_eval_replay)
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     timing_good_window_ms: float = 55.0
     timing_focus_window_ms: float = 165.0
@@ -595,9 +595,11 @@ def main() -> None:
 
     checkpoint_path = Path(cfg.checkpoint_path)
     if not checkpoint_path.exists():
-        print(f"[phase7 multimap checkpoint not found] {checkpoint_path}")
+        print(f"[phase8 easy checkpoint not found] {checkpoint_path}")
         for fallback in (
+            PATHS.phase8_easy_latest_checkpoint,
             PATHS.phase7_multimap_best_checkpoint,
+            PATHS.phase7_multimap_latest_checkpoint,
             PATHS.spica_main_golden_checkpoint,
             PATHS.spica_main_latest_checkpoint,
             PATHS.spica_main_best_checkpoint,

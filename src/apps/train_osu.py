@@ -20,13 +20,13 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 @dataclass(slots=True)
 class TrainConfig:
     beatmap_path: str = str(PATHS.active_map)
-    train_beatmap_paths: tuple[str, ...] = field(default_factory=lambda: tuple(str(path) for path in PATHS.phase7_train_maps))
-    phase_name: str = "phase7_multimap_generalization"
+    train_beatmap_paths: tuple[str, ...] = field(default_factory=lambda: tuple(str(path) for path in PATHS.phase8_train_maps))
+    phase_name: str = "phase8_easy_generalization_stability_gate"
 
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 1000
+    updates: int = 700
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_ratio: float = 0.10
@@ -46,19 +46,29 @@ class TrainConfig:
     slider_hold_threshold: float = 0.45
     spinner_hold_threshold: float = 0.45
 
-    source_checkpoint_path: str = str(PATHS.spica_main_golden_checkpoint)
-    run_dir: str = str(PATHS.osu_phase7_multimap_run_dir)
-    checkpoint_dir: str = str(PATHS.phase7_multimap_checkpoints_dir)
-    logs_dir: str = str(PATHS.phase7_multimap_logs_dir)
-    metrics_dir: str = str(PATHS.phase7_multimap_metrics_dir)
-    replays_dir: str = str(PATHS.phase7_multimap_replays_dir)
-    eval_dir: str = str(PATHS.phase7_multimap_eval_dir)
-    latest_ckpt_name: str = "latest_multimap.pt"
-    best_ckpt_name: str = "best_multimap.pt"
+    source_checkpoint_path: str = str(PATHS.phase7_multimap_best_checkpoint)
+    run_dir: str = str(PATHS.osu_phase8_easy_generalization_run_dir)
+    checkpoint_dir: str = str(PATHS.phase8_easy_checkpoints_dir)
+    logs_dir: str = str(PATHS.phase8_easy_logs_dir)
+    metrics_dir: str = str(PATHS.phase8_easy_metrics_dir)
+    replays_dir: str = str(PATHS.phase8_easy_replays_dir)
+    eval_dir: str = str(PATHS.phase8_easy_eval_dir)
+    latest_ckpt_name: str = "latest_easy_generalization.pt"
+    best_ckpt_name: str = "best_easy_generalization.pt"
     save_every: int = 10
     normalize_best_reward_by_objects: bool = True
-    best_selection_mode: str = "cycle_mean_min_slider_v1"
+    best_selection_mode: str = "cycle_easy_generalization_gate_v1"
     full_console_log: bool = False
+
+    phase8_regression_map_count: int = 5
+    phase8_target_map_index: int = 5
+    phase8_heldout_map_index: int = 6
+    phase8_gate_min_hit: float = 0.94
+    phase8_gate_min_slider_quality: float = 0.84
+    phase8_target_min_hit: float = 0.88
+    phase8_target_min_slider_quality: float = 0.72
+    phase8_target_max_dpx: float = 64.0
+    phase8_mean_dpx_soft_cap: float = 46.0
 
     # ------------------------------------------------------------
     # Outcome shaping
@@ -732,6 +742,25 @@ def select_train_beatmap_path(cfg: TrainConfig, update_idx: int) -> str:
     return cfg.train_beatmap_paths[(update_idx - 1) % len(cfg.train_beatmap_paths)]
 
 
+def train_map_index(cfg: TrainConfig, update_idx: int) -> int:
+    if not cfg.train_beatmap_paths:
+        return 0
+    return (update_idx - 1) % len(cfg.train_beatmap_paths)
+
+
+def train_map_role(cfg: TrainConfig, update_idx: int) -> str:
+    index = train_map_index(cfg, update_idx)
+    if cfg.best_selection_mode != "cycle_easy_generalization_gate_v1":
+        return "train"
+    if index < cfg.phase8_regression_map_count:
+        return "gate"
+    if index == cfg.phase8_target_map_index:
+        return "target"
+    if index == cfg.phase8_heldout_map_index:
+        return "heldout"
+    return "train"
+
+
 def checkpoint_selection_reward(cfg: TrainConfig, stats: EpisodeStats, env: OsuEnv) -> float:
     if not cfg.normalize_best_reward_by_objects:
         return stats.reward_total
@@ -741,6 +770,8 @@ def checkpoint_selection_reward(cfg: TrainConfig, stats: EpisodeStats, env: OsuE
 @dataclass(slots=True)
 class CycleMapScore:
     update_idx: int
+    map_index: int
+    map_role: str
     map_label: str
     selection_reward: float
     hit_rate: float
@@ -748,6 +779,10 @@ class CycleMapScore:
     slider_inside_ratio: float
     slider_finish_rate: float
     slider_segment_quality: float
+    slider_follow_distance_mean_px: float
+    useful_click_ratio: float
+    far_click_ratio: float
+    timing_error_median_ms: float
     spinner_miss_count: int
 
 
@@ -762,6 +797,7 @@ def short_label(label: str, max_len: int = 44) -> str:
 
 
 def build_cycle_map_score(
+    cfg: TrainConfig,
     update_idx: int,
     selection_reward: float,
     stats: EpisodeStats,
@@ -769,6 +805,8 @@ def build_cycle_map_score(
 ) -> CycleMapScore:
     return CycleMapScore(
         update_idx=update_idx,
+        map_index=train_map_index(cfg, update_idx),
+        map_role=train_map_role(cfg, update_idx),
         map_label=beatmap_label(env),
         selection_reward=selection_reward,
         hit_rate=stats.hit_rate,
@@ -776,11 +814,15 @@ def build_cycle_map_score(
         slider_inside_ratio=stats.slider_inside_ratio,
         slider_finish_rate=stats.slider_finish_rate,
         slider_segment_quality=stats.slider_segment_quality_mean,
+        slider_follow_distance_mean_px=stats.slider_follow_distance_mean_px,
+        useful_click_ratio=stats.useful_click_ratio,
+        far_click_ratio=stats.far_click_ratio,
+        timing_error_median_ms=stats.timing_error_median_ms,
         spinner_miss_count=stats.spinner_miss_count,
     )
 
 
-def cycle_selection_score(scores: list[CycleMapScore]) -> float:
+def phase7_cycle_selection_score(scores: list[CycleMapScore]) -> float:
     selection_values = [score.selection_reward for score in scores]
     hit_values = [score.hit_rate for score in scores]
     slider_inside_values = [score.slider_inside_ratio for score in scores]
@@ -806,13 +848,63 @@ def cycle_selection_score(scores: list[CycleMapScore]) -> float:
     )
 
 
+def phase8_cycle_selection_score(cfg: TrainConfig, scores: list[CycleMapScore]) -> float:
+    base_score = phase7_cycle_selection_score(scores)
+    gate_scores = [score for score in scores if score.map_role == "gate"]
+    target_scores = [score for score in scores if score.map_role == "target"]
+    new_scores = [score for score in scores if score.map_role in {"target", "heldout"}]
+    dpx_values = [score.slider_follow_distance_mean_px for score in scores if score.slider_follow_distance_mean_px > 0.0]
+
+    gate_hit_min = min((score.hit_rate for score in gate_scores), default=1.0)
+    gate_slider_q_min = min((score.slider_segment_quality for score in gate_scores), default=1.0)
+    new_hit_mean = float(np.mean([score.hit_rate for score in new_scores])) if new_scores else 0.0
+    new_slider_q_mean = float(np.mean([score.slider_segment_quality for score in new_scores])) if new_scores else 0.0
+    mean_dpx = float(np.mean(dpx_values)) if dpx_values else 0.0
+
+    penalty = 0.0
+    penalty += max(0.0, cfg.phase8_gate_min_hit - gate_hit_min) * 2.50
+    penalty += max(0.0, cfg.phase8_gate_min_slider_quality - gate_slider_q_min) * 2.00
+    penalty += max(0.0, mean_dpx - cfg.phase8_mean_dpx_soft_cap) * 0.010
+
+    if target_scores:
+        target = target_scores[0]
+        penalty += max(0.0, cfg.phase8_target_min_hit - target.hit_rate) * 2.00
+        penalty += max(0.0, cfg.phase8_target_min_slider_quality - target.slider_segment_quality) * 2.20
+        penalty += max(0.0, target.slider_follow_distance_mean_px - cfg.phase8_target_max_dpx) * 0.018
+
+    return (
+        base_score
+        + 0.30 * new_hit_mean
+        + 0.40 * new_slider_q_mean
+        + 0.12 * gate_hit_min
+        + 0.18 * gate_slider_q_min
+        - penalty
+    )
+
+
+def cycle_selection_score(cfg: TrainConfig, scores: list[CycleMapScore]) -> float:
+    if cfg.best_selection_mode == "cycle_easy_generalization_gate_v1":
+        return phase8_cycle_selection_score(cfg, scores)
+    return phase7_cycle_selection_score(scores)
+
+
 def print_cycle_summary(
+    cfg: TrainConfig,
     cycle_idx: int,
     cycle_score: float,
     best_reward: float,
     scores: list[CycleMapScore],
 ) -> None:
     selection_values = [score.selection_reward for score in scores]
+    dpx_values = [score.slider_follow_distance_mean_px for score in scores if score.slider_follow_distance_mean_px > 0.0]
+    gate_scores = [score for score in scores if score.map_role == "gate"]
+    gate_hit_min = min((score.hit_rate for score in gate_scores), default=1.0)
+    gate_slider_q_min = min((score.slider_segment_quality for score in gate_scores), default=1.0)
+    gate_ok = (
+        gate_hit_min >= cfg.phase8_gate_min_hit
+        and gate_slider_q_min >= cfg.phase8_gate_min_slider_quality
+        and sum(score.spinner_miss_count for score in scores) == 0
+    )
     print(
         f"[cycle {cycle_idx:04d}] "
         f"score={cycle_score:7.3f} "
@@ -823,17 +915,20 @@ def print_cycle_summary(
         f"sl_inside={float(np.mean([score.slider_inside_ratio for score in scores])):.3f} "
         f"sl_fin={float(np.mean([score.slider_finish_rate for score in scores])):.3f} "
         f"sl_q={float(np.mean([score.slider_segment_quality for score in scores])):.3f} "
+        f"dpx={float(np.mean(dpx_values)) if dpx_values else 0.0:5.1f} "
+        f"gate={'ok' if gate_ok else 'watch'} "
         f"spin_miss={sum(score.spinner_miss_count for score in scores)}"
     )
     for score in scores:
         print(
-            f"  - {short_label(score.map_label):44s} "
+            f"  - {score.map_role:7s} {short_label(score.map_label):44s} "
             f"sel={score.selection_reward:7.3f} "
             f"hit={score.hit_rate:.3f} "
             f"miss={score.miss_count:3d} "
             f"sl={score.slider_inside_ratio:.3f} "
             f"fin={score.slider_finish_rate:.3f} "
             f"q={score.slider_segment_quality:.3f} "
+            f"dpx={score.slider_follow_distance_mean_px:5.1f} "
             f"spin_miss={score.spinner_miss_count}"
         )
 
@@ -2209,7 +2304,7 @@ def main() -> None:
     # а начать свою отдельную "лучшую" линию
 
     print("=" * 100)
-    print("PHASE 7 MULTI-MAP GENERALIZATION STARTED")
+    print("PHASE 8 EASY GENERALIZATION + STABILITY GATE STARTED")
     print(f"Phase: {cfg.phase_name}")
     print("Train maps:")
     for index, path in enumerate(cfg.train_beatmap_paths, start=1):
@@ -2238,11 +2333,11 @@ def main() -> None:
         train_metrics = ppo_update(cfg, model, optimizer, buffer, device)
         selection_reward = checkpoint_selection_reward(cfg, stats, env)
 
-        cycle_scores.append(build_cycle_map_score(update_idx, selection_reward, stats, env))
+        cycle_scores.append(build_cycle_map_score(cfg, update_idx, selection_reward, stats, env))
         if len(cycle_scores) >= train_map_count:
             cycle_idx = update_idx // train_map_count
-            cycle_score = cycle_selection_score(cycle_scores)
-            print_cycle_summary(cycle_idx, cycle_score, best_reward, cycle_scores)
+            cycle_score = cycle_selection_score(cfg, cycle_scores)
+            print_cycle_summary(cfg, cycle_idx, cycle_score, best_reward, cycle_scores)
             if cycle_score > best_reward:
                 best_reward = cycle_score
                 save_checkpoint(

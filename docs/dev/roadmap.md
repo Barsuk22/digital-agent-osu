@@ -6,15 +6,25 @@
 
 ## Где проект сейчас
 
-osu skill module прошел закрытие Phase 7 / Multi-Map Generalization. Агент стабильно играет несколько beginner/easy карт, показывает перенос на held-out `Chikatto`, удерживает sliders, timing и spinner behavior.
+osu skill module закрыл Phase 8.1 / Easy Generalization + Stability Gate и прошел Phase 9 / Gate Report.
 
-Текущий golden checkpoint:
+Golden checkpoint Phase 7:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Следующий большой фокус: **Phase 8 / Easy Generalization & Pattern Formation**.
+Принятый Phase 8.1 checkpoint:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Текущий следующий шаг:
+
+```text
+Phase 10 / Skill Memory Init
+```
 
 ## Закрыто
 
@@ -30,7 +40,7 @@ artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 - replay frames;
 - pygame viewer.
 
-### Phase 1 / Initial Learning / Base PPO Learning
+### Phase 1 / Base PPO Learning
 
 Сделано:
 
@@ -108,16 +118,21 @@ artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 docs/osu/phase7_multimap_generalization_status.md
 ```
 
-## Активная следующая стадия
+### Phase 8.1 / Easy Generalization + Stability Gate
 
-### Phase 8 / Easy Generalization & Pattern Formation
-
-Статус: планируется.
+Статус: закрыта.
 
 Старт:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Выход:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/latest_easy_generalization.pt
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
 ```
 
 Фокус:
@@ -128,26 +143,53 @@ artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 - начать формировать короткие паттерны: doubles, triples, short chains;
 - hard/dense карты держать как stress-only eval.
 
+Best mode:
+
+```text
+cycle_easy_generalization_gate_v1
+```
+
+Итог:
+
+```text
+best cycle score = 12.486
+best checkpoint = artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Закрывающие признаки:
+
+- старый Phase 7 gate pool удержан;
+- `Sentimental Love` поднята до уверенного slider-follow;
+- `Chikatto` и новая held-out easy карта прошли успешно;
+- hard/dense карты оставлены как stress-only eval.
+
 Подробности:
 
 ```text
 docs/osu/phase8_easy_generalization_plan.md
 ```
 
-## Дальше
+### Phase 9 / Gate Report
 
-### Phase 9 / Stability Gate
+Статус: пройдена.
 
 Цель: проверить повторяемость поведения, а не единичные удачные прогоны.
 
 Направления:
 
-- multi-seed eval;
-- сравнение нескольких deterministic запусков;
-- gate по старому train pool и held-out pool;
+- несколько deterministic eval-запусков;
+- gate по старому Phase 7 pool;
+- target eval на `Sentimental Love`;
+- heldout eval на `Chikatto`;
 - анализ деградации между checkpoint ветками.
 
+Итоговые eval-прогоны подтвердили перенос на gate, target, held-out и новую easy карту. Основное замечание на будущее: timing drift часто ранний.
+
+## Активно / дальше
+
 ### Phase 10 / Skill Memory Init
+
+Статус: следующая планируемая стадия.
 
 Цель: начать сохранять устойчивые успешные паттерны.
 
@@ -169,8 +211,8 @@ docs/osu/phase8_easy_generalization_plan.md
 - pattern ranking;
 - gradual BPM/AR/OD increase;
 - плотные карты вроде `INTERNET YAMERO` как отдельный curriculum;
-- hard-карты после промежуточной лестницы, не сразу.
+- hard-карты после промежуточной лестницы сложности.
 
 ## Принцип проекта
 
-Агент должен учиться через среду, reward и policy update. Документация не должна описывать его как scripted bot или как уже готового универсального osu-игрока. Phase 7 закрыта как beginner/easy multi-map milestone, но не как финальная универсальная игра в osu.
+Агент должен учиться через среду, reward и policy update. Документация не должна описывать его как scripted bot или как уже готового универсального osu-игрока. Phase 8.1 закрыта как easy/generalization milestone, но не как финальная универсальная игра в osu.

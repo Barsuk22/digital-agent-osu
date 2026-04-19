@@ -117,6 +117,22 @@ class OsuPaths:
         return self.internet_yamero_dir / "Sati Akura - INTERNET YAMERO (BAN BLAT) [Easy].osu"
 
     @property
+    def yasashii_suisei_dir(self) -> Path:
+        return self.maps_dir / "YOASOBI - Yasashii Suisei"
+
+    @property
+    def yasashii_suisei_easy_map(self) -> Path:
+        return self.yasashii_suisei_dir / "YOASOBI - Yasashii Suisei (TV Size) (Tighnari) [Kyouren's Easy].osu"
+
+    @property
+    def idol_dir(self) -> Path:
+        return self.maps_dir / "Sati Akura - IDOL"
+
+    @property
+    def idol_normal_map(self) -> Path:
+        return self.idol_dir / "YOASOBI feat. Sati Akura - Idol feat. Sati Akura (CREEPO4EK) [(Normal)].osu"
+
+    @property
     def phase7_train_maps(self) -> tuple[Path, ...]:
         return (
             self.beginner_ka_map,
@@ -127,17 +143,38 @@ class OsuPaths:
         )
 
     @property
+    def phase8_train_maps(self) -> tuple[Path, ...]:
+        return (
+            self.beginner_ka_map,
+            self.suzuki_dame_beginner_map,
+            self.miminari_itowanai_easy_map,
+            self.noa_megane_easy_map,
+            self.onmyo_kouga_easy_map,
+            self.sentiment_easy_map,
+            self.chikatto_easy_map,
+        )
+
+    @property
+    def phase8_stress_eval_maps(self) -> tuple[Path, ...]:
+        return (
+            self.internet_yamero_easy_map,
+            self.animal_hard_map,
+        )
+
+    @property
     def phase7_eval_maps(self) -> tuple[Path, ...]:
         return (
+            # self.chikatto_easy_map,
             # self.sentiment_easy_map,
-            self.chikatto_easy_map,
             # self.beginner_ka_map,
             # self.suzuki_dame_beginner_map,
             # self.miminari_itowanai_easy_map,
             # self.noa_megane_easy_map,
             # self.onmyo_kouga_easy_map,
-            # self.animal_hard_map,
+            # self.yasashii_suisei_easy_map,
+            self.animal_hard_map,
             # self.internet_yamero_easy_map,
+            # self.idol_normal_map,
         )
 
     @property
@@ -190,6 +227,10 @@ class OsuPaths:
     @property
     def osu_phase7_multimap_run_dir(self) -> Path:
         return self.runs_dir / "osu_phase7_multimap_generalization"
+
+    @property
+    def osu_phase8_easy_generalization_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase8_easy_generalization"
 
     @property
     def checkpoints_dir(self) -> Path:
@@ -340,6 +381,26 @@ class OsuPaths:
         return self.osu_phase7_multimap_run_dir / "eval"
 
     @property
+    def phase8_easy_checkpoints_dir(self) -> Path:
+        return self.osu_phase8_easy_generalization_run_dir / "checkpoints"
+
+    @property
+    def phase8_easy_logs_dir(self) -> Path:
+        return self.osu_phase8_easy_generalization_run_dir / "logs"
+
+    @property
+    def phase8_easy_metrics_dir(self) -> Path:
+        return self.osu_phase8_easy_generalization_run_dir / "metrics"
+
+    @property
+    def phase8_easy_replays_dir(self) -> Path:
+        return self.osu_phase8_easy_generalization_run_dir / "replays"
+
+    @property
+    def phase8_easy_eval_dir(self) -> Path:
+        return self.osu_phase8_easy_generalization_run_dir / "eval"
+
+    @property
     def latest_checkpoint(self) -> Path:
         return self.checkpoints_dir / "latest_recoil.pt"
 
@@ -408,6 +469,14 @@ class OsuPaths:
         return self.phase7_multimap_checkpoints_dir / "best_multimap.pt"
 
     @property
+    def phase8_easy_latest_checkpoint(self) -> Path:
+        return self.phase8_easy_checkpoints_dir / "latest_easy_generalization.pt"
+
+    @property
+    def phase8_easy_best_checkpoint(self) -> Path:
+        return self.phase8_easy_checkpoints_dir / "best_easy_generalization.pt"
+
+    @property
     def latest_live_replay(self) -> Path:
         return self.replays_dir / "latest_live_replay.json"
 
@@ -442,6 +511,10 @@ class OsuPaths:
     @property
     def phase7_multimap_best_eval_replay(self) -> Path:
         return self.phase7_multimap_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase8_easy_best_eval_replay(self) -> Path:
+        return self.phase8_easy_replays_dir / "best_eval_replay.json"
 
 
 PATHS = OsuPaths()

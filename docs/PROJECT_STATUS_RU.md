@@ -6,23 +6,66 @@
 
 `digital_agent_osu_project` - модульный проект цифрового агента. osu-навык является отдельным skill module, где агент обучается моторному поведению через reinforcement learning, а не через scripted bot логику.
 
-osu skill module прошел важную точку: **Phase 7 / Multi-Map Generalization закрыта**. Агент стабильно играет несколько beginner/easy карт, удерживает timing, click discipline, spinner behavior и снова уверенно ведет sliders после исправления tight-follow.
+osu skill module прошел важную точку: **Phase 8.1 / Easy Generalization + Stability Gate закрыта**, а **Phase 9 / Gate Report пройдена**. Агент стабильно играет расширенный beginner/easy pool, удерживает старые gate-карты, подтянул `Sentimental Love` и показал перенос на новую held-out easy карту.
 
-Текущий golden checkpoint:
+Следующая планируемая стадия: **Phase 10 / Skill Memory Init**.
+
+Phase 8 и Phase 9 были объединены:
+
+- Phase 8 расширила easy/generalization curriculum;
+- Phase 9 была встроена как stability gate при выборе best checkpoint и подтверждена eval-прогонами.
+
+## Golden baseline
+
+Phase 7 golden checkpoint:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Следующая планируемая стадия:
+Финальный лучший Phase 7 score:
 
 ```text
-Phase 8 / Easy Generalization & Pattern Formation
+best cycle score = 12.342
+best mode = cycle_mean_min_slider_v1
+```
+
+## Phase 8.1 итоговая ветка
+
+Старт:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Run directory:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/
+```
+
+Checkpoint-и:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/latest_easy_generalization.pt
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Best mode:
+
+```text
+cycle_easy_generalization_gate_v1
+```
+
+Финальный лучший score Phase 8.1:
+
+```text
+best cycle score = 12.486
 ```
 
 ## Главный итог Phase 7
 
-Финальный лучший training cycle:
+Финальный training cycle:
 
 ```text
 [cycle 0200] score=12.342
@@ -47,175 +90,76 @@ ONMYO-ZA:         hits=355 miss=1 sl_inside=0.948 dpx=32.0 sl_seg_q=0.958
 hits=105 miss=6 sl_inside=0.695 dpx=57.1 sl_finish_rate=0.432 sl_seg_q=0.734
 ```
 
-Это не блокер закрытия Phase 7. Наоборот, это хороший первый target для Phase 8.
+Это не блокер Phase 7. Это главный target для Phase 8.1.
 
 ## Статус фаз
 
-### Phase 0 / Foundation
+| Фаза | Статус | Смысл |
+|---|---|---|
+| Phase 0 / Foundation | закрыта | parser, environment, judgement, replay, viewer |
+| Phase 1 / Base PPO | закрыта | PPO loop, Actor-Critic, checkpoints, eval |
+| Phase 1.5 / Movement Polishing | закрыта | базовая моторика и recoil |
+| Phase 2 / Timing Refinement | закрыта | timing windows и click timing |
+| Phase 3 / Aim Stability | закрыта | pre-hit stability |
+| Phase 3.5 / Post-hit Motion Smoothing | закрыта | мягкий выход после hit |
+| Phase 4.1 / Slider Follow Fix | закрыта | уход от “hit head only” |
+| Phase 5 / Slider Control | закрыта | полный slider segment control |
+| Phase 6 / Spinner Control | закрыта | spinner моторика |
+| Spica Main Fine-Tune | закрыта | single-map baseline |
+| Phase 7 / Multi-Map Generalization | закрыта | стабильный beginner/easy multi-map pool |
+| Phase 8.1 / Easy Generalization + Stability Gate | закрыта | новый easy pool + встроенный stability gate |
+| Phase 9 / Gate Report | пройдена | eval-проверка стабильности Phase 8.1 checkpoint |
+| Phase 10 / Skill Memory Init | планируется | сохранение устойчивых успешных паттернов |
 
-Статус: закрыта.
-
-Сделано:
-
-- parser `.osu`;
-- environment;
-- judgement;
-- replay;
-- pygame viewer.
-
-### Phase 1 / Initial Learning / Base PPO Learning
-
-Статус: закрыта.
-
-Сделано:
-
-- PPO training loop;
-- Actor-Critic policy;
-- rollout buffer / GAE;
-- checkpoint save/load;
-- deterministic eval;
-- replay после eval.
-
-### Phase 1.5 / Movement Polishing
-
-Статус: закрыта как recoil/movement база.
-
-### Phase 2 / Timing Refinement
-
-Статус: закрыта как рабочая timing refinement ветка.
-
-### Phase 3 / Aim Stability
-
-Статус: закрыта как рабочая aim stability ветка.
-
-### Phase 3.5 / Post-hit Motion Smoothing
-
-Статус: закрыта.
-
-Цель была убрать резкий post-hit recoil и сделать выход к следующей цели более мягким.
-
-### Phase 4.1 / Slider Follow Fix
-
-Статус: закрыта.
-
-Цель была исправить ситуацию, где агент берет slider head, но не формирует устойчивый follow.
-
-### Phase 5 / Slider Control
-
-Статус: закрыта.
-
-Цель была перейти от "hit head and hold" к управлению полным slider segment.
-
-### Phase 6 / Spinner Control
-
-Статус: закрыта.
-
-Цель была добавить устойчивую spinner-моторику и диагностику.
-
-### Spica Main Fine-Tune
-
-Статус: закрыта как single-map baseline перед multi-map.
-
-### Phase 7 / Multi-Map Generalization
-
-Статус: закрыта.
-
-Закрывающие признаки:
-
-- агент играет несколько easy/beginner карт;
-- Spica baseline не разрушен;
-- held-out `Chikatto` проходит почти идеально;
-- sliders восстановлены после multi-map degradation;
-- best checkpoint выбирается по полному cycle score;
-- spinner behavior не разрушен.
-
-Подробности:
+## Phase 8.1 curriculum
 
 ```text
-docs/osu/phase7_multimap_generalization_status.md
+1. StylipS - Spica. (TV-size) [Beginner-ka]
+2. Suzuki Minori - Dame wa Dame (TV Size) [maikayuii's Beginner]
+3. MIMiNARI - Itowanai feat. Tomita Miyu, Ichinose Kana (TV Size) [Teages's Easy]
+4. noa - Megane o Hazushite (TV Size) [Easy]
+5. ONMYO-ZA - Kouga Ninpouchou [JauiPlaY's Easy]
+6. Sati Akura - Sentimental Love (TV Size) [Myxo's Easy]
+7. Sati Akura - Chikatto Chika Chika [Easy]
 ```
 
-### Phase 8 / Easy Generalization & Pattern Formation
+Роли:
 
-Статус: следующая планируемая стадия.
+- `gate`: первые 5 карт, старый Phase 7 regression gate;
+- `target`: `Sentimental Love`;
+- `heldout`: `Chikatto`.
 
-Цель:
+## Stress-only
 
-- расширить easy/generalization pool;
-- довести `Sentimental Love` до уверенного slider-follow;
-- сохранить Phase 7 gate pool почти идеальным;
-- начать формировать короткие паттерны;
-- не использовать hard/dense карты как обязательный gate.
-
-План:
+Эти карты используются только как стресс-тест, не как критерий закрытия Phase 8.1:
 
 ```text
-docs/osu/phase8_easy_generalization_plan.md
+Sati Akura - INTERNET YAMERO [Easy]
+Sati Akura - Animal [Even if it's ugly, that's the way I want it.]
 ```
 
-## Состояние osu skill module
+На них нормально видеть много misses. Сейчас важно не сломать easy-моторику.
 
-### Parser
+## Phase 9 gate-report
 
-Parser читает `.osu` файлы, metadata, difficulty, timing points, hit objects, audio/background/video events и строит внутренние модели circles/sliders/spinners.
+Проверка на `best_easy_generalization.pt`:
 
-### Environment
-
-`OsuEnv` поддерживает:
-
-- шаг симуляции;
-- время;
-- позицию курсора;
-- action `dx, dy, click_strength`;
-- observation с upcoming objects;
-- reward через `OsuJudge`;
-- done condition;
-- replay frames.
-
-### Judgement
-
-`OsuJudge` поддерживает:
-
-- circle judgement;
-- slider head/follow/tick/finish/drop;
-- spinner progress;
-- combo;
-- accuracy;
-- miss handling;
-- подробные метрики для train/eval.
-
-Логика функциональна для RL-обучения, но не претендует на полную точность osu! lazer.
-
-### Training
-
-`src/apps/train_osu.py` содержит PPO pipeline и текущую Phase 7 конфигурацию. На момент закрытия Phase 7 лимит `updates=1000` достигнут, поэтому повторный запуск может сразу завершаться без новых update.
-
-### Eval и replay
-
-`src/apps/eval_osu.py` умеет загружать checkpoint, выполнять deterministic rollout, сохранять replay и печатать summary. Для явного выбора checkpoint и карты используются:
-
-```powershell
-$env:OSU_EVAL_CHECKPOINT='...'
-$env:OSU_EVAL_MAP='...'
-python -m src.apps.eval_osu
+```text
+Chikatto:          hits=133 miss=0 sl_inside=0.997 dpx=23.2 sl_seg_q=0.997
+Sentimental Love:  hits=124 miss=3 sl_inside=0.951 dpx=32.5 sl_seg_q=0.961
+Spica:             hits=84  miss=4 sl_inside=0.985 dpx=22.8 sl_seg_q=0.980
+Suzuki:            hits=85  miss=1 sl_inside=1.000 dpx=26.7 sl_seg_q=1.000
+MIMiNARI:          hits=91  miss=0 sl_inside=1.000 dpx=23.4 sl_seg_q=1.000
+noa:               hits=120 miss=0 sl_inside=0.983 dpx=20.5 sl_seg_q=0.993
+ONMYO-ZA:          hits=359 miss=2 sl_inside=0.980 dpx=28.4 sl_seg_q=0.981
+YOASOBI held-out:  hits=129 miss=0 sl_inside=0.923 dpx=40.0 sl_seg_q=0.952
 ```
 
-## Активные ограничения
+Вывод: Phase 9 пройдена. Агент играет не случайно: slider-follow стабилен, misses низкие, старый gate pool не потерян, перенос на новую easy карту появился. Замечание: timing drift часто ранний, это стоит учитывать в следующих фазах.
 
-- карты и медиа не лежат в репозитории;
-- часть YAML-конфигов остается заготовками;
-- значимая часть параметров обучения пока в `TrainConfig`;
-- тестовая структура есть, но покрытие еще неполное;
-- slider geometry и renderer упрощены;
-- Phase 8 еще не реализована как отдельная training branch;
-- skill memory еще не подключена к osu-поведению.
+## Ближайшая цель
 
-## Ближайшие направления
-
-1. Зафиксировать Phase 7 `best_multimap.pt` как golden baseline.
-2. Создать отдельную Phase 8 run branch/config.
-3. Стартовать Phase 8 от `best_multimap.pt`.
-4. Добавить `Sentimental Love` и `Chikatto` в более широкий easy curriculum.
-5. Держать старый Phase 7 pool как regression gate.
-6. Использовать `INTERNET YAMERO` и `Animal hard` только как stress-only eval, не как критерий успеха.
-7. После Phase 8 думать о плотных картах и более сложных паттернах.
+1. Зафиксировать `best_easy_generalization.pt` как основу для следующей стадии.
+2. Начать Phase 10 / Skill Memory Init.
+3. Сохранить первые устойчивые паттерны: slider follow, reverse slider, short chain, spinner control, simple jump/double.
+4. Не переходить резко к hard/dense curriculum до появления базовой skill memory.

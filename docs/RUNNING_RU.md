@@ -2,7 +2,7 @@
 
 Актуально на 2026-04-19.
 
-Документ описывает текущие команды запуска osu-модуля. Все команды выполняются из корня проекта:
+Все команды выполняются из корня проекта:
 
 ```powershell
 cd D:\Projects\digital_agent_osu_project
@@ -11,20 +11,16 @@ cd D:\Projects\digital_agent_osu_project
 ## Текущий статус
 
 Phase 7 / Multi-Map Generalization закрыта.
+Phase 8.1 / Easy Generalization + Stability Gate закрыта.
+Phase 9 / Gate Report пройдена.
 
-Текущий основной checkpoint:
+Лучший Phase 7 checkpoint:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Последний checkpoint:
-
-```text
-artifacts/runs/osu_phase7_multimap_generalization/checkpoints/latest_multimap.pt
-```
-
-Финальный лучший score:
+Финальный лучший score Phase 7:
 
 ```text
 best cycle score = 12.342
@@ -33,46 +29,133 @@ best cycle score = 12.342
 Следующая планируемая стадия:
 
 ```text
-Phase 8 / Easy Generalization & Pattern Formation
+Phase 10 / Skill Memory Init
 ```
 
-Подробности:
+Phase 8 и Phase 9 шли вместе: Phase 8 обучила новый easy/generalization pool, а Phase 9 была встроена в выбор best checkpoint как stability gate и затем подтверждена eval-прогонами.
 
-```text
-docs/osu/phase7_multimap_generalization_status.md
-docs/osu/phase8_easy_generalization_plan.md
-```
+## Phase 8.1 обучение
 
-## Обучение
-
-Текущая команда:
+Команда:
 
 ```powershell
 python -m src.apps.train_osu
 ```
 
-На момент закрытия Phase 7 в `TrainConfig` лимит обновлений достигнут:
+Стартовая база:
 
 ```text
-updates = 1000
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Поэтому повторный запуск Phase 7 training может сразу завершиться, сохранить `latest_multimap.pt` и вывести текущий `best cycle score`, не выполняя новых update. Это нормально: фаза завершена.
+Новая run-директория:
 
-Для Phase 8 нужно будет создать отдельную run branch/config, чтобы не затирать Phase 7 golden checkpoint.
+```text
+artifacts/runs/osu_phase8_easy_generalization/
+```
+
+Checkpoint-и Phase 8.1:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/latest_easy_generalization.pt
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Лимит обучения:
+
+```text
+updates = 700
+```
+
+Один цикл равен 7 картам.
+
+Финальный результат:
+
+```text
+best cycle score = 12.486
+best checkpoint = artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+## Phase 8.1 curriculum
+
+```text
+1. StylipS - Spica. (TV-size) [Beginner-ka]
+2. Suzuki Minori - Dame wa Dame (TV Size) [maikayuii's Beginner]
+3. MIMiNARI - Itowanai feat. Tomita Miyu, Ichinose Kana (TV Size) [Teages's Easy]
+4. noa - Megane o Hazushite (TV Size) [Easy]
+5. ONMYO-ZA - Kouga Ninpouchou [JauiPlaY's Easy]
+6. Sati Akura - Sentimental Love (TV Size) [Myxo's Easy]
+7. Sati Akura - Chikatto Chika Chika [Easy]
+```
+
+Роли:
+
+- `gate`: первые 5 карт, старый Phase 7 regression gate;
+- `target`: `Sentimental Love`, главная карта для подтягивания слайдеров;
+- `heldout`: `Chikatto`, проверка переноса на easy-карту.
+
+## Best checkpoint selection
+
+Режим:
+
+```text
+cycle_easy_generalization_gate_v1
+```
+
+Он учитывает:
+
+- средний и минимальный selection score;
+- hit rate;
+- slider inside / finish / segment quality;
+- `dpx`, то есть среднюю дистанцию до slider ball/head;
+- отсутствие регресса на старом Phase 7 pool;
+- качество `Sentimental Love`.
+
+В консоли cycle summary теперь показывает роли карт:
+
+```text
+gate
+target
+heldout
+```
+
+и добавляет:
+
+```text
+dpx
+gate=ok/watch
+```
 
 ## Eval
 
-Обычный запуск:
+Команда:
 
 ```powershell
 python -m src.apps.eval_osu
 ```
 
-Eval может использовать переменные окружения:
+По умолчанию eval теперь проверяет:
+
+```text
+Sati Akura - Sentimental Love (TV Size) [Myxo's Easy]
+```
+
+и берет:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+```
+
+Если Phase 8 checkpoint еще не создан, eval автоматически откатится на:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Выбор конкретного checkpoint:
 
 ```powershell
-$env:OSU_EVAL_CHECKPOINT='D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase7_multimap_generalization\checkpoints\best_multimap.pt'
+$env:OSU_EVAL_CHECKPOINT='D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase8_easy_generalization\checkpoints\best_easy_generalization.pt'
 python -m src.apps.eval_osu
 Remove-Item Env:\OSU_EVAL_CHECKPOINT
 ```
@@ -85,21 +168,28 @@ python -m src.apps.eval_osu
 Remove-Item Env:\OSU_EVAL_MAP
 ```
 
-Можно комбинировать:
-
-```powershell
-$env:OSU_EVAL_CHECKPOINT='D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase7_multimap_generalization\checkpoints\best_multimap.pt'
-$env:OSU_EVAL_MAP='D:\Projects\digital_agent_osu_project\data\raw\osu\maps\...\map.osu'
-python -m src.apps.eval_osu
-Remove-Item Env:\OSU_EVAL_CHECKPOINT
-Remove-Item Env:\OSU_EVAL_MAP
-```
-
-Replay после eval сохраняется в:
+Replay после eval сохраняется сюда:
 
 ```text
-artifacts/runs/osu_phase7_multimap_generalization/replays/best_eval_replay.json
+artifacts/runs/osu_phase8_easy_generalization/replays/best_eval_replay.json
 ```
+
+## Phase 9 gate-report
+
+Итоговые eval-прогоны на `best_easy_generalization.pt`:
+
+```text
+Chikatto:          hits=133 miss=0 sl_inside=0.997 dpx=23.2 sl_seg_q=0.997
+Sentimental Love:  hits=124 miss=3 sl_inside=0.951 dpx=32.5 sl_seg_q=0.961
+Spica:             hits=84  miss=4 sl_inside=0.985 dpx=22.8 sl_seg_q=0.980
+Suzuki:            hits=85  miss=1 sl_inside=1.000 dpx=26.7 sl_seg_q=1.000
+MIMiNARI:          hits=91  miss=0 sl_inside=1.000 dpx=23.4 sl_seg_q=1.000
+noa:               hits=120 miss=0 sl_inside=0.983 dpx=20.5 sl_seg_q=0.993
+ONMYO-ZA:          hits=359 miss=2 sl_inside=0.980 dpx=28.4 sl_seg_q=0.981
+YOASOBI held-out:  hits=129 miss=0 sl_inside=0.923 dpx=40.0 sl_seg_q=0.952
+```
+
+Phase 9 пройдена. Для следующих запусков `best_easy_generalization.pt` считается принятой основой.
 
 ## Replay
 
@@ -107,29 +197,18 @@ artifacts/runs/osu_phase7_multimap_generalization/replays/best_eval_replay.json
 python -m src.apps.replay_osu
 ```
 
-Команда открывает последний сохраненный eval replay.
+Команда открывает последний сохраненный Phase 8 eval replay. Если его еще нет, откатывается на Phase 7 replay.
 
-## Live viewer
+## Stress-only eval
 
-```powershell
-python -m src.apps.live_viewer_osu
-```
-
-Это демонстрационный viewer-runner с простой policy. Он полезен для проверки среды и визуализации, но не является PPO eval текущего агента.
-
-## Карты и медиа
-
-Карты и медиа не входят в репозиторий. Локальные `.osu` файлы, аудио, фоны и видео ожидаются в:
+Эти карты можно гонять вручную, но они не являются критерием закрытия Phase 8.1:
 
 ```text
-data/raw/osu/maps/
+Sati Akura - INTERNET YAMERO [Easy]
+Sati Akura - Animal [Even if it's ugly, that's the way I want it.]
 ```
 
-Активная карта и известные пути задаются в:
-
-```text
-src/core/config/paths.py
-```
+Они нужны как стресс-тест. На них нормально видеть много misses: задача Phase 8.1 сейчас не hard-clear, а стабильный easy/generalization.
 
 ## Что смотреть в eval
 
@@ -138,50 +217,54 @@ src/core/config/paths.py
 - `hits` / `miss`;
 - `tmed`, `good_t`, `early`, `late`, `off`;
 - `near`, `far`, `dclick`;
-- `sl_head`, `sl_fin`, `sl_tick`, `sl_drop`;
 - `sl_inside_ratio`;
 - `sl_follow_dist_mean`;
 - `sl_finish_rate`;
+- `sl_tick`, `sl_drop`;
 - `sl_seg_q`;
 - `sl_full`, `sl_partial`;
 - `sl_rev_follow`, `sl_curve_good`;
 - `spin_clear`, `spin_part`, `spin_miss`.
 
-Для Phase 7/8 особенно важно:
+Для анализа Phase 8.1 / Phase 10 особенно важно:
 
 - `far` около нуля на easy-картах;
-- `sl_follow_dist_mean` не возвращается к 55-70 на старом gate pool;
+- `sl_follow_dist_mean` не возвращается к 55-70 на gate pool;
 - `sl_inside_ratio` и `sl_seg_q` остаются высокими;
-- `sl_click_released_steps` около нуля на slider-heavy картах;
-- старые Phase 7 карты не деградируют при переходе к Phase 8.
+- `Sentimental Love` не откатывается к состоянию “50 на 50”;
+- старые Phase 7 карты не деградируют.
 
-## Значение текущих checkpoint-файлов
+## Phase 10 / Skill Memory Init
 
-### `best_multimap.pt`
+Следующая планируемая стадия.
 
-Лучший checkpoint закрытой Phase 7. Выбран по полному cycle score на всех train-картах. Это текущий golden checkpoint.
+Цель: сохранять устойчивые успешные паттерны:
 
-### `latest_multimap.pt`
+- slider follow;
+- reverse slider;
+- short chain;
+- spinner control;
+- simple jump/double.
 
-Последний checkpoint закрытой Phase 7. На финальном прогоне совпадает по смыслу с завершенной веткой, но для следующей фазы базой лучше считать `best_multimap.pt`.
-
-### Старые checkpoint-ветки
-
-Старые ветки остаются полезной историей и fallback-базами:
+## Документация по стадиям
 
 ```text
-artifacts/runs/osu_phase2_timing/
-artifacts/runs/osu_phase3_motion_smoothing/
-artifacts/runs/osu_phase4_slider_follow_fix/
-artifacts/runs/osu_phase5_slider_control/
-artifacts/runs/osu_phase6_spinner_control/
-artifacts/runs/osu_spica_main_finetune/
+docs/osu/phase7_multimap_generalization_status.md
+docs/osu/phase8_easy_generalization_plan.md
+docs/osu/curriculum_plan.md
+docs/osu/reward_design.md
 ```
 
-Их не нужно перезаписывать при Phase 8.
+## Карты и медиа
 
-## Важные замечания
+Карты и медиа не входят в репозиторий. Локальные `.osu`, аудио, фоны и видео ожидаются здесь:
 
-- `artifacts/`, `data/raw/`, `exports/`, аудио, видео и checkpoints не должны храниться в git.
-- Значимая часть параметров обучения пока находится в `TrainConfig` внутри `src/apps/train_osu.py`.
-- Перед Phase 8 нужно завести отдельную run directory и отдельное имя checkpoint, чтобы сохранить Phase 7 как стабильный baseline.
+```text
+data/raw/osu/maps/
+```
+
+Известные пути задаются в:
+
+```text
+src/core/config/paths.py
+```

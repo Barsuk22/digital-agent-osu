@@ -244,27 +244,35 @@ Training/eval logs содержат:
 - `spin_miss`;
 - `kl`.
 
-## Что важно для Phase 8
+## Что было важно для Phase 8.1
 
-Phase 8 должна стартовать от:
+Phase 8.1 стартовала от:
 
 ```text
 artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
 ```
 
-Рекомендации:
+И была закрыта на:
+
+```text
+artifacts/runs/osu_phase8_easy_generalization/checkpoints/best_easy_generalization.pt
+best cycle score = 12.486
+```
+
+Что сработало:
 
 - не увеличивать сложность резко;
 - держать Phase 7 train pool как regression gate;
-- добавить `Sentimental Love` как slider-generalization target;
+- использовать `Sentimental Love` как slider-generalization target;
 - hard/dense карты не включать в best score;
 - следить, чтобы `dpx` не возвращался к плохим значениям;
 - не поощрять простое удержание click без настоящего tracking.
+
+Для Phase 10 важно не менять резко reward shaping, а сначала извлечь устойчивые паттерны из уже успешного поведения: slider follow, reverse slider, short chain, spinner control, simple jump/double.
 
 ## Что еще не закрыто
 
 - параметры shaping пока живут в `TrainConfig`;
 - нет полноценного YAML-конфига для фаз;
-- Phase 8 еще не заведена как отдельная run branch;
 - hard/dense карты требуют отдельной curriculum-лестницы;
 - skill memory еще не подключена к успешным паттернам.

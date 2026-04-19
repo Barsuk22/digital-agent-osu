@@ -1,25 +1,32 @@
-# Master Plan — osu agent
+# Master Plan - osu agent
 
-Этот документ фиксирует общий план развития osu skill module. Статусы фаз ниже отражают текущее состояние проекта, а не только первоначальный замысел.
+Актуально на 2026-04-19.
+
+Этот документ фиксирует общий план развития osu skill module. Статусы отражают текущее состояние проекта, а не первоначальный замысел.
 
 ## Текущая рамка
 
-osu skill module — часть более широкой архитектуры цифрового агента. Его задача не в scripted-автоматизации osu!, а в формировании обучаемого моторного навыка через RL.
+osu skill module - часть более широкой архитектуры цифрового агента. Его задача не в scripted-автоматизации osu!, а в формировании обучаемого моторного навыка через RL.
 
-Ключевое состояние на сейчас:
+Текущий главный milestone: **Phase 7 / Multi-Map Generalization закрыта**.
 
-- Phase 0 / Foundation закрыта;
-- Phase 1 / Initial Learning / Base PPO Learning закрыта по смыслу;
-- Phase 1.5 / Movement Polishing стала базой для следующего этапа;
-- Phase 2 / Timing Refinement и Phase 3 / Aim Stability Refinement закрыты как рабочая timing/aim ветка;
-- активная стадия — Phase 3.5 / Post-hit Motion Smoothing;
-- дальнейшие фазы связаны со sliders, multi-map generalization и skill memory.
+Текущий golden checkpoint:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Следующий планируемый milestone:
+
+```text
+Phase 8 / Easy Generalization & Pattern Formation
+```
 
 ## Phase 0 / Core Foundation
 
 Статус: закрыта.
 
-Цель: создать osu-like среду, где агент действительно действует в карте, получает judgement и reward.
+Цель: создать osu-like среду, где агент действует в карте, получает judgement и reward.
 
 Реализовано:
 
@@ -31,15 +38,9 @@ osu skill module — часть более широкой архитектуры
 - replay frames;
 - pygame viewer.
 
-Ограничения:
-
-- renderer и slider geometry не являются точной копией osu! lazer;
-- часть моделей среды намеренно упрощена для RL-обучения;
-- конфиги ещё не полностью вынесены из кода.
-
 ## Phase 1 / Initial Learning / Base PPO Learning
 
-Статус: закрыта по смыслу как этап достижения базовой обучаемости.
+Статус: закрыта.
 
 Цель: доказать, что агент может обучаться и взаимодействовать с реальной картой через PPO.
 
@@ -54,152 +55,158 @@ osu skill module — часть более широкой архитектуры
 - eval через deterministic policy;
 - replay после eval.
 
-Критерий Phase 1 был не в идеальной игре, а в достижении базовой обучаемости. Этот критерий выполнен: агент проходит train/eval/replay pipeline и способен попадать по объектам.
-
 ## Phase 1.5 / Movement Polishing
 
-Статус: закрыта как recoil/movement база для Phase 2/3.
+Статус: закрыта как recoil/movement база.
 
 Цель: улучшить качество моторики уже обучаемого агента.
 
-Текущий фокус:
+Фокус:
 
 - сглаживание движения;
 - снижение jerk и overspeed;
 - anti-recoil после попаданий;
 - мягкий выход к следующей цели;
-- улучшение useful click ratio;
-- humanlike movement polishing;
-- развитие reward shaping.
-
-Отдельная fine-tune ветка сохраняется в `best_recoil.pt` и `latest_recoil.pt`, чтобы не затирать базовый checkpoint Phase 1.
+- useful click ratio.
 
 ## Phase 2 / Timing Quality
 
-Статус: реализована и закрыта как рабочая timing-refinement ветка.
+Статус: закрыта.
 
 Цель: улучшить точность кликов во времени.
 
 Реализовано:
 
-- явные timing-метрики;
-- усиление reward вокруг hit window;
-- штрафы за ранние и поздние клики;
-- уменьшение off-window clicking.
-- отдельные `timing_bonus` и `timing_penalty` в breakdown;
-- сохранение в `artifacts/runs/osu_phase2_timing/`.
-
-База загрузки:
-
-```text
-artifacts/runs/osu_phase1_ppo/checkpoints/best_recoil.pt
-```
+- timing metrics;
+- reward вокруг hit window;
+- штрафы за ранние/поздние клики;
+- off-window click discipline.
 
 ## Phase 3 / Aim Stability
 
-Статус: реализована и закрыта вместе с Phase 2 как рабочая aim-stability ветка.
+Статус: закрыта.
 
 Цель: сделать связь позиции курсора и клика более устойчивой.
 
 Реализовано:
 
-- штрафы за click далеко от цели;
-- удержание около объекта в pre-hit окне;
-- анализ post-hit движения;
-- снижение случайных отскоков и лишних микродвижений.
-- distinction между near/far/settled/unstable click;
-- micro-stability около актуальной цели;
-- отдельный `post_hit_exit` вклад для anti-recoil/exit quality;
-- aim-related метрики в train/eval.
+- near/far click distinction;
+- pre-hit stability;
+- post-hit exit quality;
+- aim-related train/eval метрики.
 
 ## Phase 3.5 / Post-hit Motion Smoothing
 
-Статус: активная стадия.
+Статус: закрыта.
 
-Цель: убрать остаточную "отдачу" после попадания, не ломая уже сильный timing/aim checkpoint.
+Цель: убрать остаточную отдачу после hit и снизить лишний jerk.
 
-База обучения:
+Результат: checkpoint стал пригодной базой для slider/spinner веток.
 
-```text
-artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt
-```
+## Phase 4.1 / Slider Follow Fix
 
-Новая ветка сохранения:
+Статус: закрыта.
 
-```text
-artifacts/runs/osu_phase3_motion_smoothing/
-```
+Цель: исправить поведение, при котором policy берет slider head, но не держит slider-follow.
 
-Реализуемый фокус:
+Реализовано:
 
-- короткое post-hit recoil-window;
-- штраф за слишком резкий отлёт от точки попадания;
-- штраф за post-hit jerk;
-- мягкий bonus за плавный выход к следующей цели;
-- отдельные метрики `smooth_r`, `rpx`, `rjerk`, `badrec`, `smooth`.
-
-## Phase 4 / Slider Intro
-
-Статус: частично заложена в foundation, но как полноценная фаза ещё не закрыта.
-
-Сейчас есть:
-
-- slider head hit;
-- follow reward;
-- ticks;
-- finish/drop logic;
-- визуализация slider body/ball/follow circle.
-
-Дальше нужно:
-
-- улучшить slider path accuracy;
-- усилить обучение follow behavior;
-- отдельно оценивать slider stability.
+- активное состояние slider в observation;
+- reward за удержание follow;
+- диагностика hold/release/follow/drop;
+- первые устойчивые slider-follow прогоны.
 
 ## Phase 5 / Slider Control
 
-Статус: планируется.
+Статус: закрыта.
 
-Цель: научить агента стабильно вести простые sliders.
+Цель: перейти от "попасть в head и держать click" к контролю полного slider segment.
 
-Направления:
+Реализовано:
 
-- reward за удержание;
-- tick consistency;
-- штраф за drop;
-- eval-метрики по slider segments.
+- segment-level metrics;
+- `sl_seg_q`;
+- `sl_full` / `sl_partial`;
+- reverse/curve diagnostics;
+- reward для sustained path tracking.
 
 ## Phase 6 / Spinner Control
 
-Статус: базовая логика есть, полноценное обучение планируется.
+Статус: закрыта.
 
-Сейчас spinner поддерживается в judgement через накопление вращения. Дальше нужно обучать устойчивое spinner behavior и добавить метрики.
+Цель: обучить устойчивое spinner behavior и не ломать sliders/circles.
+
+Реализовано:
+
+- spinner observation/reward;
+- spinner diagnostics;
+- spinner-capable checkpoint line.
+
+## Spica Main Fine-Tune
+
+Статус: закрыта.
+
+Цель: вернуть spinner-capable policy на основную Spica-карту и получить сильный single-map baseline.
+
+Результат:
+
+```text
+artifacts/runs/osu_spica_main_finetune/checkpoints/golden_spica_main.pt
+```
 
 ## Phase 7 / Multi-Map Generalization
 
-Статус: планируется.
+Статус: закрыта 2026-04-19.
 
-Цель: перенос поведения на несколько easy-карт.
+Цель: перенос поведения на несколько nearby easy/beginner карт.
+
+Результат:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+best cycle score = 12.342
+```
+
+Закрывающие признаки:
+
+- несколько train-карт проходят почти идеально;
+- held-out `Chikatto` проходит почти идеально;
+- Spica baseline не потерян;
+- sliders восстановлены после multi-map degradation;
+- best checkpoint выбирается по полному циклу;
+- spinner behavior не разрушен.
+
+Подробности:
+
+```text
+docs/osu/phase7_multimap_generalization_status.md
+```
+
+## Phase 8 / Easy Generalization & Pattern Formation
+
+Статус: следующая планируемая стадия.
+
+Старт:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Цель: расширить easy/generalization curriculum и начать формировать короткие паттерны, не прыгая сразу в hard-карты.
 
 Направления:
 
-- train/eval pools;
-- разные BPM и паттерны;
-- сравнение поведения на seen/unseen картах;
-- защита от переобучения на одну карту.
+- добавить held-out easy карты в curriculum;
+- довести `Sentimental Love` до стабильного slider-follow;
+- сохранить старый Phase 7 pool как regression gate;
+- начать doubles/triples/short chains;
+- hard/dense карты держать как stress-only eval.
 
-## Phase 8 / Pattern Formation
+Подробности:
 
-Статус: планируется.
-
-Цель: перейти от реакции на отдельные объекты к коротким последовательностям движения.
-
-Направления:
-
-- doubles;
-- triples;
-- короткие chains;
-- анализ повторяемых successful segments.
+```text
+docs/osu/phase8_easy_generalization_plan.md
+```
 
 ## Phase 9 / Stability Gate
 
@@ -212,26 +219,28 @@ artifacts/runs/osu_phase3_motion_smoothing/
 - hit rate;
 - useful clicks;
 - timing drift;
-- похожесть удачных эпизодов;
-- стабильность поведения между eval-запусками.
+- стабильность между eval-запусками;
+- отсутствие регресса на старых gate-картах.
 
 ## Phase 10 / Skill Memory Init
 
 Статус: планируется.
 
-Цель: сохранять только устойчивые успешные паттерны.
+Цель: сохранять устойчивые успешные паттерны.
 
 Возможные типы навыков:
 
-- jump;
+- slider follow;
+- reverse slider;
 - short chain;
-- slider follow.
+- spinner control;
+- simple jump/double.
 
 ## Phase 11 / Skill System + Selection
 
 Статус: планируется.
 
-Цель: использовать извлечённые навыки во время игры.
+Цель: использовать извлеченные навыки во время игры.
 
 Направления:
 
@@ -246,7 +255,7 @@ artifacts/runs/osu_phase3_motion_smoothing/
 
 Цель: повысить сложность карт и плотность паттернов.
 
-Возможные направления:
+Направления:
 
 - AR/OD выше текущих easy-карт;
 - streams;
@@ -267,66 +276,3 @@ artifacts/runs/osu_phase3_motion_smoothing/
 - стабильность;
 - перенос навыка;
 - качество моторики.
-# Update 2026-04-18: Phase 4.1 / Slider Follow Fix
-
-Проект не перезапускает osu RL pipeline с нуля. Новая активная ветка для sliders — `artifacts/runs/osu_phase4_slider_follow_fix/`, fine-tuning от `artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt`.
-
-Причина изменения: предыдущий Slider Intro научил policy стабильно брать slider head, но не сформировал follow behavior (`sl_drop ~= sl_head`, `sl_follow ~= 0`, `sl_fin = 0`). Phase 4.1 закрывает именно архитектурный gap: policy теперь получает явное состояние активного slider и отдельный мягкий reward за удержание follow, path tracking, ticks и finish.
-
-Это не финальный slider mastery. Цель этапа — начальное устойчивое slider-follow поведение без разрушения уже сильных circles/timing/aim. Подробности: `docs/osu/phase4_slider_follow_fix_status.md`.
-
-# Update 2026-04-18: Phase 5 / Slider Control
-
-Phase 5 is now implemented as a separate active fine-tuning branch after Phase 4.1.
-
-Start checkpoint:
-
-```text
-artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
-```
-
-Run folder:
-
-```text
-artifacts/runs/osu_phase5_slider_control/
-```
-
-The phase shifts slider training from "hit the head and briefly hold" to "control the full slider segment". It reduces the relative value of isolated `slider_head` and increases shaping around sustained inside-follow, path/tangent tracking, tick consistency, finish, long good-follow chains, curved segment control, and reverse-window recovery.
-
-New segment metrics include `sl_seg_q`, `sl_full`, `sl_partial`, `sl_rev`, `sl_rev_follow`, `sl_curve`, and `sl_curve_good`.
-
-Detailed status: `docs/osu/phase5_slider_control_status.md`.
-
-# Update 2026-04-19: Phase 6 Closed, Spica Main Baseline Reached
-
-Phase 6 / Spinner Control is now closed for the current project stage. The spinner curriculum produced a spinner-capable checkpoint line:
-
-```text
-artifacts/runs/osu_phase6_spinner_control/checkpoints/latest_spinner_control.pt
-artifacts/runs/osu_phase6_spinner_control/checkpoints/best_spinner_control.pt
-```
-
-After that, the project returned to the current main map:
-
-```text
-StylipS - Spica. (TV-size) (Lanturn) [Beginner-ka].osu
-```
-
-Spica fine-tuning now has its own independent checkpoint line:
-
-```text
-artifacts/runs/osu_spica_main_finetune/checkpoints/latest_spica_main.pt
-artifacts/runs/osu_spica_main_finetune/checkpoints/best_spica_main.pt
-```
-
-Representative eval after the transfer:
-
-```text
-hits=94 miss=0 clicks=27 good_t=0.889
-sl_inside_ratio=0.823 sl_seg_q=0.839
-spin_hold=1.000 spin_good_rad=1.000 spin_miss=0
-```
-
-The current main-map baseline is considered usable. Next major work should move toward Phase 7 / multi-map generalization from `best_spica_main.pt`, rather than continuing to optimize only Spica.
-
-Detailed status: `docs/osu/spica_main_finetune_status.md`.

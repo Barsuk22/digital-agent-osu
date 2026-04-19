@@ -1,37 +1,53 @@
 # Текущий статус проекта
 
-## Актуализация: Phase 3.5
-
-Phase 2 / Timing Refinement и Phase 3 / Aim Stability Refinement теперь считаются реализованной рабочей веткой refinement: она стартовала от `best_recoil.pt`, сохранялась отдельно в `artifacts/runs/osu_phase2_timing/` и дала checkpoint `best_timing.pt`, который можно использовать как сильную базу для следующей полировки.
-
-Текущая активная стадия — **Phase 3.5 / Post-hit Motion Smoothing**. Это не новая попытка обучить агента играть с нуля. Это короткий и осторожный fine-tuning от:
-
-```text
-artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt
-```
-
-Результаты сохраняются в отдельную ветку:
-
-```text
-artifacts/runs/osu_phase3_motion_smoothing/
-```
-
-Новые checkpoints:
-
-```text
-artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
-artifacts/runs/osu_phase3_motion_smoothing/checkpoints/latest_smooth.pt
-```
-
-Цель Phase 3.5 — убрать остаточный post-hit recoil: резкий отскок после клика, лишний jerk в первые кадры после попадания и случайную болтанку вместо мягкого выхода к следующей цели. У агента уже есть базовая обучаемость, timing refinement и aim stability; сейчас фокус именно на качестве моторики.
+Актуально на 2026-04-19.
 
 ## Кратко
 
-`digital_agent_osu_project` — модульный проект цифрового агента. osu-навык является отдельным skill module внутри более широкой архитектуры, где в будущем должны появляться память, skill memory, orchestration, world interfaces и другие навыки.
+`digital_agent_osu_project` - модульный проект цифрового агента. osu-навык является отдельным skill module, где агент обучается моторному поведению через reinforcement learning, а не через scripted bot логику.
 
-osu skill module уже не находится на уровне черновой песочницы. Базовая обучаемость достигнута: PPO-агент обучается на настоящей osu-карте, взаимодействует с объектами, сохраняет checkpoints, проходит eval и даёт replay для просмотра.
+osu skill module прошел важную точку: **Phase 7 / Multi-Map Generalization закрыта**. Агент стабильно играет несколько beginner/easy карт, удерживает timing, click discipline, spinner behavior и снова уверенно ведет sliders после исправления tight-follow.
 
-Текущая стадия разработки — Phase 3.5 / Post-hit Motion Smoothing поверх уже сильной timing/aim policy `best_timing.pt`.
+Текущий golden checkpoint:
+
+```text
+artifacts/runs/osu_phase7_multimap_generalization/checkpoints/best_multimap.pt
+```
+
+Следующая планируемая стадия:
+
+```text
+Phase 8 / Easy Generalization & Pattern Formation
+```
+
+## Главный итог Phase 7
+
+Финальный лучший training cycle:
+
+```text
+[cycle 0200] score=12.342
+mean_sel=8.956 min_sel=6.266 mean_hit=0.994
+sl_inside=0.985 sl_fin=0.968 sl_q=0.987 spin_miss=0
+```
+
+Финальные eval-прогоны на `best_multimap.pt`:
+
+```text
+Chikatto held-out: hits=126 miss=1 sl_inside=0.890 dpx=38.9 sl_seg_q=0.930
+Spica:            hits=99  miss=0 sl_inside=0.933 dpx=33.0 sl_seg_q=0.947
+Suzuki:           hits=85  miss=1 sl_inside=0.981 dpx=27.4 sl_seg_q=0.980
+MIMiNARI:         hits=91  miss=0 sl_inside=0.978 dpx=23.7 sl_seg_q=0.985
+noa:              hits=120 miss=1 sl_inside=0.992 dpx=23.9 sl_seg_q=0.994
+ONMYO-ZA:         hits=355 miss=1 sl_inside=0.948 dpx=32.0 sl_seg_q=0.958
+```
+
+`Sentimental Love` пока частичный перенос:
+
+```text
+hits=105 miss=6 sl_inside=0.695 dpx=57.1 sl_finish_rate=0.432 sl_seg_q=0.734
+```
+
+Это не блокер закрытия Phase 7. Наоборот, это хороший первый target для Phase 8.
 
 ## Статус фаз
 
@@ -39,71 +55,109 @@ osu skill module уже не находится на уровне черново
 
 Статус: закрыта.
 
-Закрывающие признаки:
+Сделано:
 
-- parser читает `.osu` карты;
-- environment даёт observation и принимает action;
-- judgement считает попадания, промахи, combo и accuracy;
-- replay записывается и воспроизводится;
-- pygame viewer показывает карту и действия агента.
+- parser `.osu`;
+- environment;
+- judgement;
+- replay;
+- pygame viewer.
 
 ### Phase 1 / Initial Learning / Base PPO Learning
 
-Статус: закрыта по смыслу как этап достижения базовой обучаемости.
+Статус: закрыта.
 
-Закрывающие признаки:
+Сделано:
 
-- есть PPO training loop;
-- policy обучается через rollout и reward;
-- агент играет по реальной карте;
-- есть попадания по объектам;
-- checkpoints сохраняются и загружаются;
-- eval использует deterministic policy;
-- результат eval сохраняется в replay.
+- PPO training loop;
+- Actor-Critic policy;
+- rollout buffer / GAE;
+- checkpoint save/load;
+- deterministic eval;
+- replay после eval.
 
 ### Phase 1.5 / Movement Polishing
 
-Статус: базовая recoil/movement polishing ветка закрыта как стартовая база для следующего refinement.
-
-Фокус:
-
-- motion smoothing;
-- anti-recoil после hit;
-- снижение резких импульсов движения;
-- улучшение useful click ratio;
-- развитие flow между объектами;
-- humanlike movement polishing;
-- дальнейшее reward shaping.
+Статус: закрыта как recoil/movement база.
 
 ### Phase 2 / Timing Refinement
 
-Статус: реализована и закрыта как рабочая timing-refinement база.
+Статус: закрыта как рабочая timing refinement ветка.
 
-Фокус:
+### Phase 3 / Aim Stability
 
-- загрузка весов из `best_recoil.pt`;
-- отдельный run folder `artifacts/runs/osu_phase2_timing/`;
-- timing metrics в train/eval;
-- мягкий timing bonus/penalty;
-- отдельный reward breakdown для timing.
+Статус: закрыта как рабочая aim stability ветка.
 
-### Phase 3 / Aim Stability Refinement
+### Phase 3.5 / Post-hit Motion Smoothing
 
-Статус: реализована и закрыта вместе с Phase 2 как рабочая aim-stability база.
+Статус: закрыта.
 
-Фокус:
+Цель была убрать резкий post-hit recoil и сделать выход к следующей цели более мягким.
 
-- pre-hit positioning;
-- near/far/settled/unstable click distinction;
-- micro-stability около цели;
-- post-hit exit quality;
-- отдельные aim и exit metrics.
+### Phase 4.1 / Slider Follow Fix
+
+Статус: закрыта.
+
+Цель была исправить ситуацию, где агент берет slider head, но не формирует устойчивый follow.
+
+### Phase 5 / Slider Control
+
+Статус: закрыта.
+
+Цель была перейти от "hit head and hold" к управлению полным slider segment.
+
+### Phase 6 / Spinner Control
+
+Статус: закрыта.
+
+Цель была добавить устойчивую spinner-моторику и диагностику.
+
+### Spica Main Fine-Tune
+
+Статус: закрыта как single-map baseline перед multi-map.
+
+### Phase 7 / Multi-Map Generalization
+
+Статус: закрыта.
+
+Закрывающие признаки:
+
+- агент играет несколько easy/beginner карт;
+- Spica baseline не разрушен;
+- held-out `Chikatto` проходит почти идеально;
+- sliders восстановлены после multi-map degradation;
+- best checkpoint выбирается по полному cycle score;
+- spinner behavior не разрушен.
+
+Подробности:
+
+```text
+docs/osu/phase7_multimap_generalization_status.md
+```
+
+### Phase 8 / Easy Generalization & Pattern Formation
+
+Статус: следующая планируемая стадия.
+
+Цель:
+
+- расширить easy/generalization pool;
+- довести `Sentimental Love` до уверенного slider-follow;
+- сохранить Phase 7 gate pool почти идеальным;
+- начать формировать короткие паттерны;
+- не использовать hard/dense карты как обязательный gate.
+
+План:
+
+```text
+docs/osu/phase8_easy_generalization_plan.md
+```
 
 ## Состояние osu skill module
 
 ### Parser
 
-Реализован parser для `.osu` файлов. Он извлекает metadata, difficulty, timing points, hit objects, audio/background filenames и строит внутренние модели для circles, sliders и spinners.
+Parser читает `.osu` файлы, metadata, difficulty, timing points, hit objects, audio/background/video events и строит внутренние модели circles/sliders/spinners.
 
 ### Environment
 
@@ -127,107 +181,41 @@ osu skill module уже не находится на уровне черново
 - spinner progress;
 - combo;
 - accuracy;
-- miss handling.
+- miss handling;
+- подробные метрики для train/eval.
 
-Логика достаточно функциональна для обучения, но не претендует на полную точность osu! lazer.
+Логика функциональна для RL-обучения, но не претендует на полную точность osu! lazer.
 
 ### Training
 
-`src/apps/train_osu.py` содержит полноценный PPO pipeline:
-
-- Actor-Critic model;
-- Normal distribution policy;
-- rollout buffer;
-- GAE;
-- PPO update;
-- reward shaping;
-- checkpoint save/load;
-- fine-tuning ветку Phase 2/3 для timing и aim stability refinement;
-- текущую Phase 3.5 ветку для post-hit motion smoothing.
+`src/apps/train_osu.py` содержит PPO pipeline и текущую Phase 7 конфигурацию. На момент закрытия Phase 7 лимит `updates=1000` достигнут, поэтому повторный запуск может сразу завершаться без новых update.
 
 ### Eval и replay
 
-`src/apps/eval_osu.py` сначала загружает phase3 smoothing checkpoint, выполняет deterministic rollout, сохраняет replay, печатает timing/aim summary и показывает результат через viewer. Если `best_smooth.pt` ещё не создан, eval откатывается к `best_timing.pt`, затем к `best_recoil.pt`.
+`src/apps/eval_osu.py` умеет загружать checkpoint, выполнять deterministic rollout, сохранять replay и печатать summary. Для явного выбора checkpoint и карты используются:
 
-`src/apps/replay_osu.py` открывает сохранённый eval replay.
-
-`src/apps/live_viewer_osu.py` использует простую `SimpleChasePolicy` для live-визуализации среды. Это демонстрационный viewer-runner, а не основной PPO eval.
-
-## Checkpoint-ветки
-
-Базовая ветка:
-
-- `best.pt`;
-- `latest.pt`.
-
-Recoil fine-tune ветка:
-
-- `best_recoil.pt`;
-- `latest_recoil.pt`.
-
-Phase 2/3 ветка:
-
-- `artifacts/runs/osu_phase2_timing/checkpoints/best_timing.pt`;
-- `artifacts/runs/osu_phase2_timing/checkpoints/latest_timing.pt`.
-
-Разделение важно: timing/aim refinement стартует от `best_recoil.pt`, но сохраняется отдельно и не затирает ни `best.pt`, ни `best_recoil.pt`.
+```powershell
+$env:OSU_EVAL_CHECKPOINT='...'
+$env:OSU_EVAL_MAP='...'
+python -m src.apps.eval_osu
+```
 
 ## Активные ограничения
 
 - карты и медиа не лежат в репозитории;
-- часть YAML-конфигов пока является заготовками;
-- `train_osu.py` сейчас содержит много конфигурации прямо в `TrainConfig`;
-- тестовая структура есть, но сами тесты в основном ещё не наполнены;
+- часть YAML-конфигов остается заготовками;
+- значимая часть параметров обучения пока в `TrainConfig`;
+- тестовая структура есть, но покрытие еще неполное;
 - slider geometry и renderer упрощены;
-- multi-map generalization ещё не закрыта;
-- skill memory ещё не подключена к osu-поведению.
+- Phase 8 еще не реализована как отдельная training branch;
+- skill memory еще не подключена к osu-поведению.
 
 ## Ближайшие направления
 
-- стабилизировать Phase 3.5 smoothing fine-tune ветку;
-- сравнить `best_timing.pt` и `best_smooth.pt` на eval/replay;
-- расширить eval-метрики и сохранить их в metrics/logs;
-- аккуратно вынести параметры Phase 2/3 и Phase 3.5 в конфиги;
-- аккуратно вынести часть параметров в конфиги;
-- добавить тесты для parser, judgement и replay;
-- перейти к нескольким easy-картам;
-- подготовить stability gate для будущего skill extraction.
-# Обновление 2026-04-18: Phase 4.1 / Slider Follow Fix
-
-Текущий osu-этап переведен на отдельную ветку slider-follow fine-tuning:
-
-```text
-artifacts/runs/osu_phase4_slider_follow_fix/
-```
-
-Стартовый checkpoint:
-
-```text
-artifacts/runs/osu_phase3_motion_smoothing/checkpoints/best_smooth.pt
-```
-
-Причина: предыдущая slider-intro попытка показывала хороший `sl_head`, но почти нулевой follow и finish. Теперь observation расширен явным состоянием активного slider, reward учит удерживать follow circle и идти по slider ball, а train/eval печатают отдельные slider-метрики.
-
-Статус честный: это intro/fix стадия, не финальная mastery по всем slider cases. Circle/timing/aim pipeline сохраняется и не должен перезаписываться.
-
-# Обновление 2026-04-18: Phase 5 / Slider Control
-
-Активная slider-ветка переведена на Phase 5 / Slider Control.
-
-Phase 5 стартует из:
-
-```text
-artifacts/runs/osu_phase4_slider_follow_fix/checkpoints/best_slider_follow.pt
-```
-
-и сохраняется отдельно:
-
-```text
-artifacts/runs/osu_phase5_slider_control/
-```
-
-Статус: новая полноценная фаза реализована, но еще требует train/eval прогонов для подбора устойчивых весов. Цель фазы - не просто оживить sliders, а научить policy стабильнее вести slider segments: дольше держаться внутри follow, собирать ticks, чаще доходить до finish, лучше переживать curved path changes и reverse windows.
-
-Новые ключевые метрики: `sl_seg_q`, `sl_full`, `sl_partial`, `sl_rev`, `sl_rev_follow`, `sl_curve`, `sl_curve_good`.
-
-Подробности: `docs/osu/phase5_slider_control_status.md`.
+1. Зафиксировать Phase 7 `best_multimap.pt` как golden baseline.
+2. Создать отдельную Phase 8 run branch/config.
+3. Стартовать Phase 8 от `best_multimap.pt`.
+4. Добавить `Sentimental Love` и `Chikatto` в более широкий easy curriculum.
+5. Держать старый Phase 7 pool как regression gate.
+6. Использовать `INTERNET YAMERO` и `Animal hard` только как stress-only eval, не как критерий успеха.
+7. После Phase 8 думать о плотных картах и более сложных паттернах.

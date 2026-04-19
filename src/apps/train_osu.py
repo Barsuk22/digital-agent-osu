@@ -20,12 +20,13 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 @dataclass(slots=True)
 class TrainConfig:
     beatmap_path: str = str(PATHS.active_map)
-    phase_name: str = "phase6_spica_main_finetune"
+    train_beatmap_paths: tuple[str, ...] = field(default_factory=lambda: tuple(str(path) for path in PATHS.phase7_train_maps))
+    phase_name: str = "phase7_multimap_generalization"
 
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 700
+    updates: int = 1000
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_ratio: float = 0.10
@@ -45,16 +46,19 @@ class TrainConfig:
     slider_hold_threshold: float = 0.45
     spinner_hold_threshold: float = 0.45
 
-    source_checkpoint_path: str = str(PATHS.phase6_spinner_latest_checkpoint)
-    run_dir: str = str(PATHS.osu_spica_main_finetune_run_dir)
-    checkpoint_dir: str = str(PATHS.spica_main_checkpoints_dir)
-    logs_dir: str = str(PATHS.spica_main_logs_dir)
-    metrics_dir: str = str(PATHS.spica_main_metrics_dir)
-    replays_dir: str = str(PATHS.spica_main_replays_dir)
-    eval_dir: str = str(PATHS.spica_main_eval_dir)
-    latest_ckpt_name: str = "latest_spica_main.pt"
-    best_ckpt_name: str = "best_spica_main.pt"
+    source_checkpoint_path: str = str(PATHS.spica_main_golden_checkpoint)
+    run_dir: str = str(PATHS.osu_phase7_multimap_run_dir)
+    checkpoint_dir: str = str(PATHS.phase7_multimap_checkpoints_dir)
+    logs_dir: str = str(PATHS.phase7_multimap_logs_dir)
+    metrics_dir: str = str(PATHS.phase7_multimap_metrics_dir)
+    replays_dir: str = str(PATHS.phase7_multimap_replays_dir)
+    eval_dir: str = str(PATHS.phase7_multimap_eval_dir)
+    latest_ckpt_name: str = "latest_multimap.pt"
+    best_ckpt_name: str = "best_multimap.pt"
     save_every: int = 10
+    normalize_best_reward_by_objects: bool = True
+    best_selection_mode: str = "cycle_mean_min_slider_v1"
+    full_console_log: bool = False
 
     # ------------------------------------------------------------
     # Outcome shaping
@@ -175,14 +179,19 @@ class TrainConfig:
     # ------------------------------------------------------------
     slider_follow_hold_bonus: float = 0.020
     slider_follow_close_bonus: float = 0.014
+    slider_tight_follow_radius_mult: float = 0.62
+    slider_tight_follow_bonus: float = 0.026
+    slider_tight_follow_close_bonus: float = 0.024
+    slider_loose_follow_penalty: float = 0.010
+    slider_hold_far_penalty_scale: float = 0.014
     slider_path_delta_scale: float = 0.060
-    slider_path_negative_scale: float = 0.008
+    slider_path_negative_scale: float = 0.014
     slider_progress_scale: float = 0.035
     slider_acquire_bonus: float = 0.010
     slider_hold_click_bonus: float = 0.006
     slider_early_hold_bonus: float = 0.022
-    slider_lost_follow_penalty: float = 0.006
-    slider_escape_penalty: float = 0.004
+    slider_lost_follow_penalty: float = 0.014
+    slider_escape_penalty: float = 0.010
     slider_jerk_penalty_scale: float = 0.002
     slider_click_release_penalty: float = 0.010
     slider_early_release_penalty: float = 0.018
@@ -201,8 +210,8 @@ class TrainConfig:
     slider_inside_sustain_bonus: float = 0.010
     slider_head_deemphasis_penalty: float = 0.080
     slider_tick_consistency_bonus: float = 0.045
-    slider_finish_control_bonus: float = 0.280
-    slider_drop_control_penalty: float = 0.035
+    slider_finish_control_bonus: float = 0.340
+    slider_drop_control_penalty: float = 0.080
     slider_long_chain_bonus: float = 0.018
     slider_tangent_direction_bonus: float = 0.022
     slider_tangent_wrong_penalty: float = 0.014
@@ -703,8 +712,8 @@ def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
     return np.asarray(values, dtype=np.float32)
 
 
-def build_env(cfg: TrainConfig) -> OsuEnv:
-    beatmap = parse_beatmap(cfg.beatmap_path)
+def build_env(cfg: TrainConfig, beatmap_path: str | Path | None = None) -> OsuEnv:
+    beatmap = parse_beatmap(beatmap_path or cfg.beatmap_path)
     env = OsuEnv(
         beatmap=beatmap,
         dt_ms=cfg.dt_ms,
@@ -715,6 +724,144 @@ def build_env(cfg: TrainConfig) -> OsuEnv:
         spinner_hold_threshold=cfg.spinner_hold_threshold,
     )
     return env
+
+
+def select_train_beatmap_path(cfg: TrainConfig, update_idx: int) -> str:
+    if not cfg.train_beatmap_paths:
+        return cfg.beatmap_path
+    return cfg.train_beatmap_paths[(update_idx - 1) % len(cfg.train_beatmap_paths)]
+
+
+def checkpoint_selection_reward(cfg: TrainConfig, stats: EpisodeStats, env: OsuEnv) -> float:
+    if not cfg.normalize_best_reward_by_objects:
+        return stats.reward_total
+    return stats.reward_total / max(1, len(env.beatmap.hit_objects))
+
+
+@dataclass(slots=True)
+class CycleMapScore:
+    update_idx: int
+    map_label: str
+    selection_reward: float
+    hit_rate: float
+    miss_count: int
+    slider_inside_ratio: float
+    slider_finish_rate: float
+    slider_segment_quality: float
+    spinner_miss_count: int
+
+
+def beatmap_label(env: OsuEnv) -> str:
+    return f"{env.beatmap.artist} - {env.beatmap.title} [{env.beatmap.version}]"
+
+
+def short_label(label: str, max_len: int = 44) -> str:
+    if len(label) <= max_len:
+        return label
+    return f"{label[: max_len - 3]}..."
+
+
+def build_cycle_map_score(
+    update_idx: int,
+    selection_reward: float,
+    stats: EpisodeStats,
+    env: OsuEnv,
+) -> CycleMapScore:
+    return CycleMapScore(
+        update_idx=update_idx,
+        map_label=beatmap_label(env),
+        selection_reward=selection_reward,
+        hit_rate=stats.hit_rate,
+        miss_count=stats.miss_count,
+        slider_inside_ratio=stats.slider_inside_ratio,
+        slider_finish_rate=stats.slider_finish_rate,
+        slider_segment_quality=stats.slider_segment_quality_mean,
+        spinner_miss_count=stats.spinner_miss_count,
+    )
+
+
+def cycle_selection_score(scores: list[CycleMapScore]) -> float:
+    selection_values = [score.selection_reward for score in scores]
+    hit_values = [score.hit_rate for score in scores]
+    slider_inside_values = [score.slider_inside_ratio for score in scores]
+    slider_finish_values = [score.slider_finish_rate for score in scores]
+    slider_quality_values = [score.slider_segment_quality for score in scores]
+    spinner_misses = sum(score.spinner_miss_count for score in scores)
+
+    mean_selection = float(np.mean(selection_values))
+    min_selection = float(np.min(selection_values))
+    mean_hit = float(np.mean(hit_values))
+    mean_slider_inside = float(np.mean(slider_inside_values))
+    mean_slider_finish = float(np.mean(slider_finish_values))
+    mean_slider_quality = float(np.mean(slider_quality_values))
+
+    return (
+        mean_selection
+        + 0.25 * min_selection
+        + 0.35 * mean_hit
+        + 0.45 * mean_slider_inside
+        + 0.45 * mean_slider_finish
+        + 0.60 * mean_slider_quality
+        - 0.08 * spinner_misses
+    )
+
+
+def print_cycle_summary(
+    cycle_idx: int,
+    cycle_score: float,
+    best_reward: float,
+    scores: list[CycleMapScore],
+) -> None:
+    selection_values = [score.selection_reward for score in scores]
+    print(
+        f"[cycle {cycle_idx:04d}] "
+        f"score={cycle_score:7.3f} "
+        f"best={best_reward:7.3f} "
+        f"mean_sel={float(np.mean(selection_values)):7.3f} "
+        f"min_sel={float(np.min(selection_values)):7.3f} "
+        f"mean_hit={float(np.mean([score.hit_rate for score in scores])):.3f} "
+        f"sl_inside={float(np.mean([score.slider_inside_ratio for score in scores])):.3f} "
+        f"sl_fin={float(np.mean([score.slider_finish_rate for score in scores])):.3f} "
+        f"sl_q={float(np.mean([score.slider_segment_quality for score in scores])):.3f} "
+        f"spin_miss={sum(score.spinner_miss_count for score in scores)}"
+    )
+    for score in scores:
+        print(
+            f"  - {short_label(score.map_label):44s} "
+            f"sel={score.selection_reward:7.3f} "
+            f"hit={score.hit_rate:.3f} "
+            f"miss={score.miss_count:3d} "
+            f"sl={score.slider_inside_ratio:.3f} "
+            f"fin={score.slider_finish_rate:.3f} "
+            f"q={score.slider_segment_quality:.3f} "
+            f"spin_miss={score.spinner_miss_count}"
+        )
+
+
+def print_concise_update(
+    update_idx: int,
+    selection_reward: float,
+    stats: EpisodeStats,
+    env: OsuEnv,
+    train_metrics: dict[str, float],
+) -> None:
+    print(
+        f"[update {update_idx:04d}] "
+        f"{short_label(beatmap_label(env), 48):48s} "
+        f"reward={stats.reward_total:8.1f} "
+        f"sel={selection_reward:6.3f} "
+        f"hit={stats.hit_rate:.3f} "
+        f"miss={stats.miss_count:3d} "
+        f"clicks={stats.total_clicks:3d} "
+        f"useful={stats.useful_click_ratio:.3f} "
+        f"tmed={stats.timing_error_median_ms:5.1f} "
+        f"sl={stats.slider_inside_ratio:.3f} "
+        f"fin={stats.slider_finish_rate:.3f} "
+        f"q={stats.slider_segment_quality_mean:.3f} "
+        f"dpx={stats.slider_follow_distance_mean_px:5.1f} "
+        f"spin_miss={stats.spinner_miss_count:2d} "
+        f"kl={train_metrics['kl']:.5f}"
+    )
 
 
 def clamp(value: float, low: float, high: float) -> float:
@@ -1179,9 +1326,11 @@ def phase23_shaping_reward(
         prev_dist = prev_obs.slider.distance_to_target
         next_dist = next_obs.slider.distance_to_target
         follow_radius = max(1.0, prev_obs.slider.follow_radius)
+        tight_follow_radius = max(1.0, follow_radius * cfg.slider_tight_follow_radius_mult)
         geom_inside = prev_obs.slider.inside_follow > 0.5
         click_held = action.click_strength >= cfg.slider_hold_threshold
         inside = geom_inside and click_held
+        tight_inside = click_held and prev_dist <= tight_follow_radius
         active_step_idx = motion_state.slider_active_steps
         in_post_head_window = active_step_idx < cfg.slider_post_head_hold_window_steps
         near_follow = prev_dist <= follow_radius * 2.0
@@ -1248,10 +1397,17 @@ def phase23_shaping_reward(
 
         if inside:
             closeness = max(0.0, 1.0 - prev_dist / follow_radius)
+            tight_closeness = max(0.0, 1.0 - prev_dist / tight_follow_radius)
             breakdown.slider += cfg.slider_follow_hold_bonus * step_scale
             breakdown.slider += cfg.slider_follow_close_bonus * closeness * step_scale
             breakdown.slider += cfg.slider_inside_sustain_bonus * min(1.0, motion_state.slider_inside_chain / 6.0)
             breakdown.slider += cfg.slider_long_chain_bonus * min(1.0, motion_state.slider_inside_chain / 12.0)
+            if tight_inside:
+                breakdown.slider += cfg.slider_tight_follow_bonus * step_scale
+                breakdown.slider += cfg.slider_tight_follow_close_bonus * tight_closeness * step_scale
+            else:
+                loose_ratio = min(1.0, max(0.0, (prev_dist - tight_follow_radius) / max(1.0, follow_radius - tight_follow_radius)))
+                breakdown.slider -= cfg.slider_loose_follow_penalty * loose_ratio * step_scale
             breakdown.slider_inside_sample = 1
             breakdown.slider_dist_when_inside = prev_dist
             breakdown.slider_progress_while_inside = breakdown.slider_progress_while_hold
@@ -1273,6 +1429,8 @@ def phase23_shaping_reward(
 
             if click_held:
                 breakdown.slider += cfg.slider_hold_click_bonus
+                hold_far_ratio = min(1.0, prev_dist / max(1.0, follow_radius * 3.0))
+                breakdown.slider -= cfg.slider_hold_far_penalty_scale * hold_far_ratio
                 good_tracking = (
                     breakdown.slider_follow_gain >= cfg.slider_track_good_gain_threshold
                     or (has_alignment and target_alignment >= cfg.slider_track_good_alignment)
@@ -1948,6 +2106,7 @@ def save_checkpoint(
 def maybe_load_checkpoint(
     model: ActorCritic,
     optimizer: optim.Optimizer,
+    cfg: TrainConfig,
     path: Path,
     device: torch.device,
     reset_training_state: bool = False,
@@ -1987,6 +2146,14 @@ def maybe_load_checkpoint(
     print(f"LOADED CHECKPOINT: {path}")
     if reset_training_state:
         return 0, -1e18
+    payload_config = payload.get("config") or {}
+    payload_best_mode = payload_config.get("best_selection_mode")
+    if payload_best_mode != cfg.best_selection_mode:
+        print(
+            f"[best metric reset] checkpoint has {payload_best_mode!r}, "
+            f"current is {cfg.best_selection_mode!r}"
+        )
+        return update_idx, -1e18
     return update_idx, best_reward
 
 
@@ -2008,7 +2175,7 @@ def main() -> None:
     ensure_run_dirs(cfg)
 
     device = torch.device(cfg.device)
-    env = build_env(cfg)
+    env = build_env(cfg, cfg.train_beatmap_paths[0] if cfg.train_beatmap_paths else cfg.beatmap_path)
 
     obs_dim = len(obs_to_numpy(env.reset()))
     model = ActorCritic(obs_dim=obs_dim, hidden_dim=cfg.hidden_dim).to(device)
@@ -2032,6 +2199,7 @@ def main() -> None:
     start_update, best_reward = maybe_load_checkpoint(
         model,
         optimizer,
+        cfg,
         resume_ckpt,
         device,
         reset_training_state=not resume_from_latest,
@@ -2041,38 +2209,54 @@ def main() -> None:
     # а начать свою отдельную "лучшую" линию
 
     print("=" * 100)
-    print("PHASE 6 SPINNER CONTROL FINE-TUNING STARTED")
+    print("PHASE 7 MULTI-MAP GENERALIZATION STARTED")
     print(f"Phase: {cfg.phase_name}")
-    print(f"Map: {env.beatmap.artist} - {env.beatmap.title} [{env.beatmap.version}]")
+    print("Train maps:")
+    for index, path in enumerate(cfg.train_beatmap_paths, start=1):
+        parsed = parse_beatmap(path)
+        print(f"  {index}. {parsed.artist} - {parsed.title} [{parsed.version}]")
     print(f"Source checkpoint: {resume_ckpt}")
     print(f"Run dir: {Path(cfg.run_dir)}")
     print(f"Save latest: {latest_ckpt}")
     print(f"Save best: {best_ckpt}")
+    print(f"Best mode: {cfg.best_selection_mode}")
+    print(f"Console: {'full' if cfg.full_console_log else 'concise'}")
     print(f"Observation dim: {obs_dim}")
     print("Action dim: 3")
     print(f"Objects: {len(env.beatmap.hit_objects)}")
     print(f"Device: {device}")
     print("=" * 100)
 
+    cycle_scores: list[CycleMapScore] = []
+    train_map_count = max(1, len(cfg.train_beatmap_paths))
+
     for update_idx in range(start_update + 1, cfg.updates + 1):
+        env = build_env(cfg, select_train_beatmap_path(cfg, update_idx))
         buffer = RolloutBuffer()
         stats = run_episode(cfg, env, model, device, buffer)
 
         train_metrics = ppo_update(cfg, model, optimizer, buffer, device)
+        selection_reward = checkpoint_selection_reward(cfg, stats, env)
 
-        if stats.reward_total > best_reward:
-            best_reward = stats.reward_total
-            save_checkpoint(
-                model=model,
-                optimizer=optimizer,
-                cfg=cfg,
-                path=best_ckpt,
-                update_idx=update_idx,
-                best_reward=best_reward,
-            )
-            print(f"[best saved] {best_ckpt}")
+        cycle_scores.append(build_cycle_map_score(update_idx, selection_reward, stats, env))
+        if len(cycle_scores) >= train_map_count:
+            cycle_idx = update_idx // train_map_count
+            cycle_score = cycle_selection_score(cycle_scores)
+            print_cycle_summary(cycle_idx, cycle_score, best_reward, cycle_scores)
+            if cycle_score > best_reward:
+                best_reward = cycle_score
+                save_checkpoint(
+                    model=model,
+                    optimizer=optimizer,
+                    cfg=cfg,
+                    path=best_ckpt,
+                    update_idx=update_idx,
+                    best_reward=best_reward,
+                )
+                print(f"[best saved cycle] {best_ckpt}")
+            cycle_scores.clear()
 
-        if update_idx % cfg.save_every == 0 or update_idx == 1:
+        if update_idx % cfg.save_every == 0 or update_idx == start_update + 1:
             save_checkpoint(
                 model=model,
                 optimizer=optimizer,
@@ -2082,9 +2266,15 @@ def main() -> None:
                 best_reward=best_reward,
             )
 
+        print_concise_update(update_idx, selection_reward, stats, env, train_metrics)
+        if not cfg.full_console_log:
+            continue
+
         print(
             f"[update {update_idx:04d}] "
+            f"map={beatmap_label(env)} "
             f"reward={stats.reward_total:8.3f} "
+            f"sel={selection_reward:7.3f} "
             f"env={stats.env_reward_total:8.3f} "
             f"shape={stats.shaping_reward_total:8.3f} "
             f"hit_rate={stats.hit_rate:.3f} "
@@ -2194,8 +2384,8 @@ def main() -> None:
         best_reward=best_reward,
     )
     print(f"[saved latest] {latest_ckpt}")
-    print(f"[saved best] {best_ckpt}")
-    print(f"[best reward] {best_reward:.3f}")
+    print(f"[best checkpoint] {best_ckpt}")
+    print(f"[best cycle score] {best_reward:.3f}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 window_width: 1600
 window_height: 900
 fps: 60
+video_fps: 24
 
 background_dim_alpha: 150
 playfield_pad_x: 80

@@ -106,6 +106,9 @@ class ParsedBeatmap:
     audio_path: Optional[Path]
     background_filename: Optional[str]
     background_path: Optional[Path]
+    video_filename: Optional[str]
+    video_path: Optional[Path]
+    video_start_time_ms: float
     title: str
     artist: str
     version: str

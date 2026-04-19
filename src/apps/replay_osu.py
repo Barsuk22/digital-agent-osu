@@ -10,8 +10,10 @@ from src.core.config.paths import PATHS
 
 
 def main() -> None:
-    beatmap_path = PATHS.active_map
-    replay_path = PATHS.spica_main_best_eval_replay
+    beatmap_path = PATHS.phase7_eval_maps[0]
+    replay_path = PATHS.phase7_multimap_best_eval_replay
+    if not replay_path.exists() and PATHS.spica_main_best_eval_replay.exists():
+        replay_path = PATHS.spica_main_best_eval_replay
     if not replay_path.exists() and PATHS.phase6_spinner_best_eval_replay.exists():
         replay_path = PATHS.phase6_spinner_best_eval_replay
     if not replay_path.exists() and PATHS.phase5_slider_best_eval_replay.exists():

@@ -203,6 +203,21 @@ def parse_background_filename(events_lines: List[str]) -> Optional[str]:
     return None
 
 
+def parse_video_event(events_lines: List[str]) -> Tuple[Optional[str], float]:
+    patterns = (
+        re.compile(r'^\s*Video\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*"([^"]+)"', re.IGNORECASE),
+        re.compile(r'^\s*1\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*"([^"]+)"'),
+    )
+    for line in events_lines:
+        if not line or line.startswith("//"):
+            continue
+        for pattern in patterns:
+            match = pattern.match(line)
+            if match:
+                return match.group(2), float(match.group(1))
+    return None, 0.0
+
+
 def resolve_audio_path(beatmap_dir: Path, audio_filename: str) -> Optional[Path]:
     if audio_filename:
         candidate = beatmap_dir / audio_filename
@@ -214,6 +229,20 @@ def resolve_audio_path(beatmap_dir: Path, audio_filename: str) -> Optional[Path]
         candidate = beatmap_dir / name
         if candidate.exists():
             return candidate
+
+    return None
+
+
+def resolve_video_path(beatmap_dir: Path, video_filename: Optional[str]) -> Optional[Path]:
+    if video_filename:
+        candidate = beatmap_dir / video_filename
+        if candidate.exists():
+            return candidate
+
+    for ext in ("*.mp4", "*.avi", "*.mkv", "*.mov", "*.wmv"):
+        matches = list(beatmap_dir.glob(ext))
+        if matches:
+            return matches[0]
 
     return None
 
@@ -253,7 +282,9 @@ def parse_beatmap(path: str | Path) -> ParsedBeatmap:
     )
 
     audio_filename = general.get("AudioFilename", "")
-    background_filename = parse_background_filename(sections.get("Events", []))
+    events_lines = sections.get("Events", [])
+    background_filename = parse_background_filename(events_lines)
+    video_filename, video_start_time_ms = parse_video_event(events_lines)
 
     return ParsedBeatmap(
         beatmap_path=beatmap_path,
@@ -262,6 +293,9 @@ def parse_beatmap(path: str | Path) -> ParsedBeatmap:
         audio_path=resolve_audio_path(beatmap_dir, audio_filename),
         background_filename=background_filename,
         background_path=resolve_background_path(beatmap_dir, background_filename),
+        video_filename=video_filename,
+        video_path=resolve_video_path(beatmap_dir, video_filename),
+        video_start_time_ms=video_start_time_ms,
         title=metadata.get("Title", ""),
         artist=metadata.get("Artist", ""),
         version=metadata.get("Version", ""),

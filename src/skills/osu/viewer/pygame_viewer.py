@@ -11,6 +11,11 @@ from typing import Callable, Optional
 import pygame
 import pygame.gfxdraw
 
+try:
+    import cv2  # type: ignore
+except Exception:
+    cv2 = None
+
 from src.skills.osu.domain.math_utils import (
     OSU_PLAYFIELD_HEIGHT,
     OSU_PLAYFIELD_WIDTH,
@@ -35,6 +40,7 @@ class ViewerConfig:
     window_width: int = 1600
     window_height: int = 900
     fps: int = 60
+    video_fps: int = 24
     background_dim_alpha: int = 150
     playfield_pad_x: int = 80
     playfield_pad_y: int = 60
@@ -95,6 +101,12 @@ class OsuViewer:
         self.combo_pop_timer = 0.0
         self.playfield_rect = self._compute_playfield_rect()
         self.background_surface = self._load_background_surface()
+        self.video_status_message: str | None = None
+        self.video_capture = self._load_video_capture()
+        self.video_surface: pygame.Surface | None = None
+        self.video_last_time_ms: float = -1.0
+        self.video_last_update_ms: float = -1e18
+        self.video_frame_interval_ms: float = 1000.0 / max(1, int(self.config.video_fps))
         self.music_loaded = False
         self.cursor_trail: list[tuple[int, int]] = []
 
@@ -177,6 +189,53 @@ class OsuViewer:
             image,
             (self.config.window_width, self.config.window_height),
         )
+
+    def _load_video_capture(self):
+        video_path = self.env.beatmap.video_path
+        if video_path is None:
+            return None
+        if not video_path.exists():
+            self.video_status_message = f"Video file not found: {video_path.name}"
+            print(f"[video unavailable] {self.video_status_message}")
+            return None
+        if cv2 is None:
+            self.video_status_message = "Video needs opencv-python (cv2) in this Python environment"
+            print(f"[video unavailable] {self.video_status_message}: {video_path}")
+            return None
+
+        capture = cv2.VideoCapture(str(video_path))
+        if not capture.isOpened():
+            capture.release()
+            self.video_status_message = f"Video codec could not be opened: {video_path.name}"
+            print(f"[video unavailable] {self.video_status_message}")
+            return None
+        print(f"[video loaded] {video_path}")
+        return capture
+
+    def _video_surface_for_time(self) -> pygame.Surface | None:
+        if cv2 is None or self.video_capture is None:
+            return None
+
+        video_time_ms = self.env.time_ms - self.env.beatmap.video_start_time_ms
+        if video_time_ms < 0.0:
+            return None
+        if self.video_surface is not None and video_time_ms - self.video_last_update_ms < self.video_frame_interval_ms:
+            return self.video_surface
+
+        if self.video_surface is None or video_time_ms < self.video_last_time_ms or video_time_ms - self.video_last_time_ms > 1000.0:
+            self.video_capture.set(cv2.CAP_PROP_POS_MSEC, max(0.0, video_time_ms))
+
+        ok, frame = self.video_capture.read()
+        if not ok:
+            return self.video_surface
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (self.config.window_width, self.config.window_height))
+        surface = pygame.image.frombuffer(frame.tobytes(), frame.shape[1::-1], "RGB").convert()
+        self.video_surface = surface
+        self.video_last_time_ms = video_time_ms
+        self.video_last_update_ms = video_time_ms
+        return surface
 
     def _load_music(self) -> None:
         if self.music_loaded:
@@ -766,10 +825,18 @@ class OsuViewer:
         pygame.draw.circle(self.screen, (255, 255, 255), (cx, cy), inner_r, width=3)
 
     def _draw_background(self) -> None:
-        if self.background_surface is not None:
+        video_surface = self._video_surface_for_time()
+        if video_surface is not None:
+            self.screen.blit(video_surface, (0, 0))
+        elif self.background_surface is not None:
             self.screen.blit(self.background_surface, (0, 0))
         else:
             self.screen.fill((12, 16, 28))
+            if self.video_status_message is not None:
+                font = pygame.font.SysFont("Segoe UI", 22)
+                message = font.render(self.video_status_message, True, (230, 235, 245))
+                rect = message.get_rect(center=(self.config.window_width // 2, self.config.window_height // 2))
+                self.screen.blit(message, rect)
 
         dim = pygame.Surface((self.config.window_width, self.config.window_height), pygame.SRCALPHA)
         dim.fill((0, 0, 0, self.config.background_dim_alpha))

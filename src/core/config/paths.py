@@ -50,12 +50,95 @@ class OsuPaths:
         return self.spica_dir / "StylipS - Spica. (TV-size) (Lanturn) [Beginner-ka].osu"
 
     @property
+    def suzuki_dame_dir(self) -> Path:
+        return self.maps_dir / "Suzuki Minori - Dame wa Dame"
+
+    @property
+    def suzuki_dame_beginner_map(self) -> Path:
+        return self.suzuki_dame_dir / "Suzuki Minori - Dame wa Dame (TV Size) (chapter) [maikayuii's Beginner].osu"
+
+    @property
+    def miminari_itowanai_dir(self) -> Path:
+        return self.maps_dir / "MIMiNARI - Itowanai feat. Tomita Miyu, Ichinose Kana"
+
+    @property
+    def miminari_itowanai_easy_map(self) -> Path:
+        return (
+            self.miminari_itowanai_dir
+            / "MIMiNARI - Itowanai feat. Tomita Miyu, Ichinose Kana (TV Size) (Pata-Mon) [Teages's Easy].osu"
+        )
+
+    @property
+    def noa_megane_dir(self) -> Path:
+        return self.maps_dir / "noa - Megane o Hazushite"
+
+    @property
+    def noa_megane_easy_map(self) -> Path:
+        return self.noa_megane_dir / "noa - Megane o Hazushite (TV Size) (Pata-Mon) [Easy].osu"
+
+    @property
+    def onmyo_kouga_dir(self) -> Path:
+        return self.maps_dir / "ONMYO-ZA - Kouga Ninpouchou"
+
+    @property
+    def onmyo_kouga_easy_map(self) -> Path:
+        return self.onmyo_kouga_dir / "ONMYO-ZA - Kouga Ninpouchou (App) [JauiPlaY's Easy].osu"
+
+    @property
     def sentiment_dir(self) -> Path:
         return self.maps_dir / "Sati Akura - Sentimental Love"
 
     @property
     def sentiment_easy_map(self) -> Path:
         return self.sentiment_dir / "Sati Akura - Sentimental Love (TV Size) (Nao Tomori) [Myxo's Easy].osu"
+
+    @property
+    def chikatto_dir(self) -> Path:
+        return self.maps_dir / "Sati Akura - Chikatto Chika Chika"
+
+    @property
+    def chikatto_easy_map(self) -> Path:
+        return self.chikatto_dir / "Sati Akura - Chikatto Chika Chika (-Mikan) [Easy].osu"
+
+    @property
+    def animal_dir(self) -> Path:
+        return self.maps_dir / "Sati Akura - Animal"
+
+    @property
+    def animal_hard_map(self) -> Path:
+        return self.animal_dir / "Sati Akura - Animal (AltheaFran) [Even if it's ugly, that's the way I want it.].osu"
+
+    @property
+    def internet_yamero_dir(self) -> Path:
+        return self.maps_dir / "Sati Akura - INTERNET YAMERO"
+
+    @property
+    def internet_yamero_easy_map(self) -> Path:
+        return self.internet_yamero_dir / "Sati Akura - INTERNET YAMERO (BAN BLAT) [Easy].osu"
+
+    @property
+    def phase7_train_maps(self) -> tuple[Path, ...]:
+        return (
+            self.beginner_ka_map,
+            self.suzuki_dame_beginner_map,
+            self.miminari_itowanai_easy_map,
+            self.noa_megane_easy_map,
+            self.onmyo_kouga_easy_map,
+        )
+
+    @property
+    def phase7_eval_maps(self) -> tuple[Path, ...]:
+        return (
+            # self.sentiment_easy_map,
+            self.chikatto_easy_map,
+            # self.beginner_ka_map,
+            # self.suzuki_dame_beginner_map,
+            # self.miminari_itowanai_easy_map,
+            # self.noa_megane_easy_map,
+            # self.onmyo_kouga_easy_map,
+            # self.animal_hard_map,
+            # self.internet_yamero_easy_map,
+        )
 
     @property
     def spinner_training_dir(self) -> Path:
@@ -103,6 +186,10 @@ class OsuPaths:
     @property
     def osu_spica_main_finetune_run_dir(self) -> Path:
         return self.runs_dir / "osu_spica_main_finetune"
+
+    @property
+    def osu_phase7_multimap_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase7_multimap_generalization"
 
     @property
     def checkpoints_dir(self) -> Path:
@@ -233,6 +320,26 @@ class OsuPaths:
         return self.osu_spica_main_finetune_run_dir / "eval"
 
     @property
+    def phase7_multimap_checkpoints_dir(self) -> Path:
+        return self.osu_phase7_multimap_run_dir / "checkpoints"
+
+    @property
+    def phase7_multimap_logs_dir(self) -> Path:
+        return self.osu_phase7_multimap_run_dir / "logs"
+
+    @property
+    def phase7_multimap_metrics_dir(self) -> Path:
+        return self.osu_phase7_multimap_run_dir / "metrics"
+
+    @property
+    def phase7_multimap_replays_dir(self) -> Path:
+        return self.osu_phase7_multimap_run_dir / "replays"
+
+    @property
+    def phase7_multimap_eval_dir(self) -> Path:
+        return self.osu_phase7_multimap_run_dir / "eval"
+
+    @property
     def latest_checkpoint(self) -> Path:
         return self.checkpoints_dir / "latest_recoil.pt"
 
@@ -289,6 +396,18 @@ class OsuPaths:
         return self.spica_main_checkpoints_dir / "best_spica_main.pt"
 
     @property
+    def spica_main_golden_checkpoint(self) -> Path:
+        return self.spica_main_checkpoints_dir / "golden_spica_main.pt"
+
+    @property
+    def phase7_multimap_latest_checkpoint(self) -> Path:
+        return self.phase7_multimap_checkpoints_dir / "latest_multimap.pt"
+
+    @property
+    def phase7_multimap_best_checkpoint(self) -> Path:
+        return self.phase7_multimap_checkpoints_dir / "best_multimap.pt"
+
+    @property
     def latest_live_replay(self) -> Path:
         return self.replays_dir / "latest_live_replay.json"
 
@@ -319,6 +438,10 @@ class OsuPaths:
     @property
     def spica_main_best_eval_replay(self) -> Path:
         return self.spica_main_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase7_multimap_best_eval_replay(self) -> Path:
+        return self.phase7_multimap_replays_dir / "best_eval_replay.json"
 
 
 PATHS = OsuPaths()

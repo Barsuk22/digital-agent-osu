@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -16,11 +17,19 @@ from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
 from src.core.config.paths import PATHS
 
 
+def default_eval_beatmap_path() -> str:
+    return os.environ.get("OSU_EVAL_MAP", str(PATHS.phase7_eval_maps[0]))
+
+
+def default_eval_checkpoint_path() -> str:
+    return os.environ.get("OSU_EVAL_CHECKPOINT", str(PATHS.phase7_multimap_best_checkpoint))
+
+
 @dataclass(slots=True)
 class EvalConfig:
-    beatmap_path: str = str(PATHS.active_map)
-    checkpoint_path: str = str(PATHS.spica_main_latest_checkpoint)
-    replay_path: str = str(PATHS.spica_main_best_eval_replay)
+    beatmap_path: str = field(default_factory=default_eval_beatmap_path)
+    checkpoint_path: str = field(default_factory=default_eval_checkpoint_path)
+    replay_path: str = str(PATHS.phase7_multimap_best_eval_replay)
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     timing_good_window_ms: float = 55.0
     timing_focus_window_ms: float = 165.0
@@ -562,6 +571,13 @@ def main() -> None:
     device = torch.device(cfg.device)
 
     beatmap = parse_beatmap(cfg.beatmap_path)
+    print(f"[beatmap] {beatmap.artist} - {beatmap.title} [{beatmap.version}]")
+    if beatmap.background_filename and beatmap.background_path is None:
+        print(f"[background missing] {beatmap.background_filename}")
+    if beatmap.video_path is not None:
+        print(f"[video] {beatmap.video_path} start={beatmap.video_start_time_ms:.0f}ms")
+    elif beatmap.video_filename:
+        print(f"[video missing] {beatmap.video_filename}")
 
     # 1. Делаем честный прогон без viewer
     env_rollout = OsuEnv(
@@ -579,8 +595,12 @@ def main() -> None:
 
     checkpoint_path = Path(cfg.checkpoint_path)
     if not checkpoint_path.exists():
-        print(f"[spica main checkpoint not found] {checkpoint_path}")
+        print(f"[phase7 multimap checkpoint not found] {checkpoint_path}")
         for fallback in (
+            PATHS.phase7_multimap_best_checkpoint,
+            PATHS.spica_main_golden_checkpoint,
+            PATHS.spica_main_latest_checkpoint,
+            PATHS.spica_main_best_checkpoint,
             PATHS.phase6_spinner_latest_checkpoint,
             PATHS.phase6_spinner_best_checkpoint,
             PATHS.phase5_slider_best_checkpoint,

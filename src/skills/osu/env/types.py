@@ -32,12 +32,30 @@ class SliderStateView:
 
 
 @dataclass(slots=True)
+class SpinnerStateView:
+    active_spinner: float
+    primary_is_spinner: float
+    progress: float
+    spins: float
+    target_spins: float
+    time_to_end_ms: float
+    center_x: float
+    center_y: float
+    distance_to_center: float
+    radius_error: float
+    angle_sin: float
+    angle_cos: float
+    angular_velocity: float
+
+
+@dataclass(slots=True)
 class OsuObservation:
     time_ms: float
     cursor_x: float
     cursor_y: float
     upcoming: List[UpcomingObjectView]
     slider: SliderStateView
+    spinner: SpinnerStateView
 
 
 @dataclass(slots=True)

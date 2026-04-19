@@ -296,3 +296,37 @@ The phase shifts slider training from "hit the head and briefly hold" to "contro
 New segment metrics include `sl_seg_q`, `sl_full`, `sl_partial`, `sl_rev`, `sl_rev_follow`, `sl_curve`, and `sl_curve_good`.
 
 Detailed status: `docs/osu/phase5_slider_control_status.md`.
+
+# Update 2026-04-19: Phase 6 Closed, Spica Main Baseline Reached
+
+Phase 6 / Spinner Control is now closed for the current project stage. The spinner curriculum produced a spinner-capable checkpoint line:
+
+```text
+artifacts/runs/osu_phase6_spinner_control/checkpoints/latest_spinner_control.pt
+artifacts/runs/osu_phase6_spinner_control/checkpoints/best_spinner_control.pt
+```
+
+After that, the project returned to the current main map:
+
+```text
+StylipS - Spica. (TV-size) (Lanturn) [Beginner-ka].osu
+```
+
+Spica fine-tuning now has its own independent checkpoint line:
+
+```text
+artifacts/runs/osu_spica_main_finetune/checkpoints/latest_spica_main.pt
+artifacts/runs/osu_spica_main_finetune/checkpoints/best_spica_main.pt
+```
+
+Representative eval after the transfer:
+
+```text
+hits=94 miss=0 clicks=27 good_t=0.889
+sl_inside_ratio=0.823 sl_seg_q=0.839
+spin_hold=1.000 spin_good_rad=1.000 spin_miss=0
+```
+
+The current main-map baseline is considered usable. Next major work should move toward Phase 7 / multi-map generalization from `best_spica_main.pt`, rather than continuing to optimize only Spica.
+
+Detailed status: `docs/osu/spica_main_finetune_status.md`.

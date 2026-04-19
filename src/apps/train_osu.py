@@ -20,12 +20,12 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 @dataclass(slots=True)
 class TrainConfig:
     beatmap_path: str = str(PATHS.active_map)
-    phase_name: str = "phase5_slider_control"
+    phase_name: str = "phase6_spica_main_finetune"
 
     seed: int = 42
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
-    updates: int = 200
+    updates: int = 700
     gamma: float = 0.99
     gae_lambda: float = 0.95
     clip_ratio: float = 0.10
@@ -43,16 +43,17 @@ class TrainConfig:
     cursor_speed_scale: float = 11.0
     click_threshold: float = 0.75
     slider_hold_threshold: float = 0.45
+    spinner_hold_threshold: float = 0.45
 
-    source_checkpoint_path: str = str(PATHS.phase4_slider_best_checkpoint)
-    run_dir: str = str(PATHS.osu_phase5_slider_control_run_dir)
-    checkpoint_dir: str = str(PATHS.phase5_slider_checkpoints_dir)
-    logs_dir: str = str(PATHS.phase5_slider_logs_dir)
-    metrics_dir: str = str(PATHS.phase5_slider_metrics_dir)
-    replays_dir: str = str(PATHS.phase5_slider_replays_dir)
-    eval_dir: str = str(PATHS.phase5_slider_eval_dir)
-    latest_ckpt_name: str = "latest_slider_control.pt"
-    best_ckpt_name: str = "best_slider_control.pt"
+    source_checkpoint_path: str = str(PATHS.phase6_spinner_latest_checkpoint)
+    run_dir: str = str(PATHS.osu_spica_main_finetune_run_dir)
+    checkpoint_dir: str = str(PATHS.spica_main_checkpoints_dir)
+    logs_dir: str = str(PATHS.spica_main_logs_dir)
+    metrics_dir: str = str(PATHS.spica_main_metrics_dir)
+    replays_dir: str = str(PATHS.spica_main_replays_dir)
+    eval_dir: str = str(PATHS.spica_main_eval_dir)
+    latest_ckpt_name: str = "latest_spica_main.pt"
+    best_ckpt_name: str = "best_spica_main.pt"
     save_every: int = 10
 
     # ------------------------------------------------------------
@@ -212,6 +213,40 @@ class TrainConfig:
     slider_reverse_follow_bonus: float = 0.030
     slider_reverse_wrong_penalty: float = 0.018
 
+    # ------------------------------------------------------------
+    # Phase 6: spinner control
+    # ------------------------------------------------------------
+    spinner_target_radius_px: float = 76.0
+    spinner_good_radius_tolerance_px: float = 26.0
+    spinner_min_radius_px: float = 42.0
+    spinner_max_radius_px: float = 125.0
+    spinner_preposition_window_ms: float = 360.0
+    spinner_preposition_bonus: float = 0.018
+    spinner_click_hold_bonus: float = 0.008
+    spinner_click_strength_bonus: float = 0.010
+    spinner_click_release_penalty: float = 0.030
+    spinner_radius_bonus: float = 0.012
+    spinner_radius_penalty: float = 0.026
+    spinner_center_penalty: float = 0.065
+    spinner_no_hold_spin_scale: float = 0.0
+    spinner_angular_delta_scale: float = 0.360
+    spinner_min_orbit_delta: float = 0.025
+    spinner_max_delta_per_step: float = 0.50
+    spinner_excess_delta_penalty: float = 0.050
+    spinner_speed_bonus: float = 0.035
+    spinner_stall_penalty: float = 0.045
+    spinner_direction_consistency_bonus: float = 0.025
+    spinner_direction_flip_penalty: float = 0.020
+    spinner_progress_bonus: float = 0.110
+    spinner_clear_bonus: float = 0.650
+    spinner_partial_bonus: float = 0.220
+    spinner_miss_penalty: float = 0.260
+    spinner_no_hold_penalty: float = 0.300
+    spinner_aux_loss_coef: float = 0.20
+    spinner_aux_tangent_action: float = 0.42
+    spinner_aux_radial_gain: float = 0.020
+    spinner_aux_radial_cap: float = 0.35
+
 @dataclass(slots=True)
 class EpisodeStats:
     reward_total: float = 0.0
@@ -292,6 +327,22 @@ class EpisodeStats:
     slider_reverse_drop_steps: int = 0
     slider_curve_steps: int = 0
     slider_curve_good_steps: int = 0
+    spinner_reward_total: float = 0.0
+    spinner_active_steps: int = 0
+    spinner_hold_steps: int = 0
+    spinner_release_steps: int = 0
+    spinner_good_radius_steps: int = 0
+    spinner_spin_steps: int = 0
+    spinner_stall_steps: int = 0
+    spinner_direction_flips: int = 0
+    spinner_clear_count: int = 0
+    spinner_partial_count: int = 0
+    spinner_no_hold_count: int = 0
+    spinner_miss_count: int = 0
+    spinner_spin_progress_total: float = 0.0
+    spinner_radius_error_total: float = 0.0
+    spinner_angular_delta_total: float = 0.0
+    spinner_angular_delta_samples: int = 0
 
     timing_errors_ms: list[float] = field(default_factory=list)
     click_distances_px: list[float] = field(default_factory=list)
@@ -485,6 +536,28 @@ class EpisodeStats:
     def slider_curve_good_ratio(self) -> float:
         return 0.0 if self.slider_curve_steps <= 0 else self.slider_curve_good_steps / self.slider_curve_steps
 
+    @property
+    def spinner_hold_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_hold_steps / self.spinner_active_steps
+
+    @property
+    def spinner_good_radius_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_good_radius_steps / self.spinner_active_steps
+
+    @property
+    def spinner_spin_step_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_spin_steps / self.spinner_active_steps
+
+    @property
+    def spinner_radius_error_mean_px(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_radius_error_total / self.spinner_active_steps
+
+    @property
+    def spinner_angular_delta_mean(self) -> float:
+        if self.spinner_angular_delta_samples <= 0:
+            return 0.0
+        return self.spinner_angular_delta_total / self.spinner_angular_delta_samples
+
 
 @dataclass(slots=True)
 class RewardBreakdown:
@@ -532,6 +605,18 @@ class RewardBreakdown:
     slider_reverse_drop_step: int = 0
     slider_curve_step: int = 0
     slider_curve_good_step: int = 0
+    spinner: float = 0.0
+    spinner_active_step: int = 0
+    spinner_hold_step: int = 0
+    spinner_release_step: int = 0
+    spinner_good_radius_step: int = 0
+    spinner_spin_step: int = 0
+    spinner_stall_step: int = 0
+    spinner_direction_flip: int = 0
+    spinner_progress_gain: float = 0.0
+    spinner_radius_error: float = 0.0
+    spinner_angular_delta: float = 0.0
+    spinner_angular_delta_sample: int = 0
 
 
 @dataclass(slots=True)
@@ -547,6 +632,9 @@ class MotionState:
     prev_slider_tangent_x: float = 0.0
     prev_slider_tangent_y: float = 0.0
     slider_reverse_steps_left: int = 0
+    prev_spinner_angle_sin: float = 0.0
+    prev_spinner_angle_cos: float = 1.0
+    prev_spinner_delta_sign: int = 0
 
 
 def set_seed(seed: int) -> None:
@@ -594,6 +682,24 @@ def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
         ]
     )
 
+    values.extend(
+        [
+            obs.spinner.active_spinner,
+            obs.spinner.primary_is_spinner,
+            obs.spinner.progress,
+            obs.spinner.spins / 8.0,
+            obs.spinner.target_spins / 8.0,
+            obs.spinner.time_to_end_ms / 1000.0,
+            obs.spinner.center_x / 512.0,
+            obs.spinner.center_y / 384.0,
+            obs.spinner.distance_to_center / 256.0,
+            obs.spinner.radius_error / 256.0,
+            obs.spinner.angle_sin,
+            obs.spinner.angle_cos,
+            obs.spinner.angular_velocity / 60.0,
+        ]
+    )
+
     return np.asarray(values, dtype=np.float32)
 
 
@@ -606,6 +712,7 @@ def build_env(cfg: TrainConfig) -> OsuEnv:
         cursor_speed_scale=cfg.cursor_speed_scale,
         click_threshold=cfg.click_threshold,
         slider_hold_threshold=cfg.slider_hold_threshold,
+        spinner_hold_threshold=cfg.spinner_hold_threshold,
     )
     return env
 
@@ -630,6 +737,13 @@ def find_hit_targets(obs: OsuObservation) -> tuple[UpcomingObjectView | None, Up
     primary = targets[0] if len(targets) >= 1 else None
     secondary = targets[1] if len(targets) >= 2 else None
     return primary, secondary
+
+
+def find_spinner_target(obs: OsuObservation) -> UpcomingObjectView | None:
+    for item in obs.upcoming:
+        if item.kind_id == 2:
+            return item
+    return None
 
 
 def normalized_vec_to_target(obs: OsuObservation, target: UpcomingObjectView | None) -> tuple[float, float]:
@@ -1214,6 +1328,132 @@ def phase23_shaping_reward(
         if prev_dist > follow_radius * 3.0:
             breakdown.slider -= cfg.slider_escape_penalty
 
+    # ---------------------------------------------------------
+    # 12) Phase 6 spinner control
+    # ---------------------------------------------------------
+    spinner_target = find_spinner_target(prev_obs)
+    if (
+        spinner_target is not None
+        and prev_obs.spinner.active_spinner <= 0.5
+        and 0.0 <= spinner_target.time_to_hit_ms <= cfg.spinner_preposition_window_ms
+    ):
+        target_radius = max(1.0, cfg.spinner_target_radius_px)
+        radius_error = abs(prev_obs.spinner.distance_to_center - target_radius)
+        if radius_error <= cfg.spinner_good_radius_tolerance_px:
+            breakdown.spinner += cfg.spinner_preposition_bonus * (
+                1.0 - radius_error / cfg.spinner_good_radius_tolerance_px
+            )
+
+    if prev_obs.spinner.active_spinner > 0.5:
+        click_held = action.click_strength >= cfg.spinner_hold_threshold
+        target_radius = max(1.0, cfg.spinner_target_radius_px)
+        min_radius = max(1.0, cfg.spinner_min_radius_px)
+        max_radius = max(min_radius + 1.0, cfg.spinner_max_radius_px)
+        distance_to_center = prev_obs.spinner.distance_to_center
+        radius_error = abs(prev_obs.spinner.distance_to_center - target_radius)
+        good_radius = radius_error <= cfg.spinner_good_radius_tolerance_px
+        valid_radius = min_radius <= distance_to_center <= max_radius
+        prev_angle = math.atan2(prev_obs.spinner.angle_sin, prev_obs.spinner.angle_cos)
+        next_angle = math.atan2(next_obs.spinner.angle_sin, next_obs.spinner.angle_cos)
+        angular_delta = next_angle - prev_angle
+        while angular_delta > math.pi:
+            angular_delta -= 2.0 * math.pi
+        while angular_delta < -math.pi:
+            angular_delta += 2.0 * math.pi
+        angular_delta_abs = abs(angular_delta)
+        delta_sign = (
+            1
+            if angular_delta > cfg.spinner_min_orbit_delta
+            else -1
+            if angular_delta < -cfg.spinner_min_orbit_delta
+            else 0
+        )
+        too_fast = angular_delta_abs > cfg.spinner_max_delta_per_step
+
+        breakdown.spinner_active_step = 1
+        breakdown.spinner_radius_error = radius_error
+        breakdown.spinner_angular_delta = angular_delta_abs
+        breakdown.spinner_angular_delta_sample = 1
+        breakdown.spinner_progress_gain = max(0.0, next_obs.spinner.spins - prev_obs.spinner.spins)
+
+        if click_held:
+            breakdown.spinner_hold_step = 1
+            breakdown.spinner += cfg.spinner_click_hold_bonus
+            strength_margin = max(0.0, action.click_strength - cfg.spinner_hold_threshold)
+            breakdown.spinner += min(cfg.spinner_click_strength_bonus, strength_margin * 0.08)
+        else:
+            breakdown.spinner_release_step = 1
+            missing_hold = max(0.0, cfg.spinner_hold_threshold - action.click_strength)
+            breakdown.spinner -= cfg.spinner_click_release_penalty * (1.0 + missing_hold)
+
+        if good_radius:
+            closeness = 1.0 - radius_error / max(1.0, cfg.spinner_good_radius_tolerance_px)
+            breakdown.spinner_good_radius_step = 1
+            breakdown.spinner += cfg.spinner_radius_bonus * closeness
+        else:
+            excess = max(0.0, radius_error - cfg.spinner_good_radius_tolerance_px) / target_radius
+            breakdown.spinner -= min(0.060, excess * cfg.spinner_radius_penalty)
+        if distance_to_center < min_radius:
+            center_excess = (min_radius - distance_to_center) / min_radius
+            breakdown.spinner -= cfg.spinner_center_penalty * (1.0 + center_excess)
+        elif distance_to_center > max_radius:
+            far_excess = (distance_to_center - max_radius) / max_radius
+            breakdown.spinner -= min(0.060, cfg.spinner_radius_penalty * (1.0 + far_excess))
+
+        if angular_delta_abs >= cfg.spinner_min_orbit_delta:
+            breakdown.spinner_spin_step = 1
+            if too_fast:
+                excess_delta = angular_delta_abs - cfg.spinner_max_delta_per_step
+                breakdown.spinner -= min(0.080, excess_delta * cfg.spinner_excess_delta_penalty)
+            spin_scale = cfg.spinner_angular_delta_scale if click_held and valid_radius and not too_fast else cfg.spinner_no_hold_spin_scale
+            effective_delta = min(angular_delta_abs, cfg.spinner_max_delta_per_step)
+            if spin_scale > 0.0:
+                radius_gate = 1.0 if good_radius else 0.35
+                breakdown.spinner += min(0.060, effective_delta * spin_scale * radius_gate)
+            if (
+                cfg.spinner_min_orbit_delta <= angular_delta_abs <= cfg.spinner_max_delta_per_step
+                and good_radius
+                and click_held
+            ):
+                breakdown.spinner += cfg.spinner_speed_bonus
+            if motion_state.prev_spinner_delta_sign != 0 and delta_sign == motion_state.prev_spinner_delta_sign and click_held:
+                breakdown.spinner += cfg.spinner_direction_consistency_bonus
+            elif motion_state.prev_spinner_delta_sign != 0 and delta_sign != 0:
+                breakdown.spinner_direction_flip = 1
+                breakdown.spinner -= cfg.spinner_direction_flip_penalty
+        else:
+            breakdown.spinner_stall_step = 1
+            breakdown.spinner -= cfg.spinner_stall_penalty
+
+        if click_held and valid_radius and not too_fast:
+            progress_scale = cfg.spinner_progress_bonus if good_radius else cfg.spinner_progress_bonus * 0.25
+            breakdown.spinner += min(0.080, breakdown.spinner_progress_gain * progress_scale)
+
+    if judgement == "spinner_clear":
+        breakdown.spinner += cfg.spinner_clear_bonus
+    elif judgement == "spinner_partial":
+        breakdown.spinner += cfg.spinner_partial_bonus
+    elif judgement == "spinner_no_hold":
+        breakdown.spinner -= cfg.spinner_no_hold_penalty
+    elif judgement == "spinner_miss":
+        breakdown.spinner -= cfg.spinner_miss_penalty
+
+    if prev_obs.spinner.active_spinner > 0.5:
+        breakdown.approach = 0.0
+        breakdown.prehit = 0.0
+        breakdown.timing_bonus = 0.0
+        breakdown.timing_penalty = 0.0
+        breakdown.aim = 0.0
+        breakdown.flow = 0.0
+        breakdown.post_hit_exit = 0.0
+        breakdown.smoothing = 0.0
+        breakdown.click = 0.0
+        breakdown.calm = 0.0
+        breakdown.jerk_penalty = 0.0
+        breakdown.overspeed_penalty = 0.0
+        breakdown.idle_penalty = 0.0
+        breakdown.useless_motion_penalty = 0.0
+
     breakdown.total = (
         breakdown.approach
         + breakdown.prehit
@@ -1231,6 +1471,7 @@ def phase23_shaping_reward(
         + breakdown.idle_penalty
         + breakdown.useless_motion_penalty
         + breakdown.slider
+        + breakdown.spinner
     )
 
     return breakdown.total, useful_click, breakdown
@@ -1266,6 +1507,7 @@ def ppo_update(
     value_losses: list[float] = []
     entropies: list[float] = []
     kls: list[float] = []
+    spinner_aux_losses: list[float] = []
 
     for _ in range(cfg.epochs_per_update):
         np.random.shuffle(indices)
@@ -1295,7 +1537,33 @@ def ppo_update(
 
             value_loss = ((values - mb_returns) ** 2).mean()
 
-            loss = policy_loss + cfg.value_coef * value_loss - cfg.entropy_coef * entropy
+            spinner_aux_loss = torch.zeros((), dtype=torch.float32, device=device)
+            spinner_mask = mb_obs[:, -13] > 0.5
+            if torch.any(spinner_mask):
+                spinner_obs = mb_obs[spinner_mask]
+                angle_sin = spinner_obs[:, -3]
+                angle_cos = spinner_obs[:, -2]
+                distance_px = spinner_obs[:, -5] * 256.0
+                radial_action = torch.clamp(
+                    (cfg.spinner_target_radius_px - distance_px) * cfg.spinner_aux_radial_gain,
+                    min=-cfg.spinner_aux_radial_cap,
+                    max=cfg.spinner_aux_radial_cap,
+                )
+                tangent_action = torch.full_like(radial_action, cfg.spinner_aux_tangent_action)
+                target_dx = -angle_sin * tangent_action + angle_cos * radial_action
+                target_dy = angle_cos * tangent_action + angle_sin * radial_action
+                target_click = torch.full_like(target_dx, 0.96)
+                spinner_target_action = torch.stack((target_dx, target_dy, target_click), dim=-1)
+                spinner_target_action = torch.clamp(spinner_target_action, -0.95, 0.95)
+                spinner_mean_action = torch.tanh(dist.loc[spinner_mask])
+                spinner_aux_loss = ((spinner_mean_action - spinner_target_action) ** 2).mean()
+
+            loss = (
+                policy_loss
+                + cfg.value_coef * value_loss
+                - cfg.entropy_coef * entropy
+                + cfg.spinner_aux_loss_coef * spinner_aux_loss
+            )
 
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
@@ -1308,12 +1576,14 @@ def ppo_update(
             value_losses.append(float(value_loss.item()))
             entropies.append(float(entropy.item()))
             kls.append(float(approx_kl))
+            spinner_aux_losses.append(float(spinner_aux_loss.item()))
 
     return {
         "policy_loss": float(np.mean(policy_losses)) if policy_losses else 0.0,
         "value_loss": float(np.mean(value_losses)) if value_losses else 0.0,
         "entropy": float(np.mean(entropies)) if entropies else 0.0,
         "kl": float(np.mean(kls)) if kls else 0.0,
+        "spinner_aux_loss": float(np.mean(spinner_aux_losses)) if spinner_aux_losses else 0.0,
     }
 
 
@@ -1357,7 +1627,8 @@ def run_episode(
 
         raw_click_down = osu_action.click_strength >= env.click_threshold
         slider_hold_down = obs.slider.active_slider > 0.5 and osu_action.click_strength >= env.slider_hold_threshold
-        click_down = raw_click_down or slider_hold_down
+        spinner_hold_down = obs.spinner.active_spinner > 0.5 and osu_action.click_strength >= env.spinner_hold_threshold
+        click_down = raw_click_down or slider_hold_down or spinner_hold_down
         just_pressed = raw_click_down and not prev_raw_click_down
         prev_primary, _ = find_hit_targets(obs)
         click_timing_error = timing_error_ms(prev_primary)
@@ -1425,6 +1696,18 @@ def run_episode(
         stats.slider_reverse_drop_steps += breakdown.slider_reverse_drop_step
         stats.slider_curve_steps += breakdown.slider_curve_step
         stats.slider_curve_good_steps += breakdown.slider_curve_good_step
+        stats.spinner_reward_total += breakdown.spinner
+        stats.spinner_active_steps += breakdown.spinner_active_step
+        stats.spinner_hold_steps += breakdown.spinner_hold_step
+        stats.spinner_release_steps += breakdown.spinner_release_step
+        stats.spinner_good_radius_steps += breakdown.spinner_good_radius_step
+        stats.spinner_spin_steps += breakdown.spinner_spin_step
+        stats.spinner_stall_steps += breakdown.spinner_stall_step
+        stats.spinner_direction_flips += breakdown.spinner_direction_flip
+        stats.spinner_spin_progress_total += breakdown.spinner_progress_gain
+        stats.spinner_radius_error_total += breakdown.spinner_radius_error
+        stats.spinner_angular_delta_total += breakdown.spinner_angular_delta
+        stats.spinner_angular_delta_samples += breakdown.spinner_angular_delta_sample
         if breakdown.slider_hold_sample:
             stats.slider_dist_when_hold_total += breakdown.slider_dist_when_hold
             stats.slider_dist_when_hold_samples += 1
@@ -1552,6 +1835,14 @@ def run_episode(
             stats.slider_tick_hits += 1
         elif judgement == "slider_tick_miss":
             stats.slider_tick_misses += 1
+        elif judgement == "spinner_clear":
+            stats.spinner_clear_count += 1
+        elif judgement == "spinner_partial":
+            stats.spinner_partial_count += 1
+        elif judgement == "spinner_no_hold":
+            stats.spinner_no_hold_count += 1
+        elif judgement == "spinner_miss":
+            stats.spinner_miss_count += 1
 
         if movement_magnitude(osu_action) < cfg.urgent_idle_threshold:
             stats.idle_steps += 1
@@ -1581,6 +1872,23 @@ def run_episode(
             motion_state.prev_slider_tangent_x = 0.0
             motion_state.prev_slider_tangent_y = 0.0
             motion_state.slider_reverse_steps_left = 0
+
+        if next_obs.spinner.active_spinner > 0.5:
+            motion_state.prev_spinner_angle_sin = next_obs.spinner.angle_sin
+            motion_state.prev_spinner_angle_cos = next_obs.spinner.angle_cos
+            current_angle = math.atan2(next_obs.spinner.angle_sin, next_obs.spinner.angle_cos)
+            previous_angle = math.atan2(obs.spinner.angle_sin, obs.spinner.angle_cos)
+            delta = current_angle - previous_angle
+            while delta > math.pi:
+                delta -= 2.0 * math.pi
+            while delta < -math.pi:
+                delta += 2.0 * math.pi
+            if abs(delta) > 0.02:
+                motion_state.prev_spinner_delta_sign = 1 if delta > 0.0 else -1
+        else:
+            motion_state.prev_spinner_angle_sin = 0.0
+            motion_state.prev_spinner_angle_cos = 1.0
+            motion_state.prev_spinner_delta_sign = 0
 
         prev_click_down = click_down
         prev_raw_click_down = raw_click_down
@@ -1713,28 +2021,30 @@ def main() -> None:
     latest_ckpt = ckpt_dir / cfg.latest_ckpt_name
     best_ckpt = ckpt_dir / cfg.best_ckpt_name
 
-    source_ckpt = Path(cfg.source_checkpoint_path)
-    if not source_ckpt.exists():
+    base_ckpt = Path(cfg.source_checkpoint_path)
+    resume_from_latest = latest_ckpt.exists()
+    resume_ckpt = latest_ckpt if resume_from_latest else base_ckpt
+    if not resume_ckpt.exists():
         raise FileNotFoundError(
-            f"Phase 5 slider control fine-tuning requires source checkpoint: {source_ckpt}"
+            f"{cfg.phase_name} requires source checkpoint: {resume_ckpt}"
         )
 
     start_update, best_reward = maybe_load_checkpoint(
         model,
         optimizer,
-        source_ckpt,
+        resume_ckpt,
         device,
-        reset_training_state=True,
+        reset_training_state=not resume_from_latest,
     )
 
     # для fine-tune лучше не тащить старый абсолютный рекорд,
     # а начать свою отдельную "лучшую" линию
 
     print("=" * 100)
-    print("PHASE 5 SLIDER CONTROL FINE-TUNING STARTED")
+    print("PHASE 6 SPINNER CONTROL FINE-TUNING STARTED")
     print(f"Phase: {cfg.phase_name}")
     print(f"Map: {env.beatmap.artist} - {env.beatmap.title} [{env.beatmap.version}]")
-    print(f"Source checkpoint: {source_ckpt}")
+    print(f"Source checkpoint: {resume_ckpt}")
     print(f"Run dir: {Path(cfg.run_dir)}")
     print(f"Save latest: {latest_ckpt}")
     print(f"Save best: {best_ckpt}")
@@ -1843,6 +2153,20 @@ def main() -> None:
             f"sl_rev_follow={stats.slider_reverse_follow_ratio:.3f} "
             f"sl_curve={stats.slider_curve_steps:4d} "
             f"sl_curve_good={stats.slider_curve_good_ratio:.3f} "
+            f"spin_r={stats.spinner_reward_total:7.3f} "
+            f"spin_active={stats.spinner_active_steps:4d} "
+            f"spin_hold={stats.spinner_hold_ratio:.3f} "
+            f"spin_good_rad={stats.spinner_good_radius_ratio:.3f} "
+            f"spin_drad={stats.spinner_radius_error_mean_px:5.1f} "
+            f"spin_step={stats.spinner_spin_step_ratio:.3f} "
+            f"spin_delta={stats.spinner_angular_delta_mean:5.3f} "
+            f"spin_prog={stats.spinner_spin_progress_total:5.2f} "
+            f"spin_stall={stats.spinner_stall_steps:4d} "
+            f"spin_flip={stats.spinner_direction_flips:3d} "
+            f"spin_clear={stats.spinner_clear_count:3d} "
+            f"spin_part={stats.spinner_partial_count:3d} "
+            f"spin_nohold={stats.spinner_no_hold_count:3d} "
+            f"spin_miss={stats.spinner_miss_count:3d} "
             f"sl_geom_inside_ratio={stats.slider_geom_inside_ratio:.3f} "
             f"sl_time_to_first_inside={stats.slider_time_to_first_inside_mean:5.1f} "
             f"sl_first_inside_miss={stats.slider_time_to_first_inside_missed:3d} "
@@ -1857,7 +2181,8 @@ def main() -> None:
             f"policy_loss={train_metrics['policy_loss']:.4f} "
             f"value_loss={train_metrics['value_loss']:.4f} "
             f"entropy={train_metrics['entropy']:.4f} "
-            f"kl={train_metrics['kl']:.5f}"
+            f"kl={train_metrics['kl']:.5f} "
+            f"spin_aux={train_metrics['spinner_aux_loss']:.4f}"
         )
 
     save_checkpoint(

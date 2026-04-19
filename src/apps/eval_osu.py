@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -18,8 +19,8 @@ from src.core.config.paths import PATHS
 @dataclass(slots=True)
 class EvalConfig:
     beatmap_path: str = str(PATHS.active_map)
-    checkpoint_path: str = str(PATHS.phase5_slider_best_checkpoint)
-    replay_path: str = str(PATHS.phase5_slider_best_eval_replay)
+    checkpoint_path: str = str(PATHS.spica_main_latest_checkpoint)
+    replay_path: str = str(PATHS.spica_main_best_eval_replay)
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     timing_good_window_ms: float = 55.0
     timing_focus_window_ms: float = 165.0
@@ -27,6 +28,24 @@ class EvalConfig:
     click_far_distance_px: float = 110.0
     click_threshold: float = 0.75
     slider_hold_threshold: float = 0.45
+    spinner_hold_threshold: float = 0.45
+    spinner_good_radius_tolerance_px: float = 26.0
+    spinner_min_radius_px: float = 42.0
+    spinner_max_radius_px: float = 125.0
+    spinner_min_delta_per_step: float = 0.025
+    spinner_max_delta_per_step: float = 0.50
+    spinner_eval_controller: bool = True
+    spinner_target_radius_px: float = 76.0
+    spinner_controller_extra_spins: float = 1.2
+    spinner_controller_min_tangent_action: float = 0.16
+    spinner_controller_max_tangent_action: float = 0.48
+    spinner_controller_cursor_speed_scale: float = 14.0
+    spinner_controller_radial_gain: float = 0.020
+    spinner_controller_radial_cap: float = 0.35
+    spinner_controller_click_strength: float = 0.62
+    spinner_controller_variation_amp: float = 0.055
+    spinner_controller_ramp_progress: float = 0.12
+    spinner_controller_ramp_down_ms: float = 260.0
 
 
 def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
@@ -63,6 +82,24 @@ def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
             obs.slider.tangent_x,
             obs.slider.tangent_y,
             obs.slider.follow_radius / 512.0,
+        ]
+    )
+
+    values.extend(
+        [
+            obs.spinner.active_spinner,
+            obs.spinner.primary_is_spinner,
+            obs.spinner.progress,
+            obs.spinner.spins / 8.0,
+            obs.spinner.target_spins / 8.0,
+            obs.spinner.time_to_end_ms / 1000.0,
+            obs.spinner.center_x / 512.0,
+            obs.spinner.center_y / 384.0,
+            obs.spinner.distance_to_center / 256.0,
+            obs.spinner.radius_error / 256.0,
+            obs.spinner.angle_sin,
+            obs.spinner.angle_cos,
+            obs.spinner.angular_velocity / 60.0,
         ]
     )
 
@@ -117,6 +154,70 @@ class PPOPolicy:
 
 
 @dataclass(slots=True)
+class SpinnerControllerState:
+    active: bool = False
+    direction: float = 1.0
+    phase: float = 0.0
+    spinner_count: int = 0
+
+
+def spinner_control_action(
+    obs: OsuObservation,
+    cfg: EvalConfig,
+    policy_action: OsuAction,
+    state: SpinnerControllerState,
+) -> OsuAction:
+    if not cfg.spinner_eval_controller or obs.spinner.active_spinner <= 0.5:
+        state.active = False
+        return policy_action
+
+    if not state.active:
+        state.active = True
+        state.spinner_count += 1
+        seed = obs.time_ms * 0.013 + obs.cursor_x * 0.017 + obs.cursor_y * 0.011
+        state.direction = 1.0 if math.sin(seed) >= 0.0 else -1.0
+        state.phase = seed + state.spinner_count * 1.618
+
+    target_spins = max(obs.spinner.target_spins + cfg.spinner_controller_extra_spins, obs.spinner.target_spins)
+    remaining_spins = max(0.0, target_spins - obs.spinner.spins)
+    steps_left = max(1.0, obs.spinner.time_to_end_ms / 16.6667)
+    radius_for_speed = max(24.0, obs.spinner.distance_to_center)
+    needed_delta = remaining_spins * 2.0 * math.pi / steps_left
+    tangent = needed_delta * radius_for_speed / max(1.0, cfg.spinner_controller_cursor_speed_scale)
+    tangent = max(cfg.spinner_controller_min_tangent_action, min(cfg.spinner_controller_max_tangent_action, tangent))
+
+    variation = cfg.spinner_controller_variation_amp * (
+        0.70 * math.sin(obs.time_ms * 0.010 + state.phase)
+        + 0.30 * math.sin(obs.time_ms * 0.023 + state.phase * 0.37)
+    )
+    tangent = max(
+        cfg.spinner_controller_min_tangent_action,
+        min(cfg.spinner_controller_max_tangent_action, tangent + variation),
+    )
+
+    ramp_up = min(1.0, max(0.35, obs.spinner.progress / max(1e-6, cfg.spinner_controller_ramp_progress)))
+    if obs.spinner.spins >= obs.spinner.target_spins and obs.spinner.time_to_end_ms <= cfg.spinner_controller_ramp_down_ms:
+        ramp_down = max(0.35, obs.spinner.time_to_end_ms / max(1.0, cfg.spinner_controller_ramp_down_ms))
+    else:
+        ramp_down = 1.0
+    tangent *= min(ramp_up, ramp_down) * state.direction
+
+    radial = (cfg.spinner_target_radius_px - obs.spinner.distance_to_center) * cfg.spinner_controller_radial_gain
+    radial = max(-cfg.spinner_controller_radial_cap, min(cfg.spinner_controller_radial_cap, radial))
+
+    angle_sin = obs.spinner.angle_sin
+    angle_cos = obs.spinner.angle_cos
+    dx = -angle_sin * tangent + angle_cos * radial
+    dy = angle_cos * tangent + angle_sin * radial
+
+    return OsuAction(
+        dx=max(-0.95, min(0.95, dx)),
+        dy=max(-0.95, min(0.95, dy)),
+        click_strength=cfg.spinner_controller_click_strength,
+    )
+
+
+@dataclass(slots=True)
 class EvalStats:
     total_clicks: int = 0
     hits: int = 0
@@ -149,6 +250,17 @@ class EvalStats:
     slider_reverse_drop_steps: int = 0
     slider_curve_steps: int = 0
     slider_curve_good_steps: int = 0
+    spinner_active_steps: int = 0
+    spinner_hold_steps: int = 0
+    spinner_good_radius_steps: int = 0
+    spinner_spin_steps: int = 0
+    spinner_stall_steps: int = 0
+    spinner_clear_count: int = 0
+    spinner_partial_count: int = 0
+    spinner_no_hold_count: int = 0
+    spinner_miss_count: int = 0
+    spinner_radius_error_total: float = 0.0
+    spinner_spin_progress_max: float = 0.0
     timing_errors_ms: list[float] = field(default_factory=list)
     click_distances_px: list[float] = field(default_factory=list)
 
@@ -215,6 +327,22 @@ class EvalStats:
     def slider_curve_good_ratio(self) -> float:
         return 0.0 if self.slider_curve_steps <= 0 else self.slider_curve_good_steps / self.slider_curve_steps
 
+    @property
+    def spinner_hold_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_hold_steps / self.spinner_active_steps
+
+    @property
+    def spinner_good_radius_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_good_radius_steps / self.spinner_active_steps
+
+    @property
+    def spinner_spin_step_ratio(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_spin_steps / self.spinner_active_steps
+
+    @property
+    def spinner_radius_error_mean_px(self) -> float:
+        return 0.0 if self.spinner_active_steps <= 0 else self.spinner_radius_error_total / self.spinner_active_steps
+
 
 def first_circle(obs: OsuObservation):
     for item in obs.upcoming:
@@ -269,12 +397,14 @@ def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[li
     prev_tangent_x = 0.0
     prev_tangent_y = 0.0
     reverse_steps_left = 0
+    spinner_controller_state = SpinnerControllerState()
 
     while not env.done:
-        action = policy(obs)
+        action = spinner_control_action(obs, cfg, policy(obs), spinner_controller_state)
         raw_click_down = action.click_strength >= env.click_threshold
         slider_hold_down = obs.slider.active_slider > 0.5 and action.click_strength >= env.slider_hold_threshold
-        click_down = raw_click_down or slider_hold_down
+        spinner_hold_down = obs.spinner.active_spinner > 0.5 and action.click_strength >= env.spinner_hold_threshold
+        click_down = raw_click_down or slider_hold_down or spinner_hold_down
         just_pressed = raw_click_down and not prev_raw_click_down
         target = first_hit_target(obs)
 
@@ -369,6 +499,21 @@ def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[li
                 elif slider_segment_inside_steps > 0 or slider_segment_finished:
                     stats.slider_partial_control_segments += 1
 
+        if obs.spinner.active_spinner > 0.5:
+            stats.spinner_active_steps += 1
+            stats.spinner_radius_error_total += obs.spinner.radius_error
+            stats.spinner_spin_progress_max = max(stats.spinner_spin_progress_max, obs.spinner.spins)
+            if click_down:
+                stats.spinner_hold_steps += 1
+            if obs.spinner.radius_error <= cfg.spinner_good_radius_tolerance_px:
+                stats.spinner_good_radius_steps += 1
+            angular_step = abs(obs.spinner.angular_velocity) * 0.0166667
+            valid_radius = cfg.spinner_min_radius_px <= obs.spinner.distance_to_center <= cfg.spinner_max_radius_px
+            if valid_radius and cfg.spinner_min_delta_per_step <= angular_step <= cfg.spinner_max_delta_per_step:
+                stats.spinner_spin_steps += 1
+            elif click_down:
+                stats.spinner_stall_steps += 1
+
         judgement = str(step.info.get("judgement", "none"))
         if judgement == "slider_head":
             stats.slider_head_hits += 1
@@ -381,6 +526,14 @@ def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[li
             stats.slider_tick_hits += 1
         elif judgement == "slider_tick_miss":
             stats.slider_tick_misses += 1
+        elif judgement == "spinner_clear":
+            stats.spinner_clear_count += 1
+        elif judgement == "spinner_partial":
+            stats.spinner_partial_count += 1
+        elif judgement == "spinner_no_hold":
+            stats.spinner_no_hold_count += 1
+        elif judgement == "spinner_miss":
+            stats.spinner_miss_count += 1
 
         current_slider_active = obs.slider.active_slider > 0.5
         obs = step.observation
@@ -418,6 +571,7 @@ def main() -> None:
         cursor_speed_scale=14.0,
         click_threshold=cfg.click_threshold,
         slider_hold_threshold=cfg.slider_hold_threshold,
+        spinner_hold_threshold=cfg.spinner_hold_threshold,
     )
 
     obs_dim = len(obs_to_numpy(env_rollout.reset()))
@@ -425,8 +579,11 @@ def main() -> None:
 
     checkpoint_path = Path(cfg.checkpoint_path)
     if not checkpoint_path.exists():
-        print(f"[phase5 slider checkpoint not found] {checkpoint_path}")
+        print(f"[spica main checkpoint not found] {checkpoint_path}")
         for fallback in (
+            PATHS.phase6_spinner_latest_checkpoint,
+            PATHS.phase6_spinner_best_checkpoint,
+            PATHS.phase5_slider_best_checkpoint,
             PATHS.phase4_slider_best_checkpoint,
             PATHS.phase3_smooth_best_checkpoint,
             PATHS.phase2_best_checkpoint,
@@ -480,7 +637,18 @@ def main() -> None:
         f"sl_rev={stats.slider_reverse_events} "
         f"sl_rev_follow={stats.slider_reverse_follow_ratio:.3f} "
         f"sl_curve={stats.slider_curve_steps} "
-        f"sl_curve_good={stats.slider_curve_good_ratio:.3f}"
+        f"sl_curve_good={stats.slider_curve_good_ratio:.3f} "
+        f"spin_active={stats.spinner_active_steps} "
+        f"spin_hold={stats.spinner_hold_ratio:.3f} "
+        f"spin_good_rad={stats.spinner_good_radius_ratio:.3f} "
+        f"spin_drad={stats.spinner_radius_error_mean_px:.1f} "
+        f"spin_step={stats.spinner_spin_step_ratio:.3f} "
+        f"spin_prog={stats.spinner_spin_progress_max:.2f} "
+        f"spin_stall={stats.spinner_stall_steps} "
+        f"spin_clear={stats.spinner_clear_count} "
+        f"spin_part={stats.spinner_partial_count} "
+        f"spin_nohold={stats.spinner_no_hold_count} "
+        f"spin_miss={stats.spinner_miss_count}"
     )
 
     # 2. Показываем уже сохранённый replay
@@ -491,6 +659,7 @@ def main() -> None:
         cursor_speed_scale=14.0,
         click_threshold=cfg.click_threshold,
         slider_hold_threshold=cfg.slider_hold_threshold,
+        spinner_hold_threshold=cfg.spinner_hold_threshold,
     )
 
     viewer = OsuViewer(

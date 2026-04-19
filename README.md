@@ -1,5 +1,32 @@
 # Digital Agent OSU Project
 
+## Current osu Baseline
+
+As of 2026-04-19, the current working main-map baseline is the Spica main fine-tune:
+
+```text
+artifacts/runs/osu_spica_main_finetune/checkpoints/best_spica_main.pt
+artifacts/runs/osu_spica_main_finetune/checkpoints/golden_spica_main.pt
+```
+
+It was fine-tuned from the Phase 6 spinner-capable checkpoint and evaluated on:
+
+```text
+StylipS - Spica. (TV-size) (Lanturn) [Beginner-ka].osu
+```
+
+Representative eval:
+
+```text
+hits=94 miss=0 clicks=27 good_t=0.889
+sl_inside_ratio=0.823 sl_seg_q=0.839 spin_miss=0
+```
+
+Details:
+
+- `docs/osu/spica_main_finetune_status.md`
+- `docs/RUNNING_SPICA_MAIN.md`
+
 ## Актуальный этап
 
 После Phase 2/3 в проекте появился рабочий `best_timing.pt`: агент продолжает обучаться от сильной recoil/movement базы, уверенно проходит eval на активной карте и сохраняет отдельную timing/aim ветку в `artifacts/runs/osu_phase2_timing/`.

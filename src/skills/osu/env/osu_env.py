@@ -6,7 +6,7 @@ from typing import List
 from src.skills.osu.domain.math_utils import clamp_position, distance
 from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap
 from src.skills.osu.domain.osu_rules import ar_to_preempt_ms, slider_duration_ms
-from src.skills.osu.env.types import OsuAction, OsuObservation, SliderStateView, UpcomingObjectView
+from src.skills.osu.env.types import OsuAction, OsuObservation, SliderStateView, SpinnerStateView, UpcomingObjectView
 from src.skills.osu.reward.judgement import OsuJudge
 from src.skills.osu.viewer.replay_models import ReplayFrame
 
@@ -29,6 +29,7 @@ class OsuEnv:
         cursor_start_y: float = 192.0,
         click_threshold: float = 0.75,
         slider_hold_threshold: float = 0.45,
+        spinner_hold_threshold: float = 0.45,
         cursor_speed_scale: float = 14.0,
     ) -> None:
         self.beatmap = beatmap
@@ -36,6 +37,7 @@ class OsuEnv:
         self.upcoming_count = upcoming_count
         self.click_threshold = click_threshold
         self.slider_hold_threshold = slider_hold_threshold
+        self.spinner_hold_threshold = spinner_hold_threshold
         self.cursor_speed_scale = cursor_speed_scale
         self.judge = OsuJudge(beatmap)
 
@@ -85,7 +87,8 @@ class OsuEnv:
 
         raw_click_down = action.click_strength >= self.click_threshold
         slider_hold_down = self.judge.active_slider is not None and action.click_strength >= self.slider_hold_threshold
-        click_down = raw_click_down or slider_hold_down
+        spinner_hold_down = self.judge.active_spinner is not None and action.click_strength >= self.spinner_hold_threshold
+        click_down = raw_click_down or slider_hold_down or spinner_hold_down
         just_pressed = raw_click_down and not self.last_raw_click_down
         self.current_click_down = click_down
 
@@ -107,6 +110,7 @@ class OsuEnv:
 
         obs = self._build_observation()
         slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
+        spinner_state = self.judge.active_spinner_state(self.time_ms, self.cursor_x, self.cursor_y)
 
         info = {
             "score_value": judge_result.score_value,
@@ -122,12 +126,15 @@ class OsuEnv:
             "click_down": click_down,
             "raw_click_down": raw_click_down,
             "slider_hold_down": slider_hold_down,
+            "spinner_hold_down": spinner_hold_down,
             "click_strength": action.click_strength,
             "click_threshold": self.click_threshold,
             "slider_hold_threshold": self.slider_hold_threshold,
+            "spinner_hold_threshold": self.spinner_hold_threshold,
             "popup_x": judge_result.popup_x,
             "popup_y": judge_result.popup_y,
             "slider_state": slider_state,
+            "spinner_state": spinner_state,
         }
         self.last_info = info
 
@@ -198,6 +205,7 @@ class OsuEnv:
     def _build_observation(self) -> OsuObservation:
         upcoming = self.judge.peek_upcoming_objects(self.time_ms, self.upcoming_count)
         primary_is_slider = 1.0 if upcoming and upcoming[0].kind == HitObjectType.SLIDER else 0.0
+        primary_is_spinner = 1.0 if upcoming and upcoming[0].kind == HitObjectType.SPINNER else 0.0
 
         views: List[UpcomingObjectView] = []
         for obj in upcoming:
@@ -235,6 +243,7 @@ class OsuEnv:
             )
 
         slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
+        spinner_state = self.judge.active_spinner_state(self.time_ms, self.cursor_x, self.cursor_y)
 
         return OsuObservation(
             time_ms=self.time_ms,
@@ -255,6 +264,21 @@ class OsuEnv:
                 tangent_x=float(slider_state["tangent_x"]),
                 tangent_y=float(slider_state["tangent_y"]),
                 follow_radius=float(slider_state["follow_radius"]),
+            ),
+            spinner=SpinnerStateView(
+                active_spinner=1.0 if spinner_state["active_spinner"] else 0.0,
+                primary_is_spinner=primary_is_spinner,
+                progress=float(spinner_state["progress"]),
+                spins=float(spinner_state["spins"]),
+                target_spins=float(spinner_state["target_spins"]),
+                time_to_end_ms=float(spinner_state["time_to_end_ms"]),
+                center_x=float(spinner_state["center_x"]),
+                center_y=float(spinner_state["center_y"]),
+                distance_to_center=float(spinner_state["distance_to_center"]),
+                radius_error=float(spinner_state["radius_error"]),
+                angle_sin=float(spinner_state["angle_sin"]),
+                angle_cos=float(spinner_state["angle_cos"]),
+                angular_velocity=float(spinner_state["angular_velocity"]),
             ),
         )
 

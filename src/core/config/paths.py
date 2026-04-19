@@ -58,10 +58,19 @@ class OsuPaths:
         return self.sentiment_dir / "Sati Akura - Sentimental Love (TV Size) (Nao Tomori) [Myxo's Easy].osu"
 
     @property
+    def spinner_training_dir(self) -> Path:
+        return self.maps_dir / "Spinner Training"
+
+    @property
+    def phase6_spinner_curriculum_map(self) -> Path:
+        return self.spinner_training_dir / "You - Spinner Training [Phase 6 Curriculum].osu"
+
+    @property
     def active_map(self) -> Path:
-        return self.easy_ka_map
-        # return self.beginner_ka_map
+        # return self.easy_ka_map
+        return self.beginner_ka_map
         # return self.sentiment_easy_map
+        # return self.phase6_spinner_curriculum_map
 
     @property
     def runs_dir(self) -> Path:
@@ -86,6 +95,14 @@ class OsuPaths:
     @property
     def osu_phase5_slider_control_run_dir(self) -> Path:
         return self.runs_dir / "osu_phase5_slider_control"
+
+    @property
+    def osu_phase6_spinner_control_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase6_spinner_control"
+
+    @property
+    def osu_spica_main_finetune_run_dir(self) -> Path:
+        return self.runs_dir / "osu_spica_main_finetune"
 
     @property
     def checkpoints_dir(self) -> Path:
@@ -176,6 +193,46 @@ class OsuPaths:
         return self.osu_phase5_slider_control_run_dir / "eval"
 
     @property
+    def phase6_spinner_checkpoints_dir(self) -> Path:
+        return self.osu_phase6_spinner_control_run_dir / "checkpoints"
+
+    @property
+    def phase6_spinner_logs_dir(self) -> Path:
+        return self.osu_phase6_spinner_control_run_dir / "logs"
+
+    @property
+    def phase6_spinner_metrics_dir(self) -> Path:
+        return self.osu_phase6_spinner_control_run_dir / "metrics"
+
+    @property
+    def phase6_spinner_replays_dir(self) -> Path:
+        return self.osu_phase6_spinner_control_run_dir / "replays"
+
+    @property
+    def phase6_spinner_eval_dir(self) -> Path:
+        return self.osu_phase6_spinner_control_run_dir / "eval"
+
+    @property
+    def spica_main_checkpoints_dir(self) -> Path:
+        return self.osu_spica_main_finetune_run_dir / "checkpoints"
+
+    @property
+    def spica_main_logs_dir(self) -> Path:
+        return self.osu_spica_main_finetune_run_dir / "logs"
+
+    @property
+    def spica_main_metrics_dir(self) -> Path:
+        return self.osu_spica_main_finetune_run_dir / "metrics"
+
+    @property
+    def spica_main_replays_dir(self) -> Path:
+        return self.osu_spica_main_finetune_run_dir / "replays"
+
+    @property
+    def spica_main_eval_dir(self) -> Path:
+        return self.osu_spica_main_finetune_run_dir / "eval"
+
+    @property
     def latest_checkpoint(self) -> Path:
         return self.checkpoints_dir / "latest_recoil.pt"
 
@@ -216,6 +273,22 @@ class OsuPaths:
         return self.phase5_slider_checkpoints_dir / "best_slider_control.pt"
 
     @property
+    def phase6_spinner_latest_checkpoint(self) -> Path:
+        return self.phase6_spinner_checkpoints_dir / "latest_spinner_control.pt"
+
+    @property
+    def phase6_spinner_best_checkpoint(self) -> Path:
+        return self.phase6_spinner_checkpoints_dir / "best_spinner_control.pt"
+
+    @property
+    def spica_main_latest_checkpoint(self) -> Path:
+        return self.spica_main_checkpoints_dir / "latest_spica_main.pt"
+
+    @property
+    def spica_main_best_checkpoint(self) -> Path:
+        return self.spica_main_checkpoints_dir / "best_spica_main.pt"
+
+    @property
     def latest_live_replay(self) -> Path:
         return self.replays_dir / "latest_live_replay.json"
 
@@ -238,6 +311,14 @@ class OsuPaths:
     @property
     def phase5_slider_best_eval_replay(self) -> Path:
         return self.phase5_slider_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase6_spinner_best_eval_replay(self) -> Path:
+        return self.phase6_spinner_replays_dir / "best_eval_replay.json"
+
+    @property
+    def spica_main_best_eval_replay(self) -> Path:
+        return self.spica_main_replays_dir / "best_eval_replay.json"
 
 
 PATHS = OsuPaths()

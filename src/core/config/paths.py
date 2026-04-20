@@ -172,8 +172,8 @@ class OsuPaths:
             # self.noa_megane_easy_map,
             # self.onmyo_kouga_easy_map,
             # self.yasashii_suisei_easy_map,
-            self.animal_hard_map,
-            # self.internet_yamero_easy_map,
+            # self.animal_hard_map,
+            self.internet_yamero_easy_map,
             # self.idol_normal_map,
         )
 
@@ -231,6 +231,10 @@ class OsuPaths:
     @property
     def osu_phase8_easy_generalization_run_dir(self) -> Path:
         return self.runs_dir / "osu_phase8_easy_generalization"
+
+    @property
+    def osu_phase10_skill_memory_run_dir(self) -> Path:
+        return self.runs_dir / "osu_phase10_skill_memory"
 
     @property
     def checkpoints_dir(self) -> Path:
@@ -401,6 +405,18 @@ class OsuPaths:
         return self.osu_phase8_easy_generalization_run_dir / "eval"
 
     @property
+    def phase10_skill_memory_dir(self) -> Path:
+        return self.osu_phase10_skill_memory_run_dir / "memory"
+
+    @property
+    def phase10_skill_logs_dir(self) -> Path:
+        return self.osu_phase10_skill_memory_run_dir / "logs"
+
+    @property
+    def phase10_skill_eval_dir(self) -> Path:
+        return self.osu_phase10_skill_memory_run_dir / "eval"
+
+    @property
     def latest_checkpoint(self) -> Path:
         return self.checkpoints_dir / "latest_recoil.pt"
 
@@ -515,6 +531,18 @@ class OsuPaths:
     @property
     def phase8_easy_best_eval_replay(self) -> Path:
         return self.phase8_easy_replays_dir / "best_eval_replay.json"
+
+    @property
+    def phase10_skill_memory_path(self) -> Path:
+        return self.phase10_skill_memory_dir / "skill_memory.sqlite"
+
+    @property
+    def phase10_skill_memory_json_path(self) -> Path:
+        return self.phase10_skill_memory_dir / "skill_memory.json"
+
+    @property
+    def phase11_skill_eval_report_path(self) -> Path:
+        return self.phase10_skill_eval_dir / "skill_system_eval_report.json"
 
 
 PATHS = OsuPaths()

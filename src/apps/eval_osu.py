@@ -15,6 +15,11 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 from src.skills.osu.replay.replay_io import save_replay
 from src.skills.osu.viewer.pygame_viewer import OsuViewer, ViewerConfig
 from src.core.config.paths import PATHS
+from src.skills.osu.skill_system.config import SkillSystemConfig
+from src.skills.osu.skill_system.dedup import dedup_and_merge_candidates
+from src.skills.osu.skill_system.extraction import SkillExtractor
+from src.skills.osu.skill_system.runtime import SkillRuntime
+from src.skills.osu.skill_system.storage import make_skill_memory_store
 
 
 def default_eval_beatmap_path() -> str:
@@ -55,6 +60,12 @@ class EvalConfig:
     spinner_controller_variation_amp: float = 0.055
     spinner_controller_ramp_progress: float = 0.12
     spinner_controller_ramp_down_ms: float = 260.0
+    enable_skill_system: bool = os.environ.get("OSU_ENABLE_SKILL_SYSTEM", "1") == "1"
+    skill_memory_path: str = os.environ.get("OSU_SKILL_MEMORY_PATH", str(PATHS.phase10_skill_memory_path))
+    skill_runtime_log: bool = os.environ.get("OSU_SKILL_RUNTIME_LOG", "0") == "1"
+    skill_auto_extract: bool = os.environ.get("OSU_SKILL_AUTO_EXTRACT", "1") == "1"
+    skill_save_runtime_stats: bool = os.environ.get("OSU_SKILL_SAVE_RUNTIME_STATS", "1") == "1"
+    skill_export_json_path: str = os.environ.get("OSU_SKILL_EXPORT_JSON", "")
 
 
 def obs_to_numpy(obs: OsuObservation) -> np.ndarray:
@@ -393,7 +404,7 @@ def load_model_state_compatible(model: ActorCritic, checkpoint: dict) -> None:
         print(f"[partial checkpoint load] expanded keys: {', '.join(partial_keys)}")
 
 
-def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[list, EvalStats]:
+def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig, skill_runtime: SkillRuntime | None = None) -> tuple[list, EvalStats]:
     obs = env.reset()
     stats = EvalStats()
     prev_click_down = False
@@ -409,7 +420,8 @@ def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[li
     spinner_controller_state = SpinnerControllerState()
 
     while not env.done:
-        action = spinner_control_action(obs, cfg, policy(obs), spinner_controller_state)
+        baseline_action = spinner_control_action(obs, cfg, policy(obs), spinner_controller_state)
+        action = skill_runtime.act(obs, baseline_action) if skill_runtime is not None else baseline_action
         raw_click_down = action.click_strength >= env.click_threshold
         slider_hold_down = obs.slider.active_slider > 0.5 and action.click_strength >= env.slider_hold_threshold
         spinner_hold_down = obs.spinner.active_spinner > 0.5 and action.click_strength >= env.spinner_hold_threshold
@@ -417,7 +429,10 @@ def rollout_episode(env: OsuEnv, policy: PPOPolicy, cfg: EvalConfig) -> tuple[li
         just_pressed = raw_click_down and not prev_raw_click_down
         target = first_hit_target(obs)
 
+        prev_obs = obs
         step = env.step(action)
+        if skill_runtime is not None:
+            skill_runtime.post_step(prev_obs, step.observation, step.info)
 
         if just_pressed:
             stats.total_clicks += 1
@@ -621,11 +636,53 @@ def main() -> None:
     model.eval()
 
     policy = PPOPolicy(model=model, device=device)
+    skill_runtime = None
+    if cfg.enable_skill_system:
+        skill_runtime = SkillRuntime.from_path(
+            cfg.skill_memory_path,
+            SkillSystemConfig(
+                enable_skill_system=True,
+                skill_memory_path=cfg.skill_memory_path,
+                log_runtime=cfg.skill_runtime_log,
+            ),
+        )
 
-    frames, stats = rollout_episode(env_rollout, policy, cfg)
+    frames, stats = rollout_episode(env_rollout, policy, cfg, skill_runtime=skill_runtime)
 
     replay_path = Path(cfg.replay_path)
     save_replay(frames, replay_path)
+
+    if skill_runtime is not None and cfg.skill_save_runtime_stats:
+        skill_runtime.save(cfg.skill_memory_path)
+        print(f"[skill_runtime saved] {cfg.skill_memory_path}")
+
+    if cfg.skill_auto_extract:
+        store = make_skill_memory_store(cfg.skill_memory_path)
+        existing_skills = store.load()
+        extractor = SkillExtractor()
+        candidates, extraction_report = extractor.extract_from_frames(
+            beatmap=beatmap,
+            frames=frames,
+            replay_id=str(replay_path),
+            checkpoint_id=str(checkpoint_path),
+        )
+        merged_skills, merge_stats = dedup_and_merge_candidates(
+            candidates,
+            existing_skills=existing_skills,
+        )
+        store.save(merged_skills)
+        if cfg.skill_export_json_path:
+            make_skill_memory_store(cfg.skill_export_json_path).save(merged_skills)
+        print(
+            "[skill_auto_extract] "
+            f"memory={cfg.skill_memory_path} "
+            f"candidates={len(candidates)} "
+            f"rejected={extraction_report.rejected} "
+            f"created={merge_stats.get('created', 0)} "
+            f"merged={merge_stats.get('merged', 0)} "
+            f"final={len(merged_skills)}"
+        )
+
     print(f"[checkpoint] {checkpoint_path}")
     print(f"[saved replay] {replay_path}")
     print(
@@ -672,6 +729,17 @@ def main() -> None:
         f"spin_nohold={stats.spinner_no_hold_count} "
         f"spin_miss={stats.spinner_miss_count}"
     )
+    if skill_runtime is not None:
+        report = skill_runtime.report
+        print(
+            "[skill_runtime] "
+            f"matched={report.matched} "
+            f"selected={report.selected} "
+            f"active_steps={report.active_steps} "
+            f"aborts={report.aborts} "
+            f"ended={report.ended} "
+            f"by_type={report.by_type}"
+        )
 
     # 2. Показываем уже сохранённый replay
     env_view = OsuEnv(

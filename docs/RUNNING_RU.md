@@ -246,11 +246,57 @@ Sati Akura - Animal [Even if it's ugly, that's the way I want it.]
 - spinner control;
 - simple jump/double.
 
+## Phase 10/11 skill system
+
+Сборка skill memory:
+
+```powershell
+python -m src.apps.build_skill_memory
+```
+
+Проверка памяти:
+
+```powershell
+python -m src.apps.inspect_skill_memory --verbose
+```
+
+Обычный eval с включённой skill system:
+
+```powershell
+$env:OSU_ENABLE_SKILL_SYSTEM='1'
+$env:OSU_SKILL_MEMORY_PATH='D:\Projects\digital_agent_osu_project\artifacts\runs\osu_phase10_skill_memory\memory\skill_memory.sqlite'
+python -m src.apps.eval_osu
+Remove-Item Env:\OSU_ENABLE_SKILL_SYSTEM
+Remove-Item Env:\OSU_SKILL_MEMORY_PATH
+```
+
+Eval с автоматическим пополнением skill memory:
+
+```powershell
+$env:OSU_SKILL_AUTO_EXTRACT='1'
+python -m src.apps.eval_osu
+Remove-Item Env:\OSU_SKILL_AUTO_EXTRACT
+```
+
+Полный baseline-vs-skill report:
+
+```powershell
+python -m src.apps.eval_skill_system --repeat 3 --per-skill-type --ablations
+```
+
+Report:
+
+```text
+artifacts/runs/osu_phase10_skill_memory/eval/skill_system_eval_report.json
+```
+
 ## Документация по стадиям
 
 ```text
 docs/osu/phase7_multimap_generalization_status.md
 docs/osu/phase8_easy_generalization_plan.md
+docs/osu/phase10_skill_memory_init.md
+docs/osu/phase11_skill_system_selection.md
 docs/osu/curriculum_plan.md
 docs/osu/reward_design.md
 ```

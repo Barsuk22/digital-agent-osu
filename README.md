@@ -242,3 +242,5 @@ src/core/config/paths.py
 - [docs/osu/reward_design.md](docs/osu/reward_design.md)
 - [docs/osu/phase7_multimap_generalization_status.md](docs/osu/phase7_multimap_generalization_status.md)
 - [docs/osu/phase8_easy_generalization_plan.md](docs/osu/phase8_easy_generalization_plan.md)
+- [docs/osu/phase10_skill_memory_init.md](docs/osu/phase10_skill_memory_init.md)
+- [docs/osu/phase11_skill_system_selection.md](docs/osu/phase11_skill_system_selection.md)

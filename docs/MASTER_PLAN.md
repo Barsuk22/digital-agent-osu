@@ -280,6 +280,35 @@ YOASOBI held-out:  hits=129 miss=0 sl_inside=0.923 dpx=40.0 sl_seg_q=0.952
 - fallback на основную policy;
 - проверка, что skill usage действительно улучшает игру.
 
+## Phase 10/11 implementation update
+
+Phase 10 реализована как foundation для skill memory:
+
+- `SkillEntry` schema;
+- extraction из replay/eval traces;
+- quality/confidence scoring;
+- dedup / merge;
+- SQLite skill memory storage with optional JSON export;
+- `build_skill_memory.py`;
+- `inspect_skill_memory.py`.
+
+Phase 11 реализована как опциональный runtime layer:
+
+- matcher;
+- ranker;
+- selector с confidence/risk/cooldown gates;
+- bounded executor с fallback;
+- post-use stats update;
+- интеграция в `eval_osu`;
+- `eval_skill_system.py` для baseline-vs-skill, per-type и ablation reports.
+
+Подробности:
+
+```text
+docs/osu/phase10_skill_memory_init.md
+docs/osu/phase11_skill_system_selection.md
+```
+
 ### Phase 12 / Speed & Complexity
 
 Статус: долгосрочный план.

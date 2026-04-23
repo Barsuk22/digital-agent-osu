@@ -1,0 +1,3622 @@
+[
+  {
+    "TickIndex": 0,
+    "MapTimeMs": 0,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "warmup",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 9.8923,
+    "PolicyLatencyMs": 9.8923,
+    "Action": {
+      "Dx": 0.9188181161880493,
+      "Dy": 0.8942822217941284,
+      "ClickStrength": 0.3487975597381592
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 1,
+    "MapTimeMs": 0.9147,
+    "CursorX": 287.02453531598513,
+    "CursorY": 211.21902874132803,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 8.7518,
+    "PolicyLatencyMs": 2.0431,
+    "Action": {
+      "Dx": -0.9679887890815735,
+      "Dy": -0.7758440971374512,
+      "ClickStrength": 0.14826923608779907
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 2,
+    "MapTimeMs": 30.7452,
+    "CursorX": 273.3204460966543,
+    "CursorY": 200.18235877106042,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7025,
+    "PolicyLatencyMs": 2.3389,
+    "Action": {
+      "Dx": -0.9527674913406372,
+      "Dy": -0.7797091007232666,
+      "ClickStrength": 0.16343474388122559
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 3,
+    "MapTimeMs": 61.5821,
+    "CursorX": 259.99702602230485,
+    "CursorY": 189.14568880079287,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.4797,
+    "PolicyLatencyMs": 1.271,
+    "Action": {
+      "Dx": -0.9105067253112793,
+      "Dy": -0.9163607358932495,
+      "ClickStrength": 0.09592992067337036
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 4,
+    "MapTimeMs": 91.8208,
+    "CursorX": 247.43494423791822,
+    "CursorY": 176.20614469772053,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.2145,
+    "PolicyLatencyMs": 4.0096,
+    "Action": {
+      "Dx": -0.9195449352264404,
+      "Dy": -0.9678558707237244,
+      "ClickStrength": 0.05901619791984558
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 5,
+    "MapTimeMs": 122.6025,
+    "CursorX": 234.49219330855018,
+    "CursorY": 162.50545094152625,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.161,
+    "PolicyLatencyMs": 1.9607,
+    "Action": {
+      "Dx": -0.9075678586959839,
+      "Dy": -0.9599663019180298,
+      "ClickStrength": 0.06680220365524292
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 6,
+    "MapTimeMs": 153.5445,
+    "CursorX": 221.93011152416358,
+    "CursorY": 149.18533201189297,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.3022,
+    "PolicyLatencyMs": 2.0585,
+    "Action": {
+      "Dx": -0.8888646364212036,
+      "Dy": -0.949436604976654,
+      "ClickStrength": 0.07477182149887085
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 7,
+    "MapTimeMs": 169.6516,
+    "CursorX": 209.36802973977694,
+    "CursorY": 135.86521308225966,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7853,
+    "PolicyLatencyMs": 1.5868,
+    "Action": {
+      "Dx": -0.8634055256843567,
+      "Dy": -0.9355011582374573,
+      "ClickStrength": 0.08246633410453796
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 8,
+    "MapTimeMs": 185.2765,
+    "CursorX": 197.18661710037173,
+    "CursorY": 122.54509415262635,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1019,
+    "PolicyLatencyMs": 1.8411,
+    "Action": {
+      "Dx": -0.8299007415771484,
+      "Dy": -0.9193889498710632,
+      "ClickStrength": 0.09413358569145203
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 9,
+    "MapTimeMs": 200.5073,
+    "CursorX": 185.38587360594795,
+    "CursorY": 109.60555004955401,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8355,
+    "PolicyLatencyMs": 1.6365,
+    "Action": {
+      "Dx": -0.7839581966400146,
+      "Dy": -0.8971453905105591,
+      "ClickStrength": 0.10665848851203918
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 10,
+    "MapTimeMs": 231.2497,
+    "CursorX": 174.346468401487,
+    "CursorY": 97.0465807730426,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1123,
+    "PolicyLatencyMs": 1.8939,
+    "Action": {
+      "Dx": -0.7229529619216919,
+      "Dy": -0.8648861050605774,
+      "ClickStrength": 0.11924222111701965
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 11,
+    "MapTimeMs": 261.5619,
+    "CursorX": 164.06840148698885,
+    "CursorY": 84.86818632309217,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7196,
+    "PolicyLatencyMs": 1.4821,
+    "Action": {
+      "Dx": -0.644769549369812,
+      "Dy": -0.8180431127548218,
+      "ClickStrength": 0.1321447491645813
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 12,
+    "MapTimeMs": 277.6772,
+    "CursorX": 154.93234200743495,
+    "CursorY": 73.45094152626362,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0798,
+    "PolicyLatencyMs": 1.8129,
+    "Action": {
+      "Dx": -0.5541785955429077,
+      "Dy": -0.7533686757087708,
+      "ClickStrength": 0.1451702117919922
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 13,
+    "MapTimeMs": 308.4159,
+    "CursorX": 146.93828996282528,
+    "CursorY": 62.79484638255698,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8151,
+    "PolicyLatencyMs": 1.4387,
+    "Action": {
+      "Dx": -0.4574638903141022,
+      "Dy": -0.6677255630493164,
+      "ClickStrength": 0.158454030752182
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 14,
+    "MapTimeMs": 338.6876,
+    "CursorX": 140.46691449814125,
+    "CursorY": 53.2804757185332,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9998,
+    "PolicyLatencyMs": 1.7625,
+    "Action": {
+      "Dx": -0.3678992986679077,
+      "Dy": -0.564549446105957,
+      "ClickStrength": 0.17126986384391785
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 15,
+    "MapTimeMs": 369.4415,
+    "CursorX": 135.1375464684015,
+    "CursorY": 45.28840436075322,
+    "PrimaryObject": "none",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.831,
+    "PolicyLatencyMs": 1.6148,
+    "Action": {
+      "Dx": -0.2894253134727478,
+      "Dy": -0.45524007081985474,
+      "ClickStrength": 0.1830357313156128
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 16,
+    "MapTimeMs": 399.3774,
+    "CursorX": 130.95018587360596,
+    "CursorY": 38.818632309217044,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.2722,
+    "PolicyLatencyMs": 1.4456,
+    "Action": {
+      "Dx": 0.09301458299160004,
+      "Dy": -0.237863227725029,
+      "ClickStrength": 0.1329890489578247
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 17,
+    "MapTimeMs": 429.6292,
+    "CursorX": 132.09219330855018,
+    "CursorY": 35.39345887016849,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.7312,
+    "PolicyLatencyMs": 3.4991,
+    "Action": {
+      "Dx": 0.09310880303382874,
+      "Dy": -0.23112761974334717,
+      "ClickStrength": 0.13326022028923035
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 18,
+    "MapTimeMs": 445.4661,
+    "CursorX": 133.23420074349443,
+    "CursorY": 31.96828543111992,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.926,
+    "PolicyLatencyMs": 1.6625,
+    "Action": {
+      "Dx": 0.09209992736577988,
+      "Dy": -0.22395719587802887,
+      "ClickStrength": 0.1341773271560669
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 19,
+    "MapTimeMs": 475.7674,
+    "CursorX": 134.37620817843867,
+    "CursorY": 28.54311199207136,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.0022,
+    "PolicyLatencyMs": 3.7506,
+    "Action": {
+      "Dx": 0.09253130108118057,
+      "Dy": -0.21886087954044342,
+      "ClickStrength": 0.13469499349594116
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 20,
+    "MapTimeMs": 491.8119,
+    "CursorX": 135.5182156133829,
+    "CursorY": 25.49851337958375,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.472,
+    "PolicyLatencyMs": 3.2099,
+    "Action": {
+      "Dx": 0.09145493805408478,
+      "Dy": -0.21350069344043732,
+      "ClickStrength": 0.13557589054107666
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 21,
+    "MapTimeMs": 523.1352,
+    "CursorX": 136.66022304832714,
+    "CursorY": 22.453914767096133,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8687,
+    "PolicyLatencyMs": 1.6421,
+    "Action": {
+      "Dx": 0.09219244867563248,
+      "Dy": -0.21047666668891907,
+      "ClickStrength": 0.13604241609573364
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 22,
+    "MapTimeMs": 553.4214,
+    "CursorX": 137.8022304832714,
+    "CursorY": 19.409316154608522,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8431,
+    "PolicyLatencyMs": 1.5885,
+    "Action": {
+      "Dx": 0.0931486263871193,
+      "Dy": -0.2078467160463333,
+      "ClickStrength": 0.13662013411521912
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 23,
+    "MapTimeMs": 568.5701,
+    "CursorX": 138.9442379182156,
+    "CursorY": 16.36471754212091,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7088,
+    "PolicyLatencyMs": 1.4751,
+    "Action": {
+      "Dx": 0.09241781383752823,
+      "Dy": -0.2034742385149002,
+      "ClickStrength": 0.13772034645080566
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 24,
+    "MapTimeMs": 599.3635,
+    "CursorX": 140.08624535315985,
+    "CursorY": 13.3201189296333,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8347,
+    "PolicyLatencyMs": 1.5986,
+    "Action": {
+      "Dx": 0.09392261505126953,
+      "Dy": -0.20154845714569092,
+      "ClickStrength": 0.13838666677474976
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 25,
+    "MapTimeMs": 614.4071,
+    "CursorX": 141.2282527881041,
+    "CursorY": 10.275520317145688,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7566,
+    "PolicyLatencyMs": 1.5346,
+    "Action": {
+      "Dx": 0.09340644627809525,
+      "Dy": -0.1974826455116272,
+      "ClickStrength": 0.1395731270313263
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 26,
+    "MapTimeMs": 645.3966,
+    "CursorX": 142.37026022304832,
+    "CursorY": 7.230921704658077,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.1872,
+    "PolicyLatencyMs": 3.9763,
+    "Action": {
+      "Dx": 0.09534203261137009,
+      "Dy": -0.19583477079868317,
+      "ClickStrength": 0.14028310775756836
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 27,
+    "MapTimeMs": 675.6238,
+    "CursorX": 143.51226765799257,
+    "CursorY": 4.186323092170466,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.0249,
+    "PolicyLatencyMs": 4.7403,
+    "Action": {
+      "Dx": 0.09736338257789612,
+      "Dy": -0.1940387785434723,
+      "ClickStrength": 0.14100688695907593
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 28,
+    "MapTimeMs": 691.7844,
+    "CursorX": 144.6542750929368,
+    "CursorY": 1.1417244796828543,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.627,
+    "PolicyLatencyMs": 5.3859,
+    "Action": {
+      "Dx": 0.09716019779443741,
+      "Dy": -0.19001404941082,
+      "ClickStrength": 0.1422053575515747
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 29,
+    "MapTimeMs": 722.623,
+    "CursorX": 145.79628252788103,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7365,
+    "PolicyLatencyMs": 1.5262,
+    "Action": {
+      "Dx": 0.09811577200889587,
+      "Dy": -0.19178946316242218,
+      "ClickStrength": 0.14174294471740723
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 30,
+    "MapTimeMs": 737.7765,
+    "CursorX": 146.93828996282528,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.159,
+    "PolicyLatencyMs": 1.9351,
+    "Action": {
+      "Dx": 0.09574982523918152,
+      "Dy": -0.19363200664520264,
+      "ClickStrength": 0.14119243621826172
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 31,
+    "MapTimeMs": 768.596,
+    "CursorX": 148.08029739776953,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7826,
+    "PolicyLatencyMs": 1.5953,
+    "Action": {
+      "Dx": 0.09635181725025177,
+      "Dy": -0.1979585438966751,
+      "ClickStrength": 0.14002734422683716
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 32,
+    "MapTimeMs": 799.4011,
+    "CursorX": 149.22230483271375,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7491,
+    "PolicyLatencyMs": 1.5199,
+    "Action": {
+      "Dx": 0.0972604751586914,
+      "Dy": -0.20243406295776367,
+      "ClickStrength": 0.13882029056549072
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 33,
+    "MapTimeMs": 815.4964,
+    "CursorX": 150.364312267658,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7143,
+    "PolicyLatencyMs": 2.4714,
+    "Action": {
+      "Dx": 0.09541748464107513,
+      "Dy": -0.2047976702451706,
+      "ClickStrength": 0.1382349729537964
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 34,
+    "MapTimeMs": 830.7429,
+    "CursorX": 151.50631970260224,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.6296,
+    "PolicyLatencyMs": 2.3798,
+    "Action": {
+      "Dx": 0.0934612900018692,
+      "Dy": -0.2071007639169693,
+      "ClickStrength": 0.1376953125
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 35,
+    "MapTimeMs": 861.5654,
+    "CursorX": 152.64832713754646,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8736,
+    "PolicyLatencyMs": 1.61,
+    "Action": {
+      "Dx": 0.09498650580644608,
+      "Dy": -0.21171154081821442,
+      "ClickStrength": 0.13642728328704834
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 36,
+    "MapTimeMs": 877.754,
+    "CursorX": 153.7903345724907,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.1771,
+    "PolicyLatencyMs": 2.766,
+    "Action": {
+      "Dx": 0.09344768524169922,
+      "Dy": -0.21411897242069244,
+      "ClickStrength": 0.13584640622138977
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 37,
+    "MapTimeMs": 908.4235,
+    "CursorX": 154.93234200743495,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.3534,
+    "PolicyLatencyMs": 5.1488,
+    "Action": {
+      "Dx": 0.09548129886388779,
+      "Dy": -0.2181742638349533,
+      "ClickStrength": 0.1345360279083252
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 38,
+    "MapTimeMs": 938.755,
+    "CursorX": 156.07434944237917,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.55,
+    "PolicyLatencyMs": 1.3175,
+    "Action": {
+      "Dx": 0.09786418825387955,
+      "Dy": -0.22141684591770172,
+      "ClickStrength": 0.13320672512054443
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 39,
+    "MapTimeMs": 969.0046,
+    "CursorX": 157.21635687732342,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.808,
+    "PolicyLatencyMs": 1.5712,
+    "Action": {
+      "Dx": 0.10071037709712982,
+      "Dy": -0.22354552149772644,
+      "ClickStrength": 0.13184919953346252
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 40,
+    "MapTimeMs": 999.4758,
+    "CursorX": 158.73903345724906,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8249,
+    "PolicyLatencyMs": 1.6058,
+    "Action": {
+      "Dx": 0.10231021046638489,
+      "Dy": -0.2243690937757492,
+      "ClickStrength": 0.13056820631027222
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 41,
+    "MapTimeMs": 1015.5748,
+    "CursorX": 160.2617100371747,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.5516,
+    "PolicyLatencyMs": 2.3194,
+    "Action": {
+      "Dx": 0.0998372733592987,
+      "Dy": -0.22436049580574036,
+      "ClickStrength": 0.13013601303100586
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 42,
+    "MapTimeMs": 1046.4944,
+    "CursorX": 161.78438661710038,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.019,
+    "PolicyLatencyMs": 1.7814,
+    "Action": {
+      "Dx": 0.10234644263982773,
+      "Dy": -0.222379669547081,
+      "ClickStrength": 0.12878817319869995
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 43,
+    "MapTimeMs": 1076.8646,
+    "CursorX": 163.30706319702603,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7064,
+    "PolicyLatencyMs": 2.4022,
+    "Action": {
+      "Dx": 0.10523595660924911,
+      "Dy": -0.21836329996585846,
+      "ClickStrength": 0.12737196683883667
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 44,
+    "MapTimeMs": 1092.3576,
+    "CursorX": 164.82973977695167,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.0516,
+    "PolicyLatencyMs": 3.8265,
+    "Action": {
+      "Dx": 0.10309260338544846,
+      "Dy": -0.21566610038280487,
+      "ClickStrength": 0.12691903114318848
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 45,
+    "MapTimeMs": 1123.2746,
+    "CursorX": 166.3524163568773,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0067,
+    "PolicyLatencyMs": 1.7423,
+    "Action": {
+      "Dx": 0.1069529801607132,
+      "Dy": -0.20806199312210083,
+      "ClickStrength": 0.1251814365386963
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 46,
+    "MapTimeMs": 1139.3273,
+    "CursorX": 167.875092936803,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7835,
+    "PolicyLatencyMs": 1.5709,
+    "Action": {
+      "Dx": 0.10531465709209442,
+      "Dy": -0.2032541036605835,
+      "ClickStrength": 0.1245119571685791
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 47,
+    "MapTimeMs": 1154.6259,
+    "CursorX": 169.39776951672863,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6789,
+    "PolicyLatencyMs": 1.4451,
+    "Action": {
+      "Dx": 0.10343943536281586,
+      "Dy": -0.19797131419181824,
+      "ClickStrength": 0.12382891774177551
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 48,
+    "MapTimeMs": 1170.4927,
+    "CursorX": 170.92044609665427,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7395,
+    "PolicyLatencyMs": 1.5356,
+    "Action": {
+      "Dx": 0.1018504947423935,
+      "Dy": -0.1917235553264618,
+      "ClickStrength": 0.12298926711082458
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 49,
+    "MapTimeMs": 1185.6057,
+    "CursorX": 172.44312267657992,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7835,
+    "PolicyLatencyMs": 1.5457,
+    "Action": {
+      "Dx": 0.09999207407236099,
+      "Dy": -0.18502558767795563,
+      "ClickStrength": 0.12211084365844727
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 50,
+    "MapTimeMs": 1200.7665,
+    "CursorX": 173.96579925650556,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8662,
+    "PolicyLatencyMs": 1.6416,
+    "Action": {
+      "Dx": 0.09817904233932495,
+      "Dy": -0.17754320800304413,
+      "ClickStrength": 0.12109366059303284
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 51,
+    "MapTimeMs": 1231.6044,
+    "CursorX": 175.1078066914498,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.978,
+    "PolicyLatencyMs": 1.7382,
+    "Action": {
+      "Dx": 0.10526867210865021,
+      "Dy": -0.1602729856967926,
+      "ClickStrength": 0.11743989586830139
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 52,
+    "MapTimeMs": 1262.4234,
+    "CursorX": 176.63048327137545,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0202,
+    "PolicyLatencyMs": 1.7261,
+    "Action": {
+      "Dx": 0.11032339185476303,
+      "Dy": -0.14003828167915344,
+      "ClickStrength": 0.1131904125213623
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 53,
+    "MapTimeMs": 1292.2648,
+    "CursorX": 178.15315985130113,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.2061,
+    "PolicyLatencyMs": 3.8975,
+    "Action": {
+      "Dx": 0.11468557268381119,
+      "Dy": -0.11766328662633896,
+      "ClickStrength": 0.10825449228286743
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 54,
+    "MapTimeMs": 1323.1252,
+    "CursorX": 179.67583643122677,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8372,
+    "PolicyLatencyMs": 1.6289,
+    "Action": {
+      "Dx": 0.11879630386829376,
+      "Dy": -0.09186296910047531,
+      "ClickStrength": 0.10222244262695312
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 55,
+    "MapTimeMs": 1353.4938,
+    "CursorX": 181.19851301115241,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.574,
+    "PolicyLatencyMs": 1.3588,
+    "Action": {
+      "Dx": 0.12147953361272812,
+      "Dy": -0.0641481801867485,
+      "ClickStrength": 0.09547176957130432
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 56,
+    "MapTimeMs": 1369.5996,
+    "CursorX": 182.72118959107806,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8353,
+    "PolicyLatencyMs": 1.6057,
+    "Action": {
+      "Dx": 0.11798577010631561,
+      "Dy": -0.04825720191001892,
+      "ClickStrength": 0.09195199608802795
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 57,
+    "MapTimeMs": 1385.2833,
+    "CursorX": 184.24386617100373,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7489,
+    "PolicyLatencyMs": 1.5355,
+    "Action": {
+      "Dx": 0.11361820250749588,
+      "Dy": -0.032306917011737823,
+      "ClickStrength": 0.08836719393730164
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 58,
+    "MapTimeMs": 1400.5234,
+    "CursorX": 185.76654275092937,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8121,
+    "PolicyLatencyMs": 1.6045,
+    "Action": {
+      "Dx": 0.1082753911614418,
+      "Dy": -0.016458921134471893,
+      "ClickStrength": 0.08476606011390686
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 59,
+    "MapTimeMs": 1430.7803,
+    "CursorX": 187.28921933085502,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.3589,
+    "PolicyLatencyMs": 2.117,
+    "Action": {
+      "Dx": 0.10394879430532455,
+      "Dy": 0.014443179592490196,
+      "ClickStrength": 0.07677575945854187
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 60,
+    "MapTimeMs": 1461.7206,
+    "CursorX": 188.81189591078066,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0329,
+    "PolicyLatencyMs": 1.7421,
+    "Action": {
+      "Dx": 0.09494268149137497,
+      "Dy": 0.046028029173612595,
+      "ClickStrength": 0.06864124536514282
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 61,
+    "MapTimeMs": 1492.4235,
+    "CursorX": 189.9539033457249,
+    "CursorY": 0.38057482656095143,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.8551,
+    "PolicyLatencyMs": 3.5577,
+    "Action": {
+      "Dx": 0.0834759995341301,
+      "Dy": 0.07364050298929214,
+      "ClickStrength": 0.06070423126220703
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 62,
+    "MapTimeMs": 1522.6587,
+    "CursorX": 191.09591078066916,
+    "CursorY": 1.1417244796828543,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5418,
+    "PolicyLatencyMs": 1.3329,
+    "Action": {
+      "Dx": 0.06569553166627884,
+      "Dy": 0.09712005406618118,
+      "ClickStrength": 0.05331072211265564
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 63,
+    "MapTimeMs": 1553.4566,
+    "CursorX": 191.85724907063198,
+    "CursorY": 2.2834489593657086,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9566,
+    "PolicyLatencyMs": 1.7319,
+    "Action": {
+      "Dx": 0.041810061782598495,
+      "Dy": 0.11757300049066544,
+      "ClickStrength": 0.046166837215423584
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 64,
+    "MapTimeMs": 1583.7041,
+    "CursorX": 192.23791821561338,
+    "CursorY": 3.8057482656095143,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8736,
+    "PolicyLatencyMs": 1.6482,
+    "Action": {
+      "Dx": 0.010572225786745548,
+      "Dy": 0.1347295641899109,
+      "ClickStrength": 0.03951779007911682
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 65,
+    "MapTimeMs": 1599.5421,
+    "CursorX": 192.23791821561338,
+    "CursorY": 5.708622398414271,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8689,
+    "PolicyLatencyMs": 1.6749,
+    "Action": {
+      "Dx": -0.004241254646331072,
+      "Dy": 0.1348821371793747,
+      "ClickStrength": 0.03608638048171997
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 66,
+    "MapTimeMs": 1614.7652,
+    "CursorX": 192.23791821561338,
+    "CursorY": 7.611496531219029,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.3393,
+    "PolicyLatencyMs": 3.1218,
+    "Action": {
+      "Dx": -0.021866166964173317,
+      "Dy": 0.1346767544746399,
+      "ClickStrength": 0.03290671110153198
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 67,
+    "MapTimeMs": 1630.6185,
+    "CursorX": 191.85724907063198,
+    "CursorY": 9.514370664023787,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.5624,
+    "PolicyLatencyMs": 2.3318,
+    "Action": {
+      "Dx": -0.0407605804502964,
+      "Dy": 0.13592220842838287,
+      "ClickStrength": 0.02972280979156494
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 68,
+    "MapTimeMs": 1661.5516,
+    "CursorX": 191.09591078066916,
+    "CursorY": 11.417244796828543,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.3239,
+    "PolicyLatencyMs": 5.0734,
+    "Action": {
+      "Dx": -0.0977587103843689,
+      "Dy": 0.15808796882629395,
+      "ClickStrength": 0.02411550283432007
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 69,
+    "MapTimeMs": 1677.6498,
+    "CursorX": 189.57323420074349,
+    "CursorY": 13.3201189296333,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.4596,
+    "PolicyLatencyMs": 5.1932,
+    "Action": {
+      "Dx": -0.11321232467889786,
+      "Dy": 0.1656646579504013,
+      "ClickStrength": 0.02144119143486023
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 70,
+    "MapTimeMs": 1693.3718,
+    "CursorX": 188.05055762081784,
+    "CursorY": 15.60356788899901,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.7998,
+    "PolicyLatencyMs": 5.5794,
+    "Action": {
+      "Dx": -0.12581613659858704,
+      "Dy": 0.1716223657131195,
+      "ClickStrength": 0.019058257341384888
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 71,
+    "MapTimeMs": 1708.5759,
+    "CursorX": 186.14721189591077,
+    "CursorY": 17.887016848364716,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.0109,
+    "PolicyLatencyMs": 5.8005,
+    "Action": {
+      "Dx": -0.13106396794319153,
+      "Dy": 0.18043513596057892,
+      "ClickStrength": 0.01700413227081299
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 72,
+    "MapTimeMs": 1739.3083,
+    "CursorX": 184.24386617100373,
+    "CursorY": 20.170465807730427,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8892,
+    "PolicyLatencyMs": 1.6565,
+    "Action": {
+      "Dx": -0.17324508726596832,
+      "Dy": 0.22712093591690063,
+      "ClickStrength": 0.013867408037185669
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 73,
+    "MapTimeMs": 1754.5777,
+    "CursorX": 181.95985130111524,
+    "CursorY": 23.215064420218038,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6909,
+    "PolicyLatencyMs": 1.4605,
+    "Action": {
+      "Dx": -0.15960952639579773,
+      "Dy": 0.2390678972005844,
+      "ClickStrength": 0.012596338987350464
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 74,
+    "MapTimeMs": 1770.5124,
+    "CursorX": 179.67583643122677,
+    "CursorY": 26.259663032705653,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8781,
+    "PolicyLatencyMs": 1.6707,
+    "Action": {
+      "Dx": -0.14195755124092102,
+      "Dy": 0.2555874288082123,
+      "ClickStrength": 0.011609286069869995
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 75,
+    "MapTimeMs": 1785.7586,
+    "CursorX": 177.7724907063197,
+    "CursorY": 29.68483647175421,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.2107,
+    "PolicyLatencyMs": 1.9951,
+    "Action": {
+      "Dx": -0.12094221264123917,
+      "Dy": 0.26642587780952454,
+      "ClickStrength": 0.01097598671913147
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 76,
+    "MapTimeMs": 1816.7592,
+    "CursorX": 175.86914498141263,
+    "CursorY": 33.11000991080277,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1288,
+    "PolicyLatencyMs": 1.9423,
+    "Action": {
+      "Dx": -0.11558786779642105,
+      "Dy": 0.3190547227859497,
+      "ClickStrength": 0.011342465877532959
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 77,
+    "MapTimeMs": 1847.5489,
+    "CursorX": 174.346468401487,
+    "CursorY": 37.29633300297324,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.558,
+    "PolicyLatencyMs": 1.377,
+    "Action": {
+      "Dx": -0.09953325986862183,
+      "Dy": 0.3577347993850708,
+      "ClickStrength": 0.013934612274169922
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 78,
+    "MapTimeMs": 1878.424,
+    "CursorX": 172.82379182156134,
+    "CursorY": 42.243805748265615,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7032,
+    "PolicyLatencyMs": 1.4747,
+    "Action": {
+      "Dx": -0.07100183516740799,
+      "Dy": 0.40153464674949646,
+      "ClickStrength": 0.01919040083885193
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 79,
+    "MapTimeMs": 1893.9696,
+    "CursorX": 171.6817843866171,
+    "CursorY": 47.57185332011893,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.9678,
+    "PolicyLatencyMs": 4.7545,
+    "Action": {
+      "Dx": -0.033712055534124374,
+      "Dy": 0.4048870801925659,
+      "ClickStrength": 0.02346903085708618
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 80,
+    "MapTimeMs": 1924.5502,
+    "CursorX": 171.3011152416357,
+    "CursorY": 53.2804757185332,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6171,
+    "PolicyLatencyMs": 1.4222,
+    "Action": {
+      "Dx": -0.02697298489511013,
+      "Dy": 0.46847349405288696,
+      "ClickStrength": 0.04092654585838318
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 81,
+    "MapTimeMs": 1955.4323,
+    "CursorX": 170.92044609665427,
+    "CursorY": 59.75024777006937,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6123,
+    "PolicyLatencyMs": 1.3936,
+    "Action": {
+      "Dx": -0.04126816615462303,
+      "Dy": 0.5055249333381653,
+      "ClickStrength": 0.08978056907653809
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 82,
+    "MapTimeMs": 1986.2215,
+    "CursorX": 170.15910780669145,
+    "CursorY": 66.6005946481665,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0886,
+    "PolicyLatencyMs": 1.8076,
+    "Action": {
+      "Dx": -0.0347752571105957,
+      "Dy": 0.4871547520160675,
+      "ClickStrength": 0.22476506233215332
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 83,
+    "MapTimeMs": 2017.0459,
+    "CursorX": 169.77843866171003,
+    "CursorY": 73.45094152626362,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9299,
+    "PolicyLatencyMs": 1.7104,
+    "Action": {
+      "Dx": 0.024963190779089928,
+      "Dy": 0.37214282155036926,
+      "ClickStrength": 0.49377912282943726
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 84,
+    "MapTimeMs": 2047.4512,
+    "CursorX": 170.15910780669145,
+    "CursorY": 78.39841427155599,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 14.2166,
+    "PolicyLatencyMs": 1.5319,
+    "Action": {
+      "Dx": 0.05213294178247452,
+      "Dy": 0.20556563138961792,
+      "ClickStrength": 0.7572104930877686
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 85,
+    "MapTimeMs": 2063.5421,
+    "CursorX": 170.92044609665427,
+    "CursorY": 81.06243805748265,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8854,
+    "PolicyLatencyMs": 1.7538,
+    "Action": {
+      "Dx": 0.024768006056547165,
+      "Dy": 0.10783933103084564,
+      "ClickStrength": 0.8376572132110596
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 86,
+    "MapTimeMs": 2079.1797,
+    "CursorX": 171.3011152416357,
+    "CursorY": 82.58473736372646,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.8139,
+    "PolicyLatencyMs": 1.5466,
+    "Action": {
+      "Dx": -0.9879314303398132,
+      "Dy": -0.7512529492378235,
+      "ClickStrength": 0.9998172521591187
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 87,
+    "MapTimeMs": 2109.5124,
+    "CursorX": 157.59702602230485,
+    "CursorY": 71.92864222001981,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.3792,
+    "PolicyLatencyMs": 6.2335,
+    "Action": {
+      "Dx": -0.9864172339439392,
+      "Dy": -0.731521487236023,
+      "ClickStrength": 0.9999188184738159
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 88,
+    "MapTimeMs": 2139.7878,
+    "CursorX": 143.89293680297396,
+    "CursorY": 61.65312190287413,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.891,
+    "PolicyLatencyMs": 1.7261,
+    "Action": {
+      "Dx": -0.9843571782112122,
+      "Dy": -0.7208958864212036,
+      "ClickStrength": 0.9999448657035828
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 89,
+    "MapTimeMs": 2170.8367,
+    "CursorX": 130.1888475836431,
+    "CursorY": 51.37760158572844,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0409,
+    "PolicyLatencyMs": 1.8919,
+    "Action": {
+      "Dx": -0.9819303750991821,
+      "Dy": -0.709753155708313,
+      "ClickStrength": 0.9999533295631409
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 90,
+    "MapTimeMs": 2201.7136,
+    "CursorX": 116.48475836431227,
+    "CursorY": 41.48265609514371,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1676,
+    "PolicyLatencyMs": 1.9817,
+    "Action": {
+      "Dx": -0.978840172290802,
+      "Dy": -0.6944389343261719,
+      "ClickStrength": 0.9999551177024841
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 91,
+    "MapTimeMs": 2232.649,
+    "CursorX": 102.78066914498142,
+    "CursorY": 31.58771060455897,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7671,
+    "PolicyLatencyMs": 1.595,
+    "Action": {
+      "Dx": -0.9320091009140015,
+      "Dy": -0.5684323310852051,
+      "ClickStrength": 0.9999076128005981
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 92,
+    "MapTimeMs": 2247.7148,
+    "CursorX": 89.45724907063197,
+    "CursorY": 23.595639246778987,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5869,
+    "PolicyLatencyMs": 1.4553,
+    "Action": {
+      "Dx": -0.9289008975028992,
+      "Dy": -0.5605517625808716,
+      "ClickStrength": 0.9998874664306641
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 93,
+    "MapTimeMs": 2278.5716,
+    "CursorX": 76.51449814126394,
+    "CursorY": 15.60356788899901,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.3437,
+    "PolicyLatencyMs": 4.1884,
+    "Action": {
+      "Dx": -0.9180958271026611,
+      "Dy": -0.5538589954376221,
+      "ClickStrength": 0.9998613595962524
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 94,
+    "MapTimeMs": 2308.7855,
+    "CursorX": 63.57174721189591,
+    "CursorY": 7.611496531219029,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.5051,
+    "PolicyLatencyMs": 5.3337,
+    "Action": {
+      "Dx": -0.9058017134666443,
+      "Dy": -0.5442314147949219,
+      "ClickStrength": 0.9998286962509155
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 95,
+    "MapTimeMs": 2339.632,
+    "CursorX": 50.62899628252788,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5464,
+    "PolicyLatencyMs": 1.3827,
+    "Action": {
+      "Dx": -0.889101505279541,
+      "Dy": -0.5322039723396301,
+      "ClickStrength": 0.9997889995574951
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 96,
+    "MapTimeMs": 2370.4938,
+    "CursorX": 38.066914498141266,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7455,
+    "PolicyLatencyMs": 1.6082,
+    "Action": {
+      "Dx": -0.8605278730392456,
+      "Dy": -0.5585548281669617,
+      "ClickStrength": 0.9997521638870239
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 97,
+    "MapTimeMs": 2385.7419,
+    "CursorX": 25.88550185873606,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6902,
+    "PolicyLatencyMs": 1.5227,
+    "Action": {
+      "Dx": -0.8411069512367249,
+      "Dy": -0.5808857679367065,
+      "ClickStrength": 0.9997137188911438
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 98,
+    "MapTimeMs": 2401.4225,
+    "CursorX": 14.084758364312268,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8135,
+    "PolicyLatencyMs": 1.6583,
+    "Action": {
+      "Dx": -0.8196557760238647,
+      "Dy": -0.5988565683364868,
+      "ClickStrength": 0.9996699690818787
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 99,
+    "MapTimeMs": 2417.022,
+    "CursorX": 2.284014869888476,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.934,
+    "PolicyLatencyMs": 1.8075,
+    "Action": {
+      "Dx": -0.7968503832817078,
+      "Dy": -0.6153568029403687,
+      "ClickStrength": 0.9996194839477539
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 100,
+    "MapTimeMs": 2447.4278,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5458,
+    "PolicyLatencyMs": 1.4301,
+    "Action": {
+      "Dx": -0.7596272230148315,
+      "Dy": -0.6001102924346924,
+      "ClickStrength": 0.9995946884155273
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 101,
+    "MapTimeMs": 2463.5695,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7355,
+    "PolicyLatencyMs": 2.6288,
+    "Action": {
+      "Dx": -0.7380099296569824,
+      "Dy": -0.5907083749771118,
+      "ClickStrength": 0.9995852708816528
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 102,
+    "MapTimeMs": 2493.9934,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.7114,
+    "PolicyLatencyMs": 5.6015,
+    "Action": {
+      "Dx": -0.6917060613632202,
+      "Dy": -0.5751097798347473,
+      "ClickStrength": 0.9995654225349426
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 103,
+    "MapTimeMs": 2509.4204,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.4515,
+    "PolicyLatencyMs": 6.3304,
+    "Action": {
+      "Dx": -0.6651538610458374,
+      "Dy": -0.5678154230117798,
+      "ClickStrength": 0.9995543360710144
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 104,
+    "MapTimeMs": 2539.8296,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7085,
+    "PolicyLatencyMs": 1.5884,
+    "Action": {
+      "Dx": -0.6062909364700317,
+      "Dy": -0.5534176826477051,
+      "ClickStrength": 0.9995299577713013
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 105,
+    "MapTimeMs": 2555.563,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.4974,
+    "PolicyLatencyMs": 2.2493,
+    "Action": {
+      "Dx": -0.5724021792411804,
+      "Dy": -0.5454422831535339,
+      "ClickStrength": 0.9995157122612
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 106,
+    "MapTimeMs": 2585.9383,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8638,
+    "PolicyLatencyMs": 1.7397,
+    "Action": {
+      "Dx": -0.5007777810096741,
+      "Dy": -0.5279550552368164,
+      "ClickStrength": 0.9994843602180481
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 107,
+    "MapTimeMs": 2601.5498,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7659,
+    "PolicyLatencyMs": 1.6531,
+    "Action": {
+      "Dx": -0.4612002372741699,
+      "Dy": -0.517559289932251,
+      "ClickStrength": 0.9994659423828125
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 108,
+    "MapTimeMs": 2616.6779,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8229,
+    "PolicyLatencyMs": 1.6997,
+    "Action": {
+      "Dx": -0.42144036293029785,
+      "Dy": -0.5064266324043274,
+      "ClickStrength": 0.9994463920593262
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 109,
+    "MapTimeMs": 2632.2997,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6357,
+    "PolicyLatencyMs": 1.5129,
+    "Action": {
+      "Dx": -0.37930890917778015,
+      "Dy": -0.4937764108181,
+      "ClickStrength": 0.999424397945404
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 110,
+    "MapTimeMs": 2662.6899,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.243,
+    "PolicyLatencyMs": 6.1289,
+    "Action": {
+      "Dx": -0.295849472284317,
+      "Dy": -0.46576789021492004,
+      "ClickStrength": 0.9993759393692017
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 111,
+    "MapTimeMs": 2678.4002,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.185,
+    "PolicyLatencyMs": 4.9235,
+    "Action": {
+      "Dx": -0.25236132740974426,
+      "Dy": -0.44965338706970215,
+      "ClickStrength": 0.9993486404418945
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 112,
+    "MapTimeMs": 2709.5699,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.5343,
+    "PolicyLatencyMs": 6.4246,
+    "Action": {
+      "Dx": -0.15752314031124115,
+      "Dy": -0.41662082076072693,
+      "ClickStrength": 0.999303936958313
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 113,
+    "MapTimeMs": 2740.256,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0768,
+    "PolicyLatencyMs": 1.9227,
+    "Action": {
+      "Dx": -0.06627091020345688,
+      "Dy": -0.38233470916748047,
+      "ClickStrength": 0.9992533922195435
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 114,
+    "MapTimeMs": 2771.1969,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6054,
+    "PolicyLatencyMs": 1.4926,
+    "Action": {
+      "Dx": 0.02130371518433094,
+      "Dy": -0.34704911708831787,
+      "ClickStrength": 0.9991958141326904
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 115,
+    "MapTimeMs": 2801.4843,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7111,
+    "PolicyLatencyMs": 1.586,
+    "Action": {
+      "Dx": 0.10230543464422226,
+      "Dy": -0.3143373131752014,
+      "ClickStrength": 0.9991316199302673
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 116,
+    "MapTimeMs": 2817.5662,
+    "CursorX": 1.142007434944238,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1983,
+    "PolicyLatencyMs": 2.0524,
+    "Action": {
+      "Dx": 0.14135588705539703,
+      "Dy": -0.2947351932525635,
+      "ClickStrength": 0.9990983605384827
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 117,
+    "MapTimeMs": 2848.0648,
+    "CursorX": 3.045353159851301,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6807,
+    "PolicyLatencyMs": 1.5431,
+    "Action": {
+      "Dx": 0.209621861577034,
+      "Dy": -0.25979092717170715,
+      "ClickStrength": 0.9990317225456238
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 118,
+    "MapTimeMs": 2878.3228,
+    "CursorX": 5.710037174721189,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.8212,
+    "PolicyLatencyMs": 2.6754,
+    "Action": {
+      "Dx": 0.26831406354904175,
+      "Dy": -0.22599753737449646,
+      "ClickStrength": 0.99896639585495
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 119,
+    "MapTimeMs": 2893.9893,
+    "CursorX": 9.516728624535316,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.3937,
+    "PolicyLatencyMs": 4.2209,
+    "Action": {
+      "Dx": 0.28492140769958496,
+      "Dy": -0.2005937546491623,
+      "ClickStrength": 0.9989373683929443
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 120,
+    "MapTimeMs": 2924.6081,
+    "CursorX": 13.323420074349443,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5822,
+    "PolicyLatencyMs": 1.4416,
+    "Action": {
+      "Dx": 0.31508782505989075,
+      "Dy": -0.16146935522556305,
+      "ClickStrength": 0.9988642334938049
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 121,
+    "MapTimeMs": 2955.5623,
+    "CursorX": 17.51078066914498,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6974,
+    "PolicyLatencyMs": 1.5477,
+    "Action": {
+      "Dx": 0.34007641673088074,
+      "Dy": -0.1252538561820984,
+      "ClickStrength": 0.9987910985946655
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 122,
+    "MapTimeMs": 2970.6431,
+    "CursorX": 22.07881040892193,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5803,
+    "PolicyLatencyMs": 1.4488,
+    "Action": {
+      "Dx": 0.34637778997421265,
+      "Dy": -0.10386303812265396,
+      "ClickStrength": 0.9987679719924927
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 123,
+    "MapTimeMs": 3001.3939,
+    "CursorX": 26.646840148698885,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8182,
+    "PolicyLatencyMs": 1.6772,
+    "Action": {
+      "Dx": 0.36482951045036316,
+      "Dy": -0.0736703872680664,
+      "ClickStrength": 0.9986966848373413
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 124,
+    "MapTimeMs": 3016.5197,
+    "CursorX": 31.59553903345725,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9419,
+    "PolicyLatencyMs": 1.7794,
+    "Action": {
+      "Dx": 0.3680631220340729,
+      "Dy": -0.05532782897353172,
+      "ClickStrength": 0.9986761212348938
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 125,
+    "MapTimeMs": 3047.5039,
+    "CursorX": 36.544237918215615,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5879,
+    "PolicyLatencyMs": 1.4476,
+    "Action": {
+      "Dx": 0.38213586807250977,
+      "Dy": -0.03041883185505867,
+      "ClickStrength": 0.9986035823822021
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 126,
+    "MapTimeMs": 3077.7424,
+    "CursorX": 41.87360594795539,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.8049,
+    "PolicyLatencyMs": 3.6485,
+    "Action": {
+      "Dx": 0.3931376338005066,
+      "Dy": -0.00861592497676611,
+      "ClickStrength": 0.9985322952270508
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 127,
+    "MapTimeMs": 3093.3671,
+    "CursorX": 47.202973977695166,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.0819,
+    "PolicyLatencyMs": 4.9379,
+    "Action": {
+      "Dx": 0.3936155438423157,
+      "Dy": 0.005204641725867987,
+      "ClickStrength": 0.9985100030899048
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 128,
+    "MapTimeMs": 3109.4349,
+    "CursorX": 52.53234200743494,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.4344,
+    "PolicyLatencyMs": 5.2862,
+    "Action": {
+      "Dx": 0.39398571848869324,
+      "Dy": 0.01802959479391575,
+      "ClickStrength": 0.9984850883483887
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 129,
+    "MapTimeMs": 3139.6969,
+    "CursorX": 57.861710037174724,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.508,
+    "PolicyLatencyMs": 1.3581,
+    "Action": {
+      "Dx": 0.40229374170303345,
+      "Dy": 0.03349202498793602,
+      "ClickStrength": 0.9984046220779419
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 130,
+    "MapTimeMs": 3170.4752,
+    "CursorX": 63.57174721189591,
+    "CursorY": 0.38057482656095143,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.6794,
+    "PolicyLatencyMs": 2.0214,
+    "Action": {
+      "Dx": 0.03944345563650131,
+      "Dy": -0.30243000388145447,
+      "ClickStrength": 0.9982594847679138
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 131,
+    "MapTimeMs": 3200.6873,
+    "CursorX": 63.95241635687732,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8197,
+    "PolicyLatencyMs": 1.6139,
+    "Action": {
+      "Dx": 0.06461817026138306,
+      "Dy": -0.28171634674072266,
+      "ClickStrength": 0.9981271028518677
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 132,
+    "MapTimeMs": 3231.119,
+    "CursorX": 64.71375464684014,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5012,
+    "PolicyLatencyMs": 1.3508,
+    "Action": {
+      "Dx": 0.08781006187200546,
+      "Dy": -0.2642366886138916,
+      "ClickStrength": 0.997990608215332
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 133,
+    "MapTimeMs": 3261.445,
+    "CursorX": 65.85576208178439,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.8448,
+    "PolicyLatencyMs": 3.6777,
+    "Action": {
+      "Dx": 0.10868971049785614,
+      "Dy": -0.24934621155261993,
+      "ClickStrength": 0.9978487491607666
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 134,
+    "MapTimeMs": 3276.6082,
+    "CursorX": 67.37843866171004,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.2371,
+    "PolicyLatencyMs": 5.0919,
+    "Action": {
+      "Dx": 0.11725324392318726,
+      "Dy": -0.24261385202407837,
+      "ClickStrength": 0.9977802038192749
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 135,
+    "MapTimeMs": 3307.2976,
+    "CursorX": 68.9011152416357,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8033,
+    "PolicyLatencyMs": 1.6504,
+    "Action": {
+      "Dx": 0.13548225164413452,
+      "Dy": -0.23077517747879028,
+      "ClickStrength": 0.9976271390914917
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 136,
+    "MapTimeMs": 3322.894,
+    "CursorX": 70.80446096654275,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1349,
+    "PolicyLatencyMs": 1.994,
+    "Action": {
+      "Dx": 0.14256171882152557,
+      "Dy": -0.22529062628746033,
+      "ClickStrength": 0.9975532293319702
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 137,
+    "MapTimeMs": 3353.7801,
+    "CursorX": 72.70780669144982,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6282,
+    "PolicyLatencyMs": 1.4924,
+    "Action": {
+      "Dx": 0.15831613540649414,
+      "Dy": -0.21571946144104004,
+      "ClickStrength": 0.9973894953727722
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 138,
+    "MapTimeMs": 3384.6326,
+    "CursorX": 74.99182156133828,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.4282,
+    "PolicyLatencyMs": 2.2794,
+    "Action": {
+      "Dx": 0.1723260134458542,
+      "Dy": -0.20721371471881866,
+      "ClickStrength": 0.9972202777862549
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 139,
+    "MapTimeMs": 3414.8855,
+    "CursorX": 77.27583643122676,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.3043,
+    "PolicyLatencyMs": 3.1689,
+    "Action": {
+      "Dx": 0.1850055307149887,
+      "Dy": -0.19962695240974426,
+      "ClickStrength": 0.997046709060669
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 140,
+    "MapTimeMs": 3430.4997,
+    "CursorX": 79.94052044609666,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.5554,
+    "PolicyLatencyMs": 3.3907,
+    "Action": {
+      "Dx": 0.18864746391773224,
+      "Dy": -0.19571790099143982,
+      "ClickStrength": 0.9969654679298401
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 141,
+    "MapTimeMs": 3460.8324,
+    "CursorX": 82.60520446096655,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.1865,
+    "PolicyLatencyMs": 5.0262,
+    "Action": {
+      "Dx": 0.196453258395195,
+      "Dy": -0.19051946699619293,
+      "ClickStrength": 0.9968464970588684
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 142,
+    "MapTimeMs": 3476.5828,
+    "CursorX": 85.26988847583642,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.7852,
+    "PolicyLatencyMs": 5.6184,
+    "Action": {
+      "Dx": 0.19686338305473328,
+      "Dy": -0.18833956122398376,
+      "ClickStrength": 0.9968189001083374
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 143,
+    "MapTimeMs": 3507.5613,
+    "CursorX": 87.93457249070632,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7934,
+    "PolicyLatencyMs": 1.6185,
+    "Action": {
+      "Dx": 0.20189045369625092,
+      "Dy": -0.18453152477741241,
+      "ClickStrength": 0.996746301651001
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 144,
+    "MapTimeMs": 3523.158,
+    "CursorX": 90.59925650557621,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8126,
+    "PolicyLatencyMs": 1.6735,
+    "Action": {
+      "Dx": 0.20176853239536285,
+      "Dy": -0.18231233954429626,
+      "ClickStrength": 0.9967215061187744
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 145,
+    "MapTimeMs": 3553.5167,
+    "CursorX": 93.2639405204461,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6545,
+    "PolicyLatencyMs": 1.4607,
+    "Action": {
+      "Dx": 0.20589765906333923,
+      "Dy": -0.1785200983285904,
+      "ClickStrength": 0.9966551065444946
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 146,
+    "MapTimeMs": 3569.6391,
+    "CursorX": 95.92862453531599,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8402,
+    "PolicyLatencyMs": 1.6963,
+    "Action": {
+      "Dx": 0.2055128961801529,
+      "Dy": -0.17612618207931519,
+      "ClickStrength": 0.9966310262680054
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 147,
+    "MapTimeMs": 3599.9019,
+    "CursorX": 98.59330855018587,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8258,
+    "PolicyLatencyMs": 1.6759,
+    "Action": {
+      "Dx": 0.2089938223361969,
+      "Dy": -0.1722242385149002,
+      "ClickStrength": 0.9965693950653076
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 148,
+    "MapTimeMs": 3615.4829,
+    "CursorX": 101.25799256505576,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0037,
+    "PolicyLatencyMs": 1.8512,
+    "Action": {
+      "Dx": 0.2080705314874649,
+      "Dy": -0.16974155604839325,
+      "ClickStrength": 0.9965490102767944
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 149,
+    "MapTimeMs": 3646.4636,
+    "CursorX": 103.92267657992565,
+    "CursorY": 0,
+    "PrimaryObject": "slider@2064,0",
+    "ActiveSlider": true,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.6284,
+    "PolicyLatencyMs": 2.483,
+    "Action": {
+      "Dx": 0.2111811339855194,
+      "Dy": -0.16563285887241364,
+      "ClickStrength": 0.9964897632598877
+    },
+    "RawClickDown": true,
+    "SliderHoldDown": true,
+    "SpinnerHoldDown": false,
+    "ClickDown": true
+  },
+  {
+    "TickIndex": 150,
+    "MapTimeMs": 3677.5084,
+    "CursorX": 106.96802973977695,
+    "CursorY": 0,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 8.8437,
+    "PolicyLatencyMs": 8.4277,
+    "Action": {
+      "Dx": 0.33582788705825806,
+      "Dy": 0.24699755012989044,
+      "ClickStrength": 0.12208807468414307
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 151,
+    "MapTimeMs": 3707.5072,
+    "CursorX": 111.5360594795539,
+    "CursorY": 3.425173439048563,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7775,
+    "PolicyLatencyMs": 1.5588,
+    "Action": {
+      "Dx": 0.3359178602695465,
+      "Dy": 0.2513640820980072,
+      "ClickStrength": 0.11975112557411194
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 152,
+    "MapTimeMs": 3723.1185,
+    "CursorX": 116.10408921933086,
+    "CursorY": 6.850346878097126,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8208,
+    "PolicyLatencyMs": 1.642,
+    "Action": {
+      "Dx": 0.3333510160446167,
+      "Dy": 0.24567647278308868,
+      "ClickStrength": 0.11880674958229065
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 153,
+    "MapTimeMs": 3753.5537,
+    "CursorX": 120.6721189591078,
+    "CursorY": 10.275520317145688,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6386,
+    "PolicyLatencyMs": 1.4426,
+    "Action": {
+      "Dx": 0.3339751660823822,
+      "Dy": 0.25114572048187256,
+      "ClickStrength": 0.11622285842895508
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 154,
+    "MapTimeMs": 3769.6391,
+    "CursorX": 125.24014869888475,
+    "CursorY": 13.700693756194251,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0326,
+    "PolicyLatencyMs": 1.7862,
+    "Action": {
+      "Dx": 0.3318517804145813,
+      "Dy": 0.24583575129508972,
+      "ClickStrength": 0.11509203910827637
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 155,
+    "MapTimeMs": 3800.5048,
+    "CursorX": 129.8081784386617,
+    "CursorY": 17.125867195242815,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5964,
+    "PolicyLatencyMs": 1.4136,
+    "Action": {
+      "Dx": 0.33300745487213135,
+      "Dy": 0.2522777318954468,
+      "ClickStrength": 0.11217939853668213
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 156,
+    "MapTimeMs": 3830.7382,
+    "CursorX": 134.37620817843867,
+    "CursorY": 20.551040634291375,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.5521,
+    "PolicyLatencyMs": 1.3542,
+    "Action": {
+      "Dx": 0.33422279357910156,
+      "Dy": 0.25868168473243713,
+      "ClickStrength": 0.10910344123840332
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 157,
+    "MapTimeMs": 3861.5536,
+    "CursorX": 138.9442379182156,
+    "CursorY": 23.97621407333994,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.8625,
+    "PolicyLatencyMs": 2.6728,
+    "Action": {
+      "Dx": 0.3357008099555969,
+      "Dy": 0.2660576403141022,
+      "ClickStrength": 0.10567736625671387
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 158,
+    "MapTimeMs": 3891.8236,
+    "CursorX": 143.51226765799257,
+    "CursorY": 27.401387512388503,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.4762,
+    "PolicyLatencyMs": 6.2716,
+    "Action": {
+      "Dx": 0.3371690511703491,
+      "Dy": 0.2735214829444885,
+      "ClickStrength": 0.10202202200889587
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 159,
+    "MapTimeMs": 3923.1081,
+    "CursorX": 155.69368029739778,
+    "CursorY": 33.11000991080277,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8292,
+    "PolicyLatencyMs": 1.6567,
+    "Action": {
+      "Dx": 0.3245086967945099,
+      "Dy": 0.26718589663505554,
+      "ClickStrength": 0.0998009741306305
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 160,
+    "MapTimeMs": 3953.6322,
+    "CursorX": 169.39776951672863,
+    "CursorY": 39.9603567888999,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.977,
+    "PolicyLatencyMs": 1.8099,
+    "Action": {
+      "Dx": 0.311113178730011,
+      "Dy": 0.25411537289619446,
+      "ClickStrength": 0.0975237488746643
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 161,
+    "MapTimeMs": 3984.3334,
+    "CursorX": 180.4371747211896,
+    "CursorY": 47.191278493557974,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9032,
+    "PolicyLatencyMs": 1.704,
+    "Action": {
+      "Dx": 0.30636066198349,
+      "Dy": 0.24107271432876587,
+      "ClickStrength": 0.09390094876289368
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 162,
+    "MapTimeMs": 4015.2538,
+    "CursorX": 190.3345724907063,
+    "CursorY": 54.42220019821606,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8152,
+    "PolicyLatencyMs": 1.603,
+    "Action": {
+      "Dx": 0.30525264143943787,
+      "Dy": 0.229882150888443,
+      "ClickStrength": 0.08950573205947876
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 163,
+    "MapTimeMs": 4030.8451,
+    "CursorX": 195.2832713754647,
+    "CursorY": 57.84737363726462,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6891,
+    "PolicyLatencyMs": 1.4952,
+    "Action": {
+      "Dx": 0.3043314516544342,
+      "Dy": 0.22634240984916687,
+      "ClickStrength": 0.08720353245735168
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 164,
+    "MapTimeMs": 4061.7309,
+    "CursorX": 199.85130111524163,
+    "CursorY": 61.272547076313174,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.19,
+    "PolicyLatencyMs": 3.9964,
+    "Action": {
+      "Dx": 0.3069540560245514,
+      "Dy": 0.24226734042167664,
+      "ClickStrength": 0.08175933361053467
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 165,
+    "MapTimeMs": 4092.4502,
+    "CursorX": 204.8,
+    "CursorY": 65.8394449950446,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.3561,
+    "PolicyLatencyMs": 5.1772,
+    "Action": {
+      "Dx": 0.3119105398654938,
+      "Dy": 0.25296902656555176,
+      "ClickStrength": 0.07597717642784119
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 166,
+    "MapTimeMs": 4122.7497,
+    "CursorX": 209.74869888475837,
+    "CursorY": 70.78691774033697,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.7973,
+    "PolicyLatencyMs": 1.6248,
+    "Action": {
+      "Dx": 0.3181944787502289,
+      "Dy": 0.26273617148399353,
+      "ClickStrength": 0.07010626792907715
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 167,
+    "MapTimeMs": 4138.3049,
+    "CursorX": 214.69739776951673,
+    "CursorY": 74.97324083250743,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6895,
+    "PolicyLatencyMs": 1.5045,
+    "Action": {
+      "Dx": 0.32001709938049316,
+      "Dy": 0.2584657669067383,
+      "ClickStrength": 0.0673406720161438
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 168,
+    "MapTimeMs": 4168.6784,
+    "CursorX": 219.64609665427508,
+    "CursorY": 78.77898909811695,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0094,
+    "PolicyLatencyMs": 1.7707,
+    "Action": {
+      "Dx": 0.32232263684272766,
+      "Dy": 0.27923041582107544,
+      "ClickStrength": 0.06177818775177002
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 169,
+    "MapTimeMs": 4199.466,
+    "CursorX": 224.21412639405204,
+    "CursorY": 82.58473736372646,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 3.0444,
+    "PolicyLatencyMs": 2.8151,
+    "Action": {
+      "Dx": 0.32538920640945435,
+      "Dy": 0.3022332191467285,
+      "ClickStrength": 0.05616751313209534
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 170,
+    "MapTimeMs": 4230.2665,
+    "CursorX": 228.782156133829,
+    "CursorY": 87.15163528245787,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7595,
+    "PolicyLatencyMs": 2.5813,
+    "Action": {
+      "Dx": 0.33082202076911926,
+      "Dy": 0.3215695023536682,
+      "ClickStrength": 0.050552427768707275
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 171,
+    "MapTimeMs": 4260.6715,
+    "CursorX": 234.11152416356876,
+    "CursorY": 92.86025768087215,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 5.3175,
+    "PolicyLatencyMs": 5.1331,
+    "Action": {
+      "Dx": 0.3371327817440033,
+      "Dy": 0.3342500925064087,
+      "ClickStrength": 0.0450880229473114
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 172,
+    "MapTimeMs": 4291.8029,
+    "CursorX": 238.67955390334572,
+    "CursorY": 97.80773042616453,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 6.4427,
+    "PolicyLatencyMs": 6.2539,
+    "Action": {
+      "Dx": 0.3403507471084595,
+      "Dy": 0.3538942039012909,
+      "ClickStrength": 0.03962475061416626
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 173,
+    "MapTimeMs": 4322.6206,
+    "CursorX": 243.24758364312268,
+    "CursorY": 102.75520317145688,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.9027,
+    "PolicyLatencyMs": 1.6953,
+    "Action": {
+      "Dx": 0.33845219016075134,
+      "Dy": 0.3742919862270355,
+      "ClickStrength": 0.034291237592697144
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 174,
+    "MapTimeMs": 4337.7992,
+    "CursorX": 247.81561338289964,
+    "CursorY": 108.08325074331022,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.6866,
+    "PolicyLatencyMs": 1.481,
+    "Action": {
+      "Dx": 0.33794060349464417,
+      "Dy": 0.36650338768959045,
+      "ClickStrength": 0.03155824542045593
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 175,
+    "MapTimeMs": 4353.5044,
+    "CursorX": 252.38364312267657,
+    "CursorY": 113.03072348860258,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.0624,
+    "PolicyLatencyMs": 1.8553,
+    "Action": {
+      "Dx": 0.33138012886047363,
+      "Dy": 0.3632149398326874,
+      "ClickStrength": 0.028850466012954712
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 176,
+    "MapTimeMs": 4384.3198,
+    "CursorX": 256.9516728624535,
+    "CursorY": 117.97819623389495,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.1529,
+    "PolicyLatencyMs": 1.9599,
+    "Action": {
+      "Dx": 0.30475494265556335,
+      "Dy": 0.39115700125694275,
+      "ClickStrength": 0.023604929447174072
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 177,
+    "MapTimeMs": 4415.2859,
+    "CursorX": 261.13903345724907,
+    "CursorY": 123.30624380574827,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8288,
+    "PolicyLatencyMs": 1.631,
+    "Action": {
+      "Dx": 0.2662554979324341,
+      "Dy": 0.4252457618713379,
+      "ClickStrength": 0.018576115369796753
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 178,
+    "MapTimeMs": 4445.5519,
+    "CursorX": 264.9457249070632,
+    "CursorY": 129.01486620416253,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 2.7625,
+    "PolicyLatencyMs": 2.5782,
+    "Action": {
+      "Dx": 0.21854974329471588,
+      "Dy": 0.4578782916069031,
+      "ClickStrength": 0.014619678258895874
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 179,
+    "MapTimeMs": 4461.3184,
+    "CursorX": 267.9910780669145,
+    "CursorY": 135.4846382556987,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 4.9866,
+    "PolicyLatencyMs": 4.7871,
+    "Action": {
+      "Dx": 0.2034991979598999,
+      "Dy": 0.46114274859428406,
+      "ClickStrength": 0.012776881456375122
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 180,
+    "MapTimeMs": 4491.8083,
+    "CursorX": 270.65576208178436,
+    "CursorY": 141.95441030723487,
+    "PrimaryObject": "slider@4822,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 1.8905,
+    "PolicyLatencyMs": 1.4747,
+    "Action": {
+      "Dx": 0.162681445479393,
+      "Dy": 0.4955615699291229,
+      "ClickStrength": 0.010557025671005249
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  }
+]

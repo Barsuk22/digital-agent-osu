@@ -7,10 +7,11 @@ from pathlib import Path
 
 import torch
 
-from src.apps.eval_osu import ActorCritic, EvalConfig, PPOPolicy, load_model_state_compatible, obs_to_numpy, rollout_episode
+from src.apps.eval_osu import EvalConfig, rollout_episode
 from src.core.config.paths import PATHS
 from src.skills.osu.env.osu_env import OsuEnv
 from src.skills.osu.parser.osu_parser import parse_beatmap
+from src.skills.osu.policy.runtime import PPOPolicy, load_policy_from_checkpoint, obs_to_numpy
 from src.skills.osu.skill_system.config import SkillSelectorConfig, SkillSystemConfig
 from src.skills.osu.skill_system.runtime import SkillRuntime
 from src.skills.osu.skill_system.storage import make_skill_memory_store
@@ -96,11 +97,7 @@ def delta_dict(skill: dict, baseline: dict) -> dict:
 
 
 def load_policy(checkpoint_path: str, device: torch.device, obs_dim: int) -> PPOPolicy:
-    model = ActorCritic(obs_dim=obs_dim, hidden_dim=256).to(device)
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    load_model_state_compatible(model, checkpoint)
-    model.eval()
-    return PPOPolicy(model=model, device=device)
+    return load_policy_from_checkpoint(checkpoint_path=checkpoint_path, device=device, obs_dim=obs_dim, hidden_dim=256)
 
 
 def run_single(beatmap_path: str, policy: PPOPolicy, cfg: EvalConfig, runtime: SkillRuntime | None) -> tuple[dict, dict | None]:

@@ -1,0 +1,47 @@
+{
+  "policyBridge": {
+    "mode": "onnx",
+    "address": "tcp://127.0.0.1:5555",
+    "modelPath": "D:\\Projects\\digital_agent_osu_project\\artifacts\\exports\\onnx\\best_easy_generalization.onnx",
+    "observationSize": 59,
+    "timeoutMs": 1000
+  },
+  "timing": {
+    "tickRateHz": 60.0,
+    "startupDelayMs": 0.0,
+    "diagnosticTicks": 0,
+    "diagnosticInitialMapTimeMs": 0.0,
+    "startTriggerMode": "hotkey",
+    "startHotkey": "F8",
+    "audioOffsetMs": -60.0,
+    "inputDelayMs": 30.0,
+    "captureDelayMs": 0.0
+  },
+  "window": {
+    "titleHint": "osu!",
+    "processName": "osu!",
+    "requireForeground": true,
+    "executablePath": "C:\\Users\\valer\\AppData\\Local\\osulazer\\current\\osu!.exe"
+  },
+  "beatmap": {
+    "sourceOsuPath": "D:\\Projects\\digital_agent_osu_project\\data\\raw\\osu\\maps\\StylipS - Spica\\StylipS - Spica. (TV-size) (Lanturn) [Beginner-ka].osu",
+    "exportJsonPath": "D:\\Projects\\digital_agent_osu_project\\exports\\osu_lazer_bridge_map.json"
+  },
+  "control": {
+    "enableMouseMovement": true,
+    "enableMouseClicks": true,
+    "recenterCursorOnStart": true,
+    "useLiveCursorTracking": false,
+    "playfieldPadX": 0.0,
+    "playfieldPadY": 0.0,
+    "cursorSpeedScale": 12.0,
+    "clickThreshold": 0.75,
+    "sliderHoldThreshold": 0.45,
+    "spinnerHoldThreshold": 0.45
+  },
+  "logging": {
+    "enabled": true,
+    "directory": "logs",
+    "saveJsonTrace": true
+  }
+}

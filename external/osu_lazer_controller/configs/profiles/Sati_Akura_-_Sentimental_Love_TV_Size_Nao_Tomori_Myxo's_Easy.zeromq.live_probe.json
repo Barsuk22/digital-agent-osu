@@ -1,0 +1,43 @@
+{
+  "policyBridge": {
+    "mode": "zeromq",
+    "address": "tcp://127.0.0.1:5555",
+    "modelPath": "D:\\Projects\\digital_agent_osu_project\\artifacts\\exports\\onnx\\best_easy_generalization.onnx",
+    "observationSize": 59,
+    "timeoutMs": 1000
+  },
+  "timing": {
+    "tickRateHz": 60.0,
+    "startupDelayMs": 1200.0,
+    "diagnosticTicks": 30,
+    "diagnosticInitialMapTimeMs": 1800.0,
+    "startTriggerMode": "delay",
+    "startHotkey": "F8",
+    "audioOffsetMs": -60.0,
+    "inputDelayMs": 30.0,
+    "captureDelayMs": 0.0
+  },
+  "window": {
+    "titleHint": "osu!",
+    "processName": "osu!",
+    "requireForeground": true,
+    "executablePath": "C:\\Users\\valer\\AppData\\Local\\osulazer\\current\\osu!.exe"
+  },
+  "beatmap": {
+    "sourceOsuPath": "D:\\Projects\\digital_agent_osu_project\\data\\raw\\osu\\maps\\Sati Akura - Sentimental Love\\Sati Akura - Sentimental Love (TV Size) (Nao Tomori) [Myxo's Easy].osu",
+    "exportJsonPath": "D:\\Projects\\digital_agent_osu_project\\exports\\osu_lazer_bridge_map.json"
+  },
+  "control": {
+    "enableMouseMovement": true,
+    "enableMouseClicks": false,
+    "cursorSpeedScale": 12.0,
+    "clickThreshold": 0.75,
+    "sliderHoldThreshold": 0.45,
+    "spinnerHoldThreshold": 0.45
+  },
+  "logging": {
+    "enabled": true,
+    "directory": "logs",
+    "saveJsonTrace": true
+  }
+}

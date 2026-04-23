@@ -1,0 +1,13 @@
+[
+  {
+    "TickIndex": 0,
+    "MapTimeMs": 0,
+    "LoopElapsedMs": 76.9242,
+    "PolicyLatencyMs": 76.9242,
+    "Action": {
+      "Dx": 0,
+      "Dy": 0,
+      "ClickStrength": 0
+    }
+  }
+]

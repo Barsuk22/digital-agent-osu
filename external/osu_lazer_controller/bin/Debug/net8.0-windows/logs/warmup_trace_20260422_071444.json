@@ -1,0 +1,184 @@
+[
+  {
+    "TickIndex": 0,
+    "MapTimeMs": 0,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "warmup",
+    "LoopElapsedMs": 25.1823,
+    "PolicyLatencyMs": 25.1823,
+    "Action": {
+      "Dx": 0.9188181161880493,
+      "Dy": 0.8942822217941284,
+      "ClickStrength": 0.3487975597381592
+    }
+  },
+  {
+    "TickIndex": 1,
+    "MapTimeMs": 1800.32,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 7.5284,
+    "PolicyLatencyMs": 7.5284,
+    "Action": {
+      "Dx": -0.8658046722412109,
+      "Dy": -0.7735000848770142,
+      "ClickStrength": 0.018634557723999023
+    }
+  },
+  {
+    "TickIndex": 2,
+    "MapTimeMs": 1830.1987,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.3252,
+    "PolicyLatencyMs": 1.3252,
+    "Action": {
+      "Dx": -0.8771946430206299,
+      "Dy": -0.7912122011184692,
+      "ClickStrength": 0.017329037189483643
+    }
+  },
+  {
+    "TickIndex": 3,
+    "MapTimeMs": 1860.5281,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.2993,
+    "PolicyLatencyMs": 1.2993,
+    "Action": {
+      "Dx": -0.8939493298530579,
+      "Dy": -0.8040218353271484,
+      "ClickStrength": 0.0173799991607666
+    }
+  },
+  {
+    "TickIndex": 4,
+    "MapTimeMs": 1876.0814,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.3543,
+    "PolicyLatencyMs": 1.3543,
+    "Action": {
+      "Dx": -0.904578447341919,
+      "Dy": -0.8095163702964783,
+      "ClickStrength": 0.018249094486236572
+    }
+  },
+  {
+    "TickIndex": 5,
+    "MapTimeMs": 1906.4202,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.5637,
+    "PolicyLatencyMs": 1.5637,
+    "Action": {
+      "Dx": -0.9273343682289124,
+      "Dy": -0.8216539025306702,
+      "ClickStrength": 0.022940337657928467
+    }
+  },
+  {
+    "TickIndex": 6,
+    "MapTimeMs": 1937.2341999999999,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.3847,
+    "PolicyLatencyMs": 1.3847,
+    "Action": {
+      "Dx": -0.9489519596099854,
+      "Dy": -0.8361713290214539,
+      "ClickStrength": 0.03355631232261658
+    }
+  },
+  {
+    "TickIndex": 7,
+    "MapTimeMs": 1968.0284,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.3935,
+    "PolicyLatencyMs": 1.3935,
+    "Action": {
+      "Dx": -0.9656202793121338,
+      "Dy": -0.8451685905456543,
+      "ClickStrength": 0.04730874300003052
+    }
+  },
+  {
+    "TickIndex": 8,
+    "MapTimeMs": 1999.3923,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 2.1767,
+    "PolicyLatencyMs": 2.1767,
+    "Action": {
+      "Dx": -0.9779789447784424,
+      "Dy": -0.8462055921554565,
+      "ClickStrength": 0.06414398550987244
+    }
+  },
+  {
+    "TickIndex": 9,
+    "MapTimeMs": 2030.0739,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 4.3528,
+    "PolicyLatencyMs": 4.3528,
+    "Action": {
+      "Dx": -0.9869045615196228,
+      "Dy": -0.8410869836807251,
+      "ClickStrength": 0.10012522339820862
+    }
+  },
+  {
+    "TickIndex": 10,
+    "MapTimeMs": 2060.6143,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.6302,
+    "PolicyLatencyMs": 1.6302,
+    "Action": {
+      "Dx": -0.9924317002296448,
+      "Dy": -0.8282736539840698,
+      "ClickStrength": 0.17991667985916138
+    }
+  },
+  {
+    "TickIndex": 11,
+    "MapTimeMs": 2091.339,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 2.8633,
+    "PolicyLatencyMs": 2.8633,
+    "Action": {
+      "Dx": -0.9968178868293762,
+      "Dy": -0.8723562359809875,
+      "ClickStrength": 0.9922759532928467
+    }
+  },
+  {
+    "TickIndex": 12,
+    "MapTimeMs": 2122.11,
+    "CursorX": 284.3598513011152,
+    "CursorY": 213.1219028741328,
+    "PrimaryObject": "slider@2064,0",
+    "LoopElapsedMs": 1.6161,
+    "PolicyLatencyMs": 1.6161,
+    "Action": {
+      "Dx": -0.9964694380760193,
+      "Dy": -0.8882426619529724,
+      "ClickStrength": 0.9958400130271912
+    }
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "inputs": {
+    "live_trace": "D:\\Projects\\digital_agent_osu_project\\external\\osu_lazer_controller\\bin\\Debug\\net8.0-windows\\logs\\warmup_trace_20260422_122735.json",
+    "reference_replay": "D:\\Projects\\digital_agent_osu_project\\artifacts\\runs\\osu_phase8_easy_generalization\\replays\\best_eval_replay.json",
+    "bridge_map": "D:\\Projects\\digital_agent_osu_project\\exports\\osu_lazer_bridge_map.json"
+  },
+  "map": {
+    "artist": "StylipS",
+    "title": "Spica. (TV-size)",
+    "version": "Beginner-ka",
+    "objects": 27
+  },
+  "metrics": {
+    "ticks": 500,
+    "loop_time_ms": {
+      "count": 500,
+      "mean": 0.5154578,
+      "median": 0.3348,
+      "p95": 0.6347,
+      "minimum": 0.2096,
+      "maximum": 17.1607
+    },
+    "policy_latency_ms": {
+      "count": 500,
+      "mean": 0.1596762,
+      "median": 0.13979999999999998,
+      "p95": 0.3341,
+      "minimum": 0.104,
+      "maximum": 0.5214
+    },
+    "effective_fps": {
+      "count": 499,
+      "mean": 34.58752476173163,
+      "median": 32.54424389958174,
+      "p95": 61.991668319775066,
+      "minimum": 31.313409654550455,
+      "maximum": 64.14985405908267
+    },
+    "primary_distance_px": {
+      "count": 500,
+      "mean": 107.89742904241831,
+      "median": 97.57544785082541,
+      "p95": 265.60701292544496,
+      "minimum": 11.225485516238178,
+      "maximum": 323.76727148029863
+    },
+    "reference_cursor_distance_px": {
+      "count": 500,
+      "mean": 204.91621765612925,
+      "median": 210.53979533222747,
+      "p95": 317.18296609150394,
+      "minimum": 16.66514022423953,
+      "maximum": 374.3663942884662
+    },
+    "edge_clamp_ratio": 0.0,
+    "active_slider_ratio": 0.416,
+    "active_spinner_ratio": 0.0,
+    "click_ratio": 0.436,
+    "raw_click_ratio": 0.436,
+    "slider_hold_ratio": 0.416,
+    "spinner_hold_ratio": 0.0,
+    "reference_click_match_ratio": 0.496,
+    "reference_cursor_samples": 500
+  },
+  "recommendations": [
+    "Большое расхождение с offline replay: подбирать `audioOffsetMs` и `inputDelayMs`, затем сравнить live trace ещё раз.",
+    "Курсор слишком далеко от primary target: проверить стартовый offset карты и не завышен ли `cursorSpeedScale`.",
+    "Слабое совпадение click-state с reference replay: подстроить `clickThreshold`, `sliderHoldThreshold` и `spinnerHoldThreshold`.",
+    "Control loop проседает ниже 50 FPS: смотреть `PolicyLatencyMs`, захват окна и лишние фоновые процессы."
+  ]
+}

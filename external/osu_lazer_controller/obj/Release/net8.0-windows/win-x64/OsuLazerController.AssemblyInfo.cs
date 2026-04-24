@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OsuLazerController")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c2fa44e3da1ca5fc3bb477cb24c90b3b35fa81dd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+89b104c247afa5effed08ba9f42e76b630a2c53a")]
 [assembly: System.Reflection.AssemblyProductAttribute("OsuLazerController")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OsuLazerController")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

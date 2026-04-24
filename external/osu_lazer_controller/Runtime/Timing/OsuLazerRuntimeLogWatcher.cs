@@ -47,20 +47,40 @@ public sealed class OsuLazerRuntimeLogWatcher
 
     public async Task<GameplayClockStart> WaitForGameplayClockStartAsync(CancellationToken cancellationToken)
     {
+        var sawGameplayScreen = false;
+        var sawFreshSeek = false;
         while (!cancellationToken.IsCancellationRequested)
         {
             foreach (var line in ReadNewLines())
             {
+                if (IsSoloPlayerEnter(line))
+                {
+                    sawGameplayScreen = true;
+                    sawFreshSeek = false;
+                    continue;
+                }
+
+                if (IsSoloPlayerExit(line))
+                {
+                    sawGameplayScreen = false;
+                    sawFreshSeek = false;
+                    continue;
+                }
+
                 if (TryParseSeek(line, out var seekTimeMs))
                 {
                     _lastSeekTimeMs = seekTimeMs;
+                    sawFreshSeek = true;
                 }
 
                 if (line.Contains(
                         "GameplayClockContainer started via call to StartGameplayClock",
                         StringComparison.OrdinalIgnoreCase))
                 {
-                    return new GameplayClockStart(_lastSeekTimeMs);
+                    if (sawGameplayScreen || sawFreshSeek)
+                    {
+                        return new GameplayClockStart(_lastSeekTimeMs);
+                    }
                 }
             }
 
@@ -75,6 +95,18 @@ public sealed class OsuLazerRuntimeLogWatcher
         var result = new List<GameplayClockEvent>();
         foreach (var line in ReadNewLines())
         {
+            if (IsSoloPlayerEnter(line))
+            {
+                result.Add(new GameplayClockEvent(GameplayClockEventKind.SoloPlayerEnter, _lastSeekTimeMs));
+                continue;
+            }
+
+            if (IsSoloPlayerExit(line))
+            {
+                result.Add(new GameplayClockEvent(GameplayClockEventKind.SoloPlayerExit, _lastSeekTimeMs));
+                continue;
+            }
+
             if (TryParseSeek(line, out var seekTimeMs))
             {
                 _lastSeekTimeMs = seekTimeMs;
@@ -179,6 +211,12 @@ public sealed class OsuLazerRuntimeLogWatcher
             return 0;
         }
     }
+
+    private static bool IsSoloPlayerEnter(string line)
+        => line.Contains(" entered SoloPlayer#", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsSoloPlayerExit(string line)
+        => line.Contains(" exit from SoloPlayer#", StringComparison.OrdinalIgnoreCase);
 }
 
 public sealed record GameplayClockStart(double SeekTimeMs);
@@ -190,4 +228,6 @@ public enum GameplayClockEventKind
     Seek,
     Start,
     Stop,
+    SoloPlayerEnter,
+    SoloPlayerExit,
 }

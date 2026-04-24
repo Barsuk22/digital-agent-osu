@@ -121,10 +121,10 @@ public sealed class ControllerApplication
 
         if (window is not null && UsesAutoBeatmapWithOsuLogStart())
         {
+            var watcher = new OsuLazerRuntimeLogWatcher(ResolveOsuLogsDirs(osuDataRoots));
             while (true)
             {
                 Console.WriteLine("[timer] waiting for osu!lazer gameplay clock before resolving auto beatmap...");
-                var watcher = new OsuLazerRuntimeLogWatcher(ResolveOsuLogsDirs(osuDataRoots));
                 var start = await watcher.WaitForGameplayClockStartAsync(CancellationToken.None);
                 var sessionTimer = new MapTimer(_config.Timing);
                 sessionTimer.StartFromOsuLog(watcher, start.SeekTimeMs);

@@ -157,12 +157,38 @@ public sealed class MapTimer
 
         foreach (var clockEvent in _logWatcher.PollEvents())
         {
+            if (clockEvent.Kind == GameplayClockEventKind.SoloPlayerExit)
+            {
+                _sessionRestartRequested = true;
+                Console.WriteLine("[timer] osu!lazer exited gameplay screen; returning to map wait loop");
+                continue;
+            }
+
+            if (clockEvent.Kind == GameplayClockEventKind.SoloPlayerEnter)
+            {
+                continue;
+            }
+
             if (clockEvent.Kind == GameplayClockEventKind.Seek)
             {
                 if (_isPaused)
                 {
-                    _sessionRestartRequested = true;
-                    Console.WriteLine($"[timer] osu!lazer seek while paused {_lastSeekLabel(clockEvent.SeekTimeMs)}; restarting session");
+                    var pausedTimeMs = CurrentTimerBaseMs();
+                    var seekDeltaMs = Math.Abs(clockEvent.SeekTimeMs - pausedTimeMs);
+                    var looksLikeNewMap = clockEvent.SeekTimeMs < 1000.0
+                                          && pausedTimeMs > 3000.0
+                                          && seekDeltaMs > 1500.0;
+
+                    if (looksLikeNewMap)
+                    {
+                        _sessionRestartRequested = true;
+                        Console.WriteLine($"[timer] osu!lazer seek while paused {_lastSeekLabel(clockEvent.SeekTimeMs)}; restarting session");
+                        continue;
+                    }
+
+                    _baseMapTimeMs = clockEvent.SeekTimeMs;
+                    _stopwatch.Reset();
+                    Console.WriteLine($"[timer] osu!lazer paused seek sync {_baseMapTimeMs:0.0}ms");
                     continue;
                 }
 
@@ -175,9 +201,13 @@ public sealed class MapTimer
 
             if (clockEvent.Kind == GameplayClockEventKind.Stop)
             {
-                _stopwatch.Stop();
-                _isPaused = true;
-                Console.WriteLine("[timer] osu!lazer clock stopped; pausing current session");
+                if (!_isPaused)
+                {
+                    _baseMapTimeMs += _stopwatch.Elapsed.TotalMilliseconds;
+                    _stopwatch.Reset();
+                    _isPaused = true;
+                    Console.WriteLine("[timer] osu!lazer clock stopped; pausing current session");
+                }
 
                 continue;
             }
@@ -186,13 +216,16 @@ public sealed class MapTimer
             {
                 if (_isPaused)
                 {
-                    _stopwatch.Start();
+                    _stopwatch.Restart();
                     _isPaused = false;
                     Console.WriteLine("[timer] osu!lazer clock resumed; continuing current session");
                 }
             }
         }
     }
+
+    private double CurrentTimerBaseMs()
+        => _baseMapTimeMs + _stopwatch.Elapsed.TotalMilliseconds;
 
     private void PollLiveAdjustmentKeys()
     {

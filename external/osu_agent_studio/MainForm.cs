@@ -227,9 +227,9 @@ public sealed class MainForm : Form
         if (!_trainingControlsInitialized)
         {
             ConfigureNumber(_updates, 1, 100000, _state.Updates, 0);
-            ConfigureNumber(_saveEvery, 1, 1000, _state.SaveEvery, 0);
-            ConfigureNumber(_cursorSpeed, 1, 40, _state.CursorSpeed, 1);
-            ConfigureNumber(_learningRate, 0.000001m, 0.01m, _state.LearningRate, 6);
+            ConfigureNumber(_saveEvery, 10, 1000, _state.SaveEvery, 0);
+            ConfigureNumber(_cursorSpeed, 5, 40, _state.CursorSpeed, 1);
+            ConfigureNumber(_learningRate, 0.000003m, 0.01m, _state.LearningRate, 6);
             _resetBest.Text = "Reset best metric";
             _resetBest.ForeColor = TextMain;
             _resetBest.BackColor = Color.Transparent;
@@ -239,7 +239,7 @@ public sealed class MainForm : Form
 
         body.Controls.Add(Field("Updates", _updates), 0, 0);
         body.Controls.Add(Field("Save every", _saveEvery), 0, 1);
-        body.Controls.Add(Field("Cursor speed", _cursorSpeed), 0, 2);
+        body.Controls.Add(Field("Train cursor speed", _cursorSpeed), 0, 2);
         body.Controls.Add(Field("Learning rate", _learningRate), 0, 3);
         body.Controls.Add(_resetBest, 0, 4);
         body.Controls.Add(Button("Start Training", Pink, (_, _) => StartTraining()), 0, 5);

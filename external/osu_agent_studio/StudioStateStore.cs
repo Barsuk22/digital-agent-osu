@@ -14,7 +14,7 @@ internal sealed class StudioState
     public int SaveEvery { get; set; } = 10;
     public decimal CursorSpeed { get; set; } = 10.5m;
     public decimal LearningRate { get; set; } = 0.00003m;
-    public bool ResetBest { get; set; } = true;
+    public bool ResetBest { get; set; } = false;
     public string SelectedConfigPath { get; set; } = StudioPaths.AgentConfig;
     public int SelectedTabIndex { get; set; }
     public List<string> SelectedMaps { get; set; } = [];
@@ -77,9 +77,9 @@ internal static class StudioStateStore
         }
 
         state.Updates = Math.Clamp(state.Updates, 1, 100000);
-        state.SaveEvery = Math.Clamp(state.SaveEvery, 1, 1000);
-        state.CursorSpeed = Math.Clamp(state.CursorSpeed, 1m, 40m);
-        state.LearningRate = Math.Clamp(state.LearningRate, 0.000001m, 0.01m);
+        state.SaveEvery = Math.Clamp(state.SaveEvery, 10, 1000);
+        state.CursorSpeed = state.CursorSpeed < 5m ? 10.5m : Math.Clamp(state.CursorSpeed, 5m, 40m);
+        state.LearningRate = state.LearningRate < 0.000003m ? 0.00003m : Math.Clamp(state.LearningRate, 0.000003m, 0.01m);
         state.SelectedTabIndex = Math.Clamp(state.SelectedTabIndex, 0, 3);
         state.SelectedConfigPath = string.IsNullOrWhiteSpace(state.SelectedConfigPath)
             ? StudioPaths.AgentConfig

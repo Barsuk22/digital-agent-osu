@@ -9,9 +9,21 @@ public sealed class MouseController
 {
     private readonly PlayfieldMapper _playfieldMapper;
 
-    public MouseController(double playfieldPadX = 0.0, double playfieldPadY = 0.0)
+    public MouseController(
+        double playfieldPadX = 0.0,
+        double playfieldPadY = 0.0,
+        double playfieldScaleX = 1.0,
+        double playfieldScaleY = 1.0,
+        double playfieldOffsetX = 0.0,
+        double playfieldOffsetY = 0.0)
     {
-        _playfieldMapper = new PlayfieldMapper(playfieldPadX, playfieldPadY);
+        _playfieldMapper = new PlayfieldMapper(
+            playfieldPadX,
+            playfieldPadY,
+            playfieldScaleX,
+            playfieldScaleY,
+            playfieldOffsetX,
+            playfieldOffsetY);
     }
 
     public void MoveToScreen(double x, double y)

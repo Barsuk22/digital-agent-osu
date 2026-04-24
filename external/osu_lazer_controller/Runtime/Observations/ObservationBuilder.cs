@@ -8,7 +8,7 @@ public sealed class ObservationBuilder
     private const double SpinnerCenterX = 256.0;
     private const double SpinnerCenterY = 192.0;
     private const double SpinnerTargetRadius = 76.0;
-    private const double SpinnerTargetSpins = 2.0;
+    private const double SpinnerTargetSpins = 2.70;
 
     public ObservationSnapshot Build(
         BridgeBeatmap beatmap,

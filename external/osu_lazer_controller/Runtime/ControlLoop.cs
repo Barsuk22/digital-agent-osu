@@ -3,6 +3,7 @@ using OsuLazerController.Config;
 using OsuLazerController.Models;
 using OsuLazerController.Runtime.Bridge;
 using OsuLazerController.Runtime.Beatmaps;
+using OsuLazerController.Runtime.Capture;
 using OsuLazerController.Runtime.Geometry;
 using OsuLazerController.Runtime.Input;
 using OsuLazerController.Runtime.Logging;
@@ -25,16 +26,34 @@ public sealed class ControlLoop
     private readonly ObservationRuntimeState _runtimeState = new();
     private readonly CursorTracker _cursorTracker = new();
     private readonly CursorRuntimeState _cursorRuntimeState = new();
+    private readonly VisionFrameRecorder? _frameRecorder;
+    private readonly VisionDatasetRecorder? _datasetRecorder;
     private readonly PlayfieldMapper _playfieldMapper;
     private readonly ActionApplier _actionApplier;
+    private readonly OracleActionPlanner _oracleActionPlanner;
 
-    public ControlLoop(RuntimeConfig config, IPolicyBridge policyBridge, TraceLogger traceLogger, MouseController mouseController)
+    public ControlLoop(
+        RuntimeConfig config,
+        IPolicyBridge policyBridge,
+        TraceLogger traceLogger,
+        MouseController mouseController,
+        VisionFrameRecorder? frameRecorder = null,
+        VisionDatasetRecorder? datasetRecorder = null)
     {
         _config = config;
         _policyBridge = policyBridge;
         _traceLogger = traceLogger;
-        _playfieldMapper = new PlayfieldMapper(config.Control.PlayfieldPadX, config.Control.PlayfieldPadY);
+        _frameRecorder = frameRecorder;
+        _datasetRecorder = datasetRecorder;
+        _playfieldMapper = new PlayfieldMapper(
+            config.Control.PlayfieldPadX,
+            config.Control.PlayfieldPadY,
+            config.Control.PlayfieldScaleX,
+            config.Control.PlayfieldScaleY,
+            config.Control.PlayfieldOffsetX,
+            config.Control.PlayfieldOffsetY);
         _actionApplier = new ActionApplier(config.Control, mouseController);
+        _oracleActionPlanner = new OracleActionPlanner(config.Control);
     }
 
     public async Task<WarmupResult> RunWarmupAsync(CancellationToken cancellationToken = default)
@@ -77,26 +96,47 @@ public sealed class ControlLoop
         BridgeBeatmap beatmap,
         WindowInfo window,
         Func<string>? windowTitleProvider = null,
+        MapTimer? prestartedTimer = null,
         CancellationToken cancellationToken = default)
     {
         var playfield = _playfieldMapper.Compute(window);
         _runtimeState.Reset();
         InitializeCursor(window, playfield);
-        var timer = new MapTimer(_config.Timing);
-        await timer.StartAsync(windowTitleProvider, beatmap, cancellationToken);
+        var timer = prestartedTimer ?? new MapTimer(_config.Timing);
+        if (prestartedTimer is null)
+        {
+            await timer.StartAsync(windowTitleProvider, beatmap, cancellationToken);
+        }
         double? previousMapTimeMs = null;
 
         var tickInterval = TimeSpan.FromSeconds(1.0 / Math.Max(1.0, _config.Timing.TickRateHz));
 
         var unlimitedTicks = _config.Timing.DiagnosticTicks <= 0;
         var maxTicks = unlimitedTicks ? int.MaxValue : Math.Max(1, _config.Timing.DiagnosticTicks);
+        var lastPrintedPrimaryLabel = string.Empty;
+        var lastPrintedActiveSlider = false;
+        var lastPrintedActiveSpinner = false;
 
         for (var tick = 0; tick < maxTicks; tick++)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            LivePlayfieldCalibration.PollHotkeys();
 
             var tickTimer = Stopwatch.StartNew();
             var mapTimeMs = timer.CurrentTimeMs();
+            if (timer.SessionRestartRequested)
+            {
+                Console.WriteLine("[timer] session restart requested; returning to map wait loop");
+                break;
+            }
+
+            if (timer.IsPaused)
+            {
+                _actionApplier.Release();
+                await Task.Delay(tickInterval, cancellationToken);
+                continue;
+            }
+
             var dtMs = previousMapTimeMs.HasValue ? Math.Max(1.0, mapTimeMs - previousMapTimeMs.Value) : tickInterval.TotalMilliseconds;
             previousMapTimeMs = mapTimeMs;
             var useLiveCursor = _config.Control.UseLiveCursorTracking;
@@ -117,8 +157,11 @@ public sealed class ControlLoop
             _runtimeState.Sync(beatmap, mapTimeMs);
             var upcoming = _runtimeState.PeekUpcoming(beatmap, 5);
             var snapshot = _observationBuilder.Build(beatmap, mapTimeMs, cursorX, cursorY, upcoming, _runtimeState);
+            var capturedFrame = _frameRecorder?.Capture(playfield, tick + 1);
             var policyTimer = Stopwatch.StartNew();
-            var action = await _policyBridge.RequestActionAsync(new ObservationPacket(snapshot.Vector), cancellationToken);
+            var action = IsOracleMode()
+                ? _oracleActionPlanner.Plan(beatmap, snapshot)
+                : await _policyBridge.RequestActionAsync(new ObservationPacket(snapshot.Vector, capturedFrame), cancellationToken);
             policyTimer.Stop();
             var primary = snapshot.Upcoming.FirstOrDefault();
             var primaryLabel = primary is null ? "none" : $"{primary.Kind}@{primary.TimeMs:0.0}";
@@ -154,44 +197,48 @@ public sealed class ControlLoop
             _cursorRuntimeState.Set(nextCursorX, nextCursorY);
             tickTimer.Stop();
 
-            _traceLogger.Append(
-                new RuntimeTick(
-                    TickIndex: tick + 1,
-                    MapTimeMs: mapTimeMs,
-                    CursorX: cursorX,
-                    CursorY: cursorY,
-                    Observation: snapshot.Vector,
-                    PrimaryObject: primaryLabel,
-                    ActiveSlider: snapshot.ActiveSlider,
-                    ActiveSpinner: snapshot.ActiveSpinner,
-                    AssistTargetX: snapshot.AssistTargetX,
-                    AssistTargetY: snapshot.AssistTargetY,
-                    LoopElapsedMs: tickTimer.Elapsed.TotalMilliseconds,
-                    PolicyLatencyMs: policyTimer.Elapsed.TotalMilliseconds,
-                    Action: action,
-                    AppliedCursorX: applied.NextCursorX,
-                    AppliedCursorY: applied.NextCursorY,
-                    TrackedCursorX: trackedCursorX,
-                    TrackedCursorY: trackedCursorY,
-                    TrackedCursorValid: trackedCursorValid,
-                    JustPressed: _runtimeState.JustPressed,
-                    RawClickDown: applied.RawClickDown,
-                    SliderHoldDown: applied.SliderHoldDown,
-                    SpinnerHoldDown: applied.SpinnerHoldDown,
-                    ClickDown: applied.ClickDown));
+            var runtimeTick = new RuntimeTick(
+                TickIndex: tick + 1,
+                MapTimeMs: mapTimeMs,
+                CursorX: cursorX,
+                CursorY: cursorY,
+                Observation: snapshot.Vector,
+                PrimaryObject: primaryLabel,
+                ActiveSlider: snapshot.ActiveSlider,
+                ActiveSpinner: snapshot.ActiveSpinner,
+                AssistTargetX: snapshot.AssistTargetX,
+                AssistTargetY: snapshot.AssistTargetY,
+                LoopElapsedMs: tickTimer.Elapsed.TotalMilliseconds,
+                PolicyLatencyMs: policyTimer.Elapsed.TotalMilliseconds,
+                Action: action,
+                AppliedCursorX: applied.NextCursorX,
+                AppliedCursorY: applied.NextCursorY,
+                TrackedCursorX: trackedCursorX,
+                TrackedCursorY: trackedCursorY,
+                TrackedCursorValid: trackedCursorValid,
+                JustPressed: _runtimeState.JustPressed,
+                RawClickDown: applied.RawClickDown,
+                SliderHoldDown: applied.SliderHoldDown,
+                SpinnerHoldDown: applied.SpinnerHoldDown,
+                ClickDown: applied.ClickDown);
+            _traceLogger.Append(runtimeTick);
+            _datasetRecorder?.Record(capturedFrame, snapshot, action, runtimeTick);
 
-            var trackedLabel = trackedCursorValid
-                ? $" tracked=({trackedCursorX:0.0},{trackedCursorY:0.0})"
-                : " tracked=(n/a)";
-            Console.WriteLine(
-                $"[tick {tick + 1:00}] t={mapTimeMs:0.0}ms cursor=({cursorX:0.0},{cursorY:0.0}) " +
-                $"primary={primaryLabel} " +
-                $"active[s={snapshot.ActiveSlider} sp={snapshot.ActiveSpinner}] " +
-                $"action=({action.Dx:0.000},{action.Dy:0.000},{action.ClickStrength:0.000}) " +
-                $"applied=({applied.NextCursorX:0.0},{applied.NextCursorY:0.0})" +
-                trackedLabel + " " +
-                $"hold[j={_runtimeState.JustPressed} r={applied.RawClickDown} sl={applied.SliderHoldDown} sp={applied.SpinnerHoldDown}] " +
-                $"move={_config.Control.EnableMouseMovement} click={_config.Control.EnableMouseClicks}");
+            if (ShouldPrintTick(tick + 1, primaryLabel, snapshot.ActiveSlider, snapshot.ActiveSpinner, ref lastPrintedPrimaryLabel, ref lastPrintedActiveSlider, ref lastPrintedActiveSpinner))
+            {
+                var trackedLabel = trackedCursorValid
+                    ? $" tracked=({trackedCursorX:0.0},{trackedCursorY:0.0})"
+                    : " tracked=(n/a)";
+                Console.WriteLine(
+                    $"[tick {tick + 1:00}] t={mapTimeMs:0.0}ms cursor=({cursorX:0.0},{cursorY:0.0}) " +
+                    $"primary={primaryLabel} " +
+                    $"active[s={snapshot.ActiveSlider} sp={snapshot.ActiveSpinner}] " +
+                    $"action=({action.Dx:0.000},{action.Dy:0.000},{action.ClickStrength:0.000}) " +
+                    $"applied=({applied.NextCursorX:0.0},{applied.NextCursorY:0.0})" +
+                    trackedLabel + " " +
+                    $"hold[j={_runtimeState.JustPressed} r={applied.RawClickDown} sl={applied.SliderHoldDown} sp={applied.SpinnerHoldDown}] " +
+                    $"move={_config.Control.EnableMouseMovement} click={_config.Control.EnableMouseClicks}");
+            }
 
             var remaining = tickInterval - tickTimer.Elapsed;
             if (remaining > TimeSpan.Zero)
@@ -299,4 +346,32 @@ public sealed class ControlLoop
                && _runtimeState.ActiveSlider is null
                && _runtimeState.ActiveSpinner is null;
     }
+
+    private bool ShouldPrintTick(
+        int tickIndex,
+        string primaryLabel,
+        bool activeSlider,
+        bool activeSpinner,
+        ref string lastPrintedPrimaryLabel,
+        ref bool lastPrintedActiveSlider,
+        ref bool lastPrintedActiveSpinner)
+    {
+        var every = _config.Logging.TickConsoleEveryNTicks;
+        var stateChanged = !string.Equals(primaryLabel, lastPrintedPrimaryLabel, StringComparison.OrdinalIgnoreCase)
+            || activeSlider != lastPrintedActiveSlider
+            || activeSpinner != lastPrintedActiveSpinner;
+        var periodic = every > 0 && tickIndex % every == 0;
+        if (!stateChanged && !periodic)
+        {
+            return false;
+        }
+
+        lastPrintedPrimaryLabel = primaryLabel;
+        lastPrintedActiveSlider = activeSlider;
+        lastPrintedActiveSpinner = activeSpinner;
+        return true;
+    }
+
+    private bool IsOracleMode()
+        => string.Equals(_config.PolicyBridge.Mode, "oracle", StringComparison.OrdinalIgnoreCase);
 }

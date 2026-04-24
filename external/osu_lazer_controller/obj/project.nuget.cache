@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "bmb7ISR6RRg=",
+  "dgSpecHash": "9yYFohMl7Ow=",
   "success": true,
   "projectFilePath": "D:\\Projects\\digital_agent_osu_project\\external\\osu_lazer_controller\\OsuLazerController.csproj",
   "expectedPackageFiles": [
@@ -27,7 +27,10 @@
     "C:\\Users\\valer\\.nuget\\packages\\system.security.principal.windows\\5.0.0\\system.security.principal.windows.5.0.0.nupkg.sha512",
     "C:\\Users\\valer\\.nuget\\packages\\system.servicemodel.primitives\\4.9.0\\system.servicemodel.primitives.4.9.0.nupkg.sha512",
     "C:\\Users\\valer\\.nuget\\packages\\system.valuetuple\\4.5.0\\system.valuetuple.4.5.0.nupkg.sha512",
-    "C:\\Users\\valer\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512"
+    "C:\\Users\\valer\\.nuget\\packages\\system.windows.extensions\\5.0.0\\system.windows.extensions.5.0.0.nupkg.sha512",
+    "C:\\Users\\valer\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\8.0.23\\microsoft.netcore.app.runtime.win-x64.8.0.23.nupkg.sha512",
+    "C:\\Users\\valer\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\8.0.23\\microsoft.windowsdesktop.app.runtime.win-x64.8.0.23.nupkg.sha512",
+    "C:\\Users\\valer\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\8.0.23\\microsoft.aspnetcore.app.runtime.win-x64.8.0.23.nupkg.sha512"
   ],
   "logs": []
 }

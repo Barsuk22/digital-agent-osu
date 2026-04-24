@@ -51,18 +51,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-name", default="osu_lazer_transfer_generalization")
     parser.add_argument("--source-checkpoint", default=str(PATHS.phase8_easy_best_checkpoint))
     parser.add_argument("--levels", nargs="+", default=list(ALLOWED_LEVELS), choices=["beginner", "easy", "normal"])
-    parser.add_argument("--updates", type=int, default=300)
+    parser.add_argument("--updates", type=int, default=500)
     parser.add_argument("--save-every", type=int, default=10)
     parser.add_argument("--learning-rate", type=float, default=3e-5)
     parser.add_argument("--cursor-speed", type=float, default=10.5)
     parser.add_argument("--max-maps", type=int, default=0, help="0 means use all discovered maps.")
+    parser.add_argument("--maps-dir", default=str(PATHS.maps_dir))
+    parser.add_argument("--map", dest="maps", action="append", default=[], help="Explicit .osu map path. Can be repeated.")
+    parser.add_argument("--reset-best", action="store_true", help="Reset best metric when resuming from latest.")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
-def discover_train_maps(levels: tuple[str, ...], max_maps: int = 0) -> list[Path]:
+def discover_train_maps(levels: tuple[str, ...], max_maps: int = 0, maps_dir: Path | None = None) -> list[Path]:
     selected: list[Path] = []
-    for path in sorted(PATHS.maps_dir.rglob("*.osu")):
+    root = maps_dir or PATHS.maps_dir
+    for path in sorted(root.rglob("*.osu")):
         try:
             beatmap = parse_beatmap(path)
         except Exception:
@@ -121,7 +125,10 @@ def print_selected_maps(train_maps: list[Path]) -> None:
 def main() -> None:
     args = parse_args()
     levels = tuple(dict.fromkeys(level.lower() for level in args.levels))
-    train_maps = discover_train_maps(levels=levels, max_maps=max(0, args.max_maps))
+    if args.maps:
+        train_maps = [Path(path).resolve() for path in args.maps]
+    else:
+        train_maps = discover_train_maps(levels=levels, max_maps=max(0, args.max_maps), maps_dir=Path(args.maps_dir))
     if not train_maps:
         raise SystemExit(f"No maps discovered for levels={levels}")
 
@@ -159,8 +166,10 @@ def main() -> None:
         cfg,
         resume_ckpt,
         device,
-        reset_training_state=not resume_from_latest,
+        reset_training_state=(not resume_from_latest) or args.reset_best,
     )
+    if args.reset_best:
+        best_reward = float("-inf")
 
     print("=" * 100)
     print("OSU LAZER TRANSFER FINE-TUNE STARTED")

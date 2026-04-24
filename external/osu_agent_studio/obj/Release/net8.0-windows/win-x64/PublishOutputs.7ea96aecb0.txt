@@ -1,0 +1,5 @@
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\win-x64\publish\OsuAgentStudio.exe
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\win-x64\publish\OsuAgentStudio.dll
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\win-x64\publish\OsuAgentStudio.deps.json
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\win-x64\publish\OsuAgentStudio.runtimeconfig.json
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\win-x64\publish\OsuAgentStudio.pdb

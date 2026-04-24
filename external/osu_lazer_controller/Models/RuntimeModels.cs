@@ -1,8 +1,15 @@
 namespace OsuLazerController.Models;
 
-public sealed record ObservationPacket(float[] Obs);
+public sealed record ObservationPacket(float[] Obs, CapturedVisionFrame? VisionFrame = null);
 
 public sealed record ActionPacket(double Dx, double Dy, double ClickStrength);
+
+public sealed record CapturedVisionFrame(
+    long TickIndex,
+    int Width,
+    int Height,
+    bool Grayscale,
+    byte[] Pixels);
 
 public sealed record RuntimeTick(
     long TickIndex,

@@ -1,0 +1,15 @@
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\OsuAgentStudio.exe
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\OsuAgentStudio.deps.json
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\OsuAgentStudio.runtimeconfig.json
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\OsuAgentStudio.dll
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\bin\Release\net8.0-windows\OsuAgentStudio.pdb
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.GeneratedMSBuildEditorConfig.editorconfig
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.AssemblyInfoInputs.cache
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.AssemblyInfo.cs
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.csproj.CoreCompileInputs.cache
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.sourcelink.json
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.dll
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\refint\OsuAgentStudio.dll
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.pdb
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\OsuAgentStudio.genruntimeconfig.cache
+D:\Projects\digital_agent_osu_project\external\osu_agent_studio\obj\Release\net8.0-windows\ref\OsuAgentStudio.dll

@@ -29,7 +29,46 @@ public sealed record WindowConfig(
 public sealed record LoggingConfig(
     bool Enabled,
     string Directory,
-    bool SaveJsonTrace);
+    bool SaveJsonTrace,
+    int TickConsoleEveryNTicks);
+
+public sealed record VisionCaptureConfig(
+    bool Enabled,
+    int Width,
+    int Height,
+    bool Grayscale,
+    int CaptureEveryNTicks,
+    int MaxCapturedFrames,
+    bool SaveFrames,
+    int SaveEveryNTicks,
+    int MaxSavedFrames)
+{
+    public static VisionCaptureConfig Disabled() =>
+        new(
+            Enabled: false,
+            Width: 96,
+            Height: 72,
+            Grayscale: true,
+            CaptureEveryNTicks: 1,
+            MaxCapturedFrames: 0,
+            SaveFrames: false,
+            SaveEveryNTicks: 120,
+            MaxSavedFrames: 12);
+}
+
+public sealed record VisionDatasetConfig(
+    bool Enabled,
+    string Directory,
+    int SaveEveryNTicks,
+    int MaxFrames)
+{
+    public static VisionDatasetConfig Disabled() =>
+        new(
+            Enabled: false,
+            Directory: "vision_dataset",
+            SaveEveryNTicks: 1,
+            MaxFrames: 0);
+}
 
 public sealed record BeatmapConfig(
     string SourceOsuPath,
@@ -42,7 +81,12 @@ public sealed record ControlConfig(
     bool UseLiveCursorTracking,
     double PlayfieldPadX,
     double PlayfieldPadY,
+    double PlayfieldScaleX,
+    double PlayfieldScaleY,
+    double PlayfieldOffsetX,
+    double PlayfieldOffsetY,
     double CursorSpeedScale,
+    double ActionSmoothing,
     double AimAssistStrength,
     double AimAssistMaxDistance,
     double AimAssistDeadzone,
@@ -56,7 +100,9 @@ public sealed record RuntimeConfig(
     WindowConfig Window,
     BeatmapConfig Beatmap,
     ControlConfig Control,
-    LoggingConfig Logging)
+    LoggingConfig Logging,
+    VisionCaptureConfig? VisionCapture,
+    VisionDatasetConfig? VisionDataset)
 {
     public static RuntimeConfig Load(string? configPath = null)
     {
@@ -69,7 +115,13 @@ public sealed record RuntimeConfig(
         }
 
         var json = File.ReadAllText(resolvedPath);
-        return JsonSerializer.Deserialize<RuntimeConfig>(json, JsonOptions()) ?? Defaults();
+        var config = JsonSerializer.Deserialize<RuntimeConfig>(json, JsonOptions()) ?? Defaults();
+        return config with
+        {
+            VisionCapture = config.VisionCapture ?? VisionCaptureConfig.Disabled(),
+            VisionDataset = config.VisionDataset ?? VisionDatasetConfig.Disabled(),
+            Control = NormalizeControlConfig(config.Control),
+        };
     }
 
     public static RuntimeConfig Defaults() =>
@@ -105,7 +157,12 @@ public sealed record RuntimeConfig(
                 UseLiveCursorTracking: false,
                 PlayfieldPadX: 80.0,
                 PlayfieldPadY: 60.0,
+                PlayfieldScaleX: 1.0,
+                PlayfieldScaleY: 1.0,
+                PlayfieldOffsetX: 0.0,
+                PlayfieldOffsetY: 0.0,
                 CursorSpeedScale: 14.0,
+                ActionSmoothing: 0.0,
                 AimAssistStrength: 0.0,
                 AimAssistMaxDistance: 160.0,
                 AimAssistDeadzone: 18.0,
@@ -115,7 +172,10 @@ public sealed record RuntimeConfig(
             new LoggingConfig(
                 Enabled: true,
                 Directory: "logs",
-                SaveJsonTrace: true));
+                SaveJsonTrace: true,
+                TickConsoleEveryNTicks: 0),
+            VisionCaptureConfig.Disabled(),
+            VisionDatasetConfig.Disabled());
 
     private static JsonSerializerOptions JsonOptions() =>
         new()
@@ -123,5 +183,12 @@ public sealed record RuntimeConfig(
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             ReadCommentHandling = JsonCommentHandling.Skip,
             AllowTrailingCommas = true,
+        };
+
+    private static ControlConfig NormalizeControlConfig(ControlConfig config) =>
+        config with
+        {
+            PlayfieldScaleX = config.PlayfieldScaleX > 0.0 ? config.PlayfieldScaleX : 1.0,
+            PlayfieldScaleY = config.PlayfieldScaleY > 0.0 ? config.PlayfieldScaleY : 1.0,
         };
 }

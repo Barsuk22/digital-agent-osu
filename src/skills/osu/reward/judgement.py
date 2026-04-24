@@ -27,10 +27,10 @@ SPINNER_TARGET_RADIUS = 76.0
 SPINNER_GOOD_RADIUS_TOLERANCE = 26.0
 SPINNER_MIN_VALID_RADIUS = 42.0
 SPINNER_MAX_VALID_RADIUS = 125.0
-SPINNER_MAX_DELTA_PER_STEP = 0.50
-SPINNER_MIN_DELTA_PER_STEP = 0.025
-SPINNER_CLEAR_MIN_SPINS = 2.0
-SPINNER_PARTIAL_MIN_SPINS = 0.9
+SPINNER_MAX_DELTA_PER_STEP = 0.78
+SPINNER_MIN_DELTA_PER_STEP = 0.035
+SPINNER_CLEAR_MIN_SPINS = 2.70
+SPINNER_PARTIAL_MIN_SPINS = 1.35
 
 
 @dataclass(slots=True)
@@ -267,10 +267,11 @@ class OsuJudge:
     ) -> JudgeResult:
         timing_error = abs(time_ms - obj.circle.time_ms)
         dist = distance(cursor_x, cursor_y, obj.circle.x, obj.circle.y)
+        precision_bonus = max(0.0, 1.0 - dist / max(1e-6, self.radius))
 
         if dist > self.radius:
             return JudgeResult(
-                reward=-0.15,
+                reward=-0.22,
                 score_value=0,
                 judgement="click_outside",
                 popup_x=obj.circle.x,
@@ -279,16 +280,22 @@ class OsuJudge:
 
         if timing_error <= hit_window_300(self.od):
             self.object_index += 1
-            return self._register_scored_hit(300, "300", obj.circle.x, obj.circle.y)
+            hit = self._register_scored_hit(300, "300", obj.circle.x, obj.circle.y)
+            hit.reward += 0.18 * precision_bonus
+            return hit
         if timing_error <= hit_window_100(self.od):
             self.object_index += 1
-            return self._register_scored_hit(100, "100", obj.circle.x, obj.circle.y)
+            hit = self._register_scored_hit(100, "100", obj.circle.x, obj.circle.y)
+            hit.reward += 0.10 * precision_bonus
+            return hit
         if timing_error <= hit_window_50(self.od):
             self.object_index += 1
-            return self._register_scored_hit(50, "50", obj.circle.x, obj.circle.y)
+            hit = self._register_scored_hit(50, "50", obj.circle.x, obj.circle.y)
+            hit.reward += 0.05 * precision_bonus
+            return hit
 
         return JudgeResult(
-            reward=-0.05,
+            reward=-0.07,
             score_value=0,
             judgement="bad_timing",
             popup_x=obj.circle.x,
@@ -305,10 +312,11 @@ class OsuJudge:
         slider = obj.slider
         timing_error = abs(time_ms - slider.time_ms)
         dist = distance(cursor_x, cursor_y, slider.x, slider.y)
+        precision_bonus = max(0.0, 1.0 - dist / max(1e-6, self.radius))
 
         if dist > self.radius:
             return JudgeResult(
-                reward=-0.15,
+                reward=-0.22,
                 score_value=0,
                 judgement="slider_head_outside",
                 popup_x=slider.x,
@@ -317,7 +325,7 @@ class OsuJudge:
 
         if timing_error > hit_window_50(self.od):
             return JudgeResult(
-                reward=-0.05,
+                reward=-0.07,
                 score_value=0,
                 judgement="slider_bad_timing",
                 popup_x=slider.x,
@@ -352,7 +360,7 @@ class OsuJudge:
 
         head_value = self._score_value_from_timing_error(timing_error)
         hit = self._register_scored_hit(head_value, "slider_head", slider.x, slider.y)
-        hit.reward += 0.15
+        hit.reward += 0.15 + 0.14 * precision_bonus
         return hit
 
     def _build_slider_tick_times(self, slider: SliderObject, span_duration_ms: float) -> list[float]:
@@ -546,16 +554,16 @@ class OsuJudge:
             self.active_spinner["good_radius_samples"] += 1
 
         radius_score = max(0.0, 1.0 - radius_error / SPINNER_GOOD_RADIUS_TOLERANCE)
-        result.reward += 0.0015 * radius_score * step_scale
+        result.reward += 0.0035 * radius_score * step_scale
         if click_down:
-            result.reward += 0.0015 * step_scale
+            result.reward += 0.0040 * step_scale
         else:
-            result.reward -= 0.010 * step_scale
+            result.reward -= 0.020 * step_scale
         if radius < SPINNER_MIN_VALID_RADIUS:
             center_excess = (SPINNER_MIN_VALID_RADIUS - radius) / SPINNER_MIN_VALID_RADIUS
-            result.reward -= 0.028 * (1.0 + center_excess) * step_scale
+            result.reward -= 0.045 * (1.0 + center_excess) * step_scale
         elif radius > SPINNER_MAX_VALID_RADIUS:
-            result.reward -= 0.010 * step_scale
+            result.reward -= 0.018 * step_scale
 
         if self.active_spinner["last_angle"] is not None:
             delta = angle - self.active_spinner["last_angle"]
@@ -570,28 +578,33 @@ class OsuJudge:
             last_delta_sign = int(self.active_spinner.get("last_delta_sign", 0))
             if last_delta_sign != 0 and delta_sign != 0 and delta_sign != last_delta_sign:
                 self.active_spinner["direction_flips"] += 1
-                result.reward -= 0.010 * step_scale
+                result.reward -= 0.006 * step_scale
             if delta_sign != 0:
                 self.active_spinner["last_delta_sign"] = delta_sign
 
             too_fast = delta_abs > SPINNER_MAX_DELTA_PER_STEP
             if too_fast:
                 self.active_spinner["excess_delta_samples"] += 1
-                result.reward -= min(0.040, (delta_abs - SPINNER_MAX_DELTA_PER_STEP) * 0.035) * step_scale
+                result.reward -= min(0.018, (delta_abs - SPINNER_MAX_DELTA_PER_STEP) * 0.012) * step_scale
 
             effective_delta = min(delta_abs, SPINNER_MAX_DELTA_PER_STEP)
-            if click_down and valid_radius and not too_fast and effective_delta >= SPINNER_MIN_DELTA_PER_STEP:
+            if click_down and valid_radius and effective_delta >= SPINNER_MIN_DELTA_PER_STEP:
                 self.active_spinner["spin_progress"] += effective_delta
             angular_velocity = delta_abs / max(1e-6, dt_ms / 1000.0)
             self.active_spinner["last_angular_velocity"] = angular_velocity
-            if click_down and good_radius and not too_fast:
-                result.reward += min(0.070, effective_delta * 0.250)
-            elif click_down and valid_radius and not too_fast:
-                result.reward += min(0.030, effective_delta * 0.120)
+            speed_ratio = min(1.6, effective_delta / max(1e-6, SPINNER_MAX_DELTA_PER_STEP))
+            if click_down and good_radius:
+                result.reward += min(0.120, effective_delta * 0.360)
+                result.reward += 0.035 * speed_ratio * step_scale
             elif click_down and valid_radius:
-                result.reward -= 0.012 * step_scale
-            if SPINNER_MIN_DELTA_PER_STEP <= delta_abs <= SPINNER_MAX_DELTA_PER_STEP and good_radius and click_down:
-                result.reward += 0.010 * step_scale
+                result.reward += min(0.060, effective_delta * 0.180)
+                result.reward += 0.018 * speed_ratio * step_scale
+            if effective_delta >= SPINNER_MIN_DELTA_PER_STEP and good_radius and click_down:
+                result.reward += 0.014 * step_scale
+            if click_down and good_radius and effective_delta < SPINNER_MIN_DELTA_PER_STEP * 1.6:
+                result.reward -= 0.025 * step_scale
+            elif click_down and valid_radius and effective_delta < SPINNER_MIN_DELTA_PER_STEP:
+                result.reward -= 0.018 * step_scale
         else:
             self.active_spinner["last_angular_velocity"] = 0.0
 
@@ -614,26 +627,27 @@ class OsuJudge:
         excess_delta_ratio = excess_delta_samples / samples
 
         clean_orbit = (
-            valid_radius_ratio >= 0.60
-            and good_radius_ratio >= 0.28
+            valid_radius_ratio >= 0.55
+            and good_radius_ratio >= 0.25
             and flip_ratio <= 0.40
-            and excess_delta_ratio <= 0.20
+            and excess_delta_ratio <= 0.35
         )
-        partial_orbit = valid_radius_ratio >= 0.40 and flip_ratio <= 0.55 and excess_delta_ratio <= 0.35
+        partial_orbit = valid_radius_ratio >= 0.38 and flip_ratio <= 0.55 and excess_delta_ratio <= 0.45
 
         target_spins = float(self.active_spinner.get("target_spins", SPINNER_CLEAR_MIN_SPINS))
         partial_spins = max(SPINNER_PARTIAL_MIN_SPINS, target_spins * 0.5)
 
         if spins >= target_spins and hold_ratio >= 0.65 and clean_orbit:
             hit = self._register_scored_hit(300, "spinner_clear", center_x, center_y)
-            result.reward += hit.reward + 0.5
+            overspin_bonus = max(0.0, spins - target_spins)
+            result.reward += hit.reward + 0.65 + min(0.55, overspin_bonus * 0.35)
             result.score_value = hit.score_value
             result.judgement = hit.judgement
             result.popup_x = hit.popup_x
             result.popup_y = hit.popup_y
         elif spins >= partial_spins and hold_ratio >= 0.45 and partial_orbit:
             hit = self._register_scored_hit(100, "spinner_partial", center_x, center_y)
-            result.reward += hit.reward + 0.2
+            result.reward += hit.reward + 0.25
             result.score_value = hit.score_value
             result.judgement = hit.judgement
             result.popup_x = hit.popup_x

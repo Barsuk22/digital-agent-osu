@@ -1,0 +1,73 @@
+{
+  "policyBridge": {
+    "mode": "oracle",
+    "address": "tcp://127.0.0.1:5555",
+    "modelPath": "",
+    "observationSize": 59,
+    "timeoutMs": 1000
+  },
+  "timing": {
+    "tickRateHz": 60.0,
+    "startupDelayMs": 0.0,
+    "diagnosticTicks": 0,
+    "diagnosticInitialMapTimeMs": 0.0,
+    "startTriggerMode": "osu_log",
+    "startHotkey": "F8",
+    "audioOffsetMs": -60.0,
+    "inputDelayMs": 30.0,
+    "captureDelayMs": 0.0
+  },
+  "window": {
+    "titleHint": "osu!",
+    "processName": "osu!",
+    "requireForeground": true,
+    "executablePath": "C:\\Users\\valer\\AppData\\Local\\osulazer\\current\\osu!.exe"
+  },
+  "beatmap": {
+    "sourceOsuPath": "auto",
+    "exportJsonPath": "D:\\Projects\\digital_agent_osu_project\\exports\\osu_lazer_bridge_map.json"
+  },
+  "control": {
+    "enableMouseMovement": true,
+    "enableMouseClicks": true,
+    "recenterCursorOnStart": true,
+    "useLiveCursorTracking": true,
+    "playfieldPadX": 0.0,
+    "playfieldPadY": 0.0,
+    "playfieldScaleX": 1.0,
+    "playfieldScaleY": 1.0,
+    "playfieldOffsetX": 0.0,
+    "playfieldOffsetY": 0.0,
+    "cursorSpeedScale": 22.0,
+    "actionSmoothing": 0.45,
+    "aimAssistStrength": 0.0,
+    "aimAssistMaxDistance": 160.0,
+    "aimAssistDeadzone": 18.0,
+    "clickThreshold": 0.5,
+    "sliderHoldThreshold": 0.5,
+    "spinnerHoldThreshold": 0.5
+  },
+  "logging": {
+    "enabled": true,
+    "directory": "logs",
+    "saveJsonTrace": true,
+    "tickConsoleEveryNTicks": 0
+  },
+  "visionCapture": {
+    "enabled": true,
+    "width": 512,
+    "height": 384,
+    "grayscale": false,
+    "captureEveryNTicks": 1,
+    "maxCapturedFrames": 0,
+    "saveFrames": true,
+    "saveEveryNTicks": 30,
+    "maxSavedFrames": 80
+  },
+  "visionDataset": {
+    "enabled": false,
+    "directory": "vision_dataset",
+    "saveEveryNTicks": 1,
+    "maxFrames": 0
+  }
+}

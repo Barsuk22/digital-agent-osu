@@ -46,6 +46,47 @@ internal static class NativeMethods
     [DllImport("user32.dll")]
     public static extern int GetSystemMetrics(int nIndex);
 
+    [DllImport("user32.dll")]
+    public static extern bool SetProcessDPIAware();
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SetProcessDpiAwarenessContext(nint dpiContext);
+
+    [DllImport("user32.dll")]
+    public static extern nint GetDC(nint hWnd);
+
+    [DllImport("user32.dll")]
+    public static extern int ReleaseDC(nint hWnd, nint hDc);
+
+    [DllImport("gdi32.dll")]
+    public static extern nint CreateCompatibleDC(nint hDc);
+
+    [DllImport("gdi32.dll")]
+    public static extern bool DeleteDC(nint hDc);
+
+    [DllImport("gdi32.dll")]
+    public static extern nint SelectObject(nint hDc, nint hGdiObj);
+
+    [DllImport("gdi32.dll")]
+    public static extern bool DeleteObject(nint hObject);
+
+    [DllImport("gdi32.dll", SetLastError = true)]
+    public static extern bool StretchBlt(
+        nint hdcDest,
+        int xDest,
+        int yDest,
+        int widthDest,
+        int heightDest,
+        nint hdcSrc,
+        int xSrc,
+        int ySrc,
+        int widthSrc,
+        int heightSrc,
+        uint rop);
+
+    [DllImport("gdi32.dll")]
+    public static extern int SetStretchBltMode(nint hdc, int mode);
+
     public const int SW_RESTORE = 9;
     public const uint PW_RENDERFULLCONTENT = 0x00000002;
     public const int INPUT_MOUSE = 0;
@@ -58,6 +99,10 @@ internal static class NativeMethods
     public const int SM_YVIRTUALSCREEN = 77;
     public const int SM_CXVIRTUALSCREEN = 78;
     public const int SM_CYVIRTUALSCREEN = 79;
+    public const uint SRCCOPY = 0x00CC0020;
+    public const int COLORONCOLOR = 3;
+    public const int HALFTONE = 4;
+    public static readonly nint DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = new(-4);
 
     [StructLayout(LayoutKind.Sequential)]
     public struct INPUT

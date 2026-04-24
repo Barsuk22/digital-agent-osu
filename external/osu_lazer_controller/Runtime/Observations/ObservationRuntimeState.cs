@@ -10,9 +10,9 @@ public sealed class ObservationRuntimeState
     private const double SpinnerGoodRadiusTolerance = 26.0;
     private const double SpinnerMinValidRadius = 42.0;
     private const double SpinnerMaxValidRadius = 125.0;
-    private const double SpinnerMaxDeltaPerStep = 0.50;
-    private const double SpinnerMinDeltaPerStep = 0.025;
-    private const double SpinnerTargetSpins = 2.0;
+    private const double SpinnerMaxDeltaPerStep = 0.78;
+    private const double SpinnerMinDeltaPerStep = 0.035;
+    private const double SpinnerTargetSpins = 2.70;
 
     public int ObjectIndex { get; private set; }
     public BridgeHitObject? ActiveSlider { get; private set; }
@@ -131,9 +131,8 @@ public sealed class ObservationRuntimeState
             while (delta < -Math.PI) delta += 2.0 * Math.PI;
 
             var deltaAbs = Math.Abs(delta);
-            var tooFast = deltaAbs > SpinnerMaxDeltaPerStep;
             var effectiveDelta = Math.Min(deltaAbs, SpinnerMaxDeltaPerStep);
-            if (clickDown && validRadius && !tooFast && effectiveDelta >= SpinnerMinDeltaPerStep)
+            if (clickDown && validRadius && effectiveDelta >= SpinnerMinDeltaPerStep)
             {
                 SpinnerSpinProgress += effectiveDelta;
             }

@@ -1,0 +1,42 @@
+[
+  {
+    "TickIndex": 0,
+    "MapTimeMs": 0,
+    "CursorX": 0,
+    "CursorY": 0,
+    "PrimaryObject": "warmup",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 13.8973,
+    "PolicyLatencyMs": 13.8973,
+    "Action": {
+      "Dx": 0.9171525835990906,
+      "Dy": 0.9013867974281311,
+      "ClickStrength": 0.346920907497406
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  },
+  {
+    "TickIndex": 1,
+    "MapTimeMs": -29.3354,
+    "CursorX": 247.46666666666667,
+    "CursorY": 259.55555555555554,
+    "PrimaryObject": "slider@855,0",
+    "ActiveSlider": false,
+    "ActiveSpinner": false,
+    "LoopElapsedMs": 8.7515,
+    "PolicyLatencyMs": 0.212,
+    "Action": {
+      "Dx": -0.5717096328735352,
+      "Dy": -0.1713995635509491,
+      "ClickStrength": 0.3010462820529938
+    },
+    "RawClickDown": false,
+    "SliderHoldDown": false,
+    "SpinnerHoldDown": false,
+    "ClickDown": false
+  }
+]

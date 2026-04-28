@@ -844,7 +844,7 @@ def phase7_cycle_selection_score(scores: list[CycleMapScore]) -> float:
         + 0.45 * mean_slider_inside
         + 0.45 * mean_slider_finish
         + 0.60 * mean_slider_quality
-        - 0.08 * spinner_misses
+        - 0.18 * spinner_misses
     )
 
 
@@ -1270,6 +1270,9 @@ def phase23_shaping_reward(
             breakdown.outcome += cfg.great_bonus_extra
         elif score_value >= 100:
             breakdown.outcome += cfg.good_bonus_extra
+            breakdown.outcome -= 0.065
+        elif score_value >= 50:
+            breakdown.outcome -= 0.140
 
     if judgement == "miss":
         breakdown.outcome -= cfg.miss_penalty

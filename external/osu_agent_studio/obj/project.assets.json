@@ -1,19 +1,49 @@
 {
   "version": 3,
   "targets": {
-    "net8.0-windows7.0": {},
-    "net8.0-windows7.0/win-x64": {}
+    "net8.0-windows7.0": {
+      "OsuAgentStudio.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/OsuAgentStudio.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OsuAgentStudio.Core.dll": {}
+        }
+      }
+    },
+    "net8.0-windows7.0/win-x64": {
+      "OsuAgentStudio.Core/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v8.0",
+        "compile": {
+          "bin/placeholder/OsuAgentStudio.Core.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/OsuAgentStudio.Core.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "OsuAgentStudio.Core/1.0.0": {
+      "type": "project",
+      "path": "../osu_agent_studio_core/OsuAgentStudio.Core.csproj",
+      "msbuildProject": "../osu_agent_studio_core/OsuAgentStudio.Core.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net8.0-windows7.0": []
+    "net8.0-windows7.0": [
+      "OsuAgentStudio.Core >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\valer\\.nuget\\packages\\": {},
     "D:\\Visual Studio Community\\Components\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "1.0.3",
     "restore": {
       "projectUniqueName": "D:\\Projects\\digital_agent_osu_project\\external\\osu_agent_studio\\OsuAgentStudio.csproj",
       "projectName": "OsuAgentStudio",
@@ -40,7 +70,11 @@
       "frameworks": {
         "net8.0-windows7.0": {
           "targetAlias": "net8.0-windows",
-          "projectReferences": {}
+          "projectReferences": {
+            "D:\\Projects\\digital_agent_osu_project\\external\\osu_agent_studio_core\\OsuAgentStudio.Core.csproj": {
+              "projectPath": "D:\\Projects\\digital_agent_osu_project\\external\\osu_agent_studio_core\\OsuAgentStudio.Core.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

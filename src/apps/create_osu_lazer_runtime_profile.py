@@ -66,6 +66,7 @@ def base_config() -> dict:
             "aimAssistStrength": 0.0,
             "aimAssistMaxDistance": 160.0,
             "aimAssistDeadzone": 18.0,
+            "spinnerOrbitSpeedMultiplier": 1.0,
             "clickThreshold": 0.75,
             "sliderHoldThreshold": 0.45,
             "spinnerHoldThreshold": 0.45,

@@ -1,0 +1,246 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OsuAgentStudio.Avalonia.MainWindow"
+        Title="{Binding Title}"
+        Width="1360"
+        Height="840"
+        MinWidth="1180"
+        MinHeight="760"
+        Background="#070912"
+        Icon="/app.ico">
+  <Window.Resources>
+    <SolidColorBrush x:Key="BackBrush" Color="#070912" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#111422" />
+    <SolidColorBrush x:Key="Surface2Brush" Color="#171B2C" />
+    <SolidColorBrush x:Key="TextMainBrush" Color="#F4F7FF" />
+    <SolidColorBrush x:Key="TextMutedBrush" Color="#99A2C3" />
+    <SolidColorBrush x:Key="CyanBrush" Color="#57CAFF" />
+    <SolidColorBrush x:Key="PinkBrush" Color="#E04AD1" />
+    <SolidColorBrush x:Key="YellowBrush" Color="#FFCD4B" />
+    <SolidColorBrush x:Key="BlueBrush" Color="#7380FF" />
+    <SolidColorBrush x:Key="GreenBrush" Color="#5BEB97" />
+    <SolidColorBrush x:Key="RedBrush" Color="#FF567A" />
+  </Window.Resources>
+
+  <Window.Styles>
+    <Style Selector="TextBlock">
+      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="Height" Value="38" />
+      <Setter Property="Margin" Value="0,4" />
+      <Setter Property="Padding" Value="14,6" />
+      <Setter Property="Background" Value="{StaticResource Surface2Brush}" />
+      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+      <Setter Property="BorderBrush" Value="#2A304A" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+    </Style>
+    <Style Selector="Button.cyan">
+      <Setter Property="BorderBrush" Value="{StaticResource CyanBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource CyanBrush}" />
+    </Style>
+    <Style Selector="Button.pink">
+      <Setter Property="BorderBrush" Value="{StaticResource PinkBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource PinkBrush}" />
+    </Style>
+    <Style Selector="Button.yellow">
+      <Setter Property="BorderBrush" Value="{StaticResource YellowBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource YellowBrush}" />
+    </Style>
+    <Style Selector="Button.blue">
+      <Setter Property="BorderBrush" Value="{StaticResource BlueBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource BlueBrush}" />
+    </Style>
+    <Style Selector="Button.green">
+      <Setter Property="BorderBrush" Value="{StaticResource GreenBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource GreenBrush}" />
+    </Style>
+    <Style Selector="Button.red">
+      <Setter Property="BorderBrush" Value="{StaticResource RedBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource RedBrush}" />
+    </Style>
+    <Style Selector="TextBox, ComboBox, NumericUpDown">
+      <Setter Property="Background" Value="{StaticResource Surface2Brush}" />
+      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+      <Setter Property="BorderBrush" Value="#2A304A" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Height" Value="34" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="94,*,220" Margin="20">
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
+      <StackPanel Grid.Column="0" VerticalAlignment="Center">
+        <TextBlock Text="osu! Agent Studio"
+                   FontSize="28"
+                   FontWeight="SemiBold"
+                   Foreground="{StaticResource TextMainBrush}" />
+        <TextBlock Text="{Binding Title}"
+                   Margin="0,5,0,0"
+                   Foreground="{StaticResource TextMutedBrush}" />
+      </StackPanel>
+
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource CyanBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+          <StackPanel>
+            <TextBlock Text="Agent" Foreground="{StaticResource CyanBrush}" FontSize="12" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding AgentStatus}" />
+          </StackPanel>
+        </Border>
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource PinkBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+          <StackPanel>
+            <TextBlock Text="Training" Foreground="{StaticResource PinkBrush}" FontSize="12" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding TrainingStatus}" />
+          </StackPanel>
+        </Border>
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource YellowBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
+          <StackPanel>
+            <TextBlock Text="Export" Foreground="{StaticResource YellowBrush}" FontSize="12" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding ExportStatus}" />
+          </StackPanel>
+        </Border>
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource GreenBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" MinWidth="170">
+          <StackPanel>
+            <TextBlock Text="Files" Foreground="{StaticResource GreenBrush}" FontSize="12" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding FilesStatus}" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Grid>
+
+    <TabControl Grid.Row="1"
+                SelectedIndex="{Binding SelectedTabIndex}"
+                Background="{StaticResource BackBrush}"
+                Foreground="{StaticResource TextMainBrush}">
+      <TabItem Header="Play">
+        <Grid ColumnDefinitions="*,*" Margin="0,14,0,0">
+          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+            <StackPanel>
+              <TextBlock Text="Live Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource CyanBrush}" />
+              <TextBlock Text="Runtime config" Margin="0,18,0,5" Foreground="{StaticResource TextMutedBrush}" />
+              <ComboBox ItemsSource="{Binding Configs}" SelectedItem="{Binding SelectedConfig}" />
+              <Button Content="Launch Agent" Classes="cyan" Command="{Binding LaunchAgentCommand}" />
+              <Button Content="Launch Oracle" Classes="cyan" Command="{Binding LaunchOracleCommand}" />
+              <Button Content="Stop / Kill Agent" Classes="red" Command="{Binding StopAgentCommand}" />
+              <Button Content="Open Live Logs" Classes="blue" Command="{Binding OpenLiveLogsCommand}" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+            <StackPanel>
+              <TextBlock Text="Runtime Notes" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
+              <TextBlock Margin="0,18,0,0"
+                         Foreground="{StaticResource TextMutedBrush}"
+                         Text="Auto map mode resolves the current osu!lazer map after gameplay starts.&#x0a;&#x0a;Pause/stop events are watched from osu!lazer runtime logs, so the controller releases input instead of playing through menus.&#x0a;&#x0a;Sensitivity in osu!lazer should stay at 1.0." />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Training">
+        <Grid ColumnDefinitions="420,*" Margin="0,14,0,0">
+          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+            <StackPanel>
+              <TextBlock Text="Training Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PinkBrush}" />
+              <TextBlock Text="Updates" Margin="0,14,0,5" Foreground="{StaticResource TextMutedBrush}" />
+              <NumericUpDown Minimum="1" Maximum="100000" Increment="1" Value="{Binding Updates}" />
+              <TextBlock Text="Save every" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
+              <NumericUpDown Minimum="10" Maximum="1000" Increment="1" Value="{Binding SaveEvery}" />
+              <TextBlock Text="Train cursor speed" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
+              <NumericUpDown Minimum="5" Maximum="40" Increment="0.1" FormatString="0.0" Value="{Binding CursorSpeed}" />
+              <TextBlock Text="Learning rate" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
+              <NumericUpDown Minimum="0.000003" Maximum="0.01" Increment="0.00001" FormatString="0.000000" Value="{Binding LearningRate}" />
+              <CheckBox Content="Reset best metric" Margin="0,12,0,4" Foreground="{StaticResource TextMainBrush}" IsChecked="{Binding ResetBest}" />
+              <Button Content="Start Training" Classes="pink" Command="{Binding StartTrainingCommand}" />
+              <Button Content="Stop Training" Classes="red" Command="{Binding StopTrainingCommand}" />
+              <Button Content="Open Checkpoints" Classes="blue" Command="{Binding OpenCheckpointsCommand}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+              <StackPanel>
+                <TextBlock Text="Training Maps" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
+                <TextBlock Text="Maps folder" Margin="0,14,0,5" Foreground="{StaticResource TextMutedBrush}" />
+                <TextBox Text="{Binding MapsFolder}" />
+              </StackPanel>
+              <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,8,0,10">
+                <Button Content="Browse" Classes="blue" Click="BrowseMapsFolder_Click" Margin="0,4,5,4" />
+                <Button Grid.Column="1" Content="Rescan" Classes="cyan" Command="{Binding RescanMapsCommand}" Margin="5,4" />
+                <Button Grid.Column="2" Content="Select All" Classes="green" Command="{Binding SelectAllMapsCommand}" Margin="5,4" />
+                <Button Grid.Column="3" Content="Select None" Classes="yellow" Command="{Binding SelectNoneMapsCommand}" Margin="5,4,0,4" />
+              </Grid>
+              <ListBox Grid.Row="2"
+                       ItemsSource="{Binding Maps}"
+                       Background="#03050A"
+                       BorderBrush="#2A304A"
+                       BorderThickness="1"
+                       Foreground="{StaticResource TextMainBrush}">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding DisplayName}" Foreground="{StaticResource TextMainBrush}" />
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <TextBlock Grid.Row="3" Text="{Binding MapsStatus}" Margin="0,10,0,0" Foreground="{StaticResource TextMutedBrush}" />
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Export">
+        <Grid ColumnDefinitions="*,*" Margin="0,14,0,0">
+          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+            <StackPanel>
+              <TextBlock Text="Export ONNX" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource YellowBrush}" />
+              <Button Content="Export Latest" Classes="yellow" Command="{Binding ExportLatestCommand}" Margin="0,20,0,4" />
+              <Button Content="Export Best" Classes="green" Command="{Binding ExportBestCommand}" />
+              <Button Content="Open ONNX Folder" Classes="blue" Command="{Binding OpenOnnxFolderCommand}" />
+              <Button Content="Refresh Status" Classes="cyan" Command="{Binding RefreshStatusCommand}" />
+            </StackPanel>
+          </Border>
+          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+            <StackPanel>
+              <TextBlock Text="Checkpoint Flow" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
+              <TextBlock Margin="0,18,0,0"
+                         Foreground="{StaticResource TextMutedBrush}"
+                         Text="Use Export Latest when you want to test what is currently learning.&#x0a;&#x0a;Use Export Best when the cycle score actually improved.&#x0a;&#x0a;Export writes to artifacts/exports/onnx/lazer_transfer_generalization.onnx - the file used by runtime.onnx.live_play.agent_observed.gu.json (Launch Agent)." />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Files">
+        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,14,0,0">
+          <StackPanel Width="420" HorizontalAlignment="Left">
+            <TextBlock Text="Project Shortcuts" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
+            <Button Content="Open Maps Folder" Classes="cyan" Command="{Binding OpenMapsFolderCommand}" Margin="0,20,0,4" />
+            <Button Content="Open Checkpoints" Classes="pink" Command="{Binding OpenCheckpointsCommand}" />
+            <Button Content="Open ONNX Folder" Classes="yellow" Command="{Binding OpenOnnxFolderCommand}" />
+            <Button Content="Open Controller Configs" Classes="blue" Command="{Binding OpenConfigsCommand}" />
+            <Button Content="Open Studio Logs" Classes="green" Command="{Binding OpenStudioLogsCommand}" />
+          </StackPanel>
+        </Border>
+      </TabItem>
+    </TabControl>
+
+    <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,16,0,0">
+      <Grid RowDefinitions="42,*">
+        <Grid ColumnDefinitions="*,150">
+          <TextBlock Text="Console" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Content="Clear Console" Command="{Binding ClearConsoleCommand}" />
+        </Grid>
+        <ListBox x:Name="ConsoleList"
+                 Grid.Row="1"
+                 ItemsSource="{Binding Logs}"
+                 Background="#03050A"
+                 BorderThickness="0"
+                 Foreground="#D6E2F4"
+                 FontFamily="Cascadia Mono"
+                 FontSize="13" />
+      </Grid>
+    </Border>
+  </Grid>
+</Window>

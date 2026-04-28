@@ -31,7 +31,7 @@
     "enableMouseMovement": true,
     "enableMouseClicks": false,
     "recenterCursorOnStart": true,
-    "useLiveCursorTracking": false,
+    "useLiveCursorTracking": true,
     "cursorSpeedScale": 14.0,
     "clickThreshold": 0.75,
     "sliderHoldThreshold": 0.45,

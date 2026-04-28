@@ -18,11 +18,11 @@
     "captureDelayMs": 0.0
   },
   "window": {
-    "titleHint": "osu! GU",
+    "titleHint": "osu!",
     "processName": "osu!",
     "requireForeground": true,
-    "executablePath": "C:\\Users\\valer\\OneDrive\\Рабочий стол\\Игры\\OSU Serv\\osu! GU.exe"
-  },
+    "executablePath": "C:\\Users\\valer\\OneDrive\\Рабочий стол\\Игры\\osulazer\\current\\osu!.exe"
+  }, 
   "beatmap": {
     "sourceOsuPath": "auto",
     "exportJsonPath": "D:\\Projects\\digital_agent_osu_project\\exports\\osu_lazer_bridge_map.json"
@@ -34,18 +34,18 @@
     "useLiveCursorTracking": true,
     "playfieldPadX": 0.0,
     "playfieldPadY": 0.0,
-    "playfieldScaleX": 1.0,
-    "playfieldScaleY": 1.0,
+    "playfieldScaleX": 0.80,
+    "playfieldScaleY": 0.85,
     "playfieldOffsetX": 0.0,
-    "playfieldOffsetY": 0.0,
-    "cursorSpeedScale": 17.5,
+    "playfieldOffsetY": 0.90,
+    "cursorSpeedScale": 25.0,
     "actionSmoothing": 0.62,
     "aimAssistStrength": 0.55,
     "aimAssistMaxDistance": 160.0,
     "aimAssistDeadzone": 12.0,
-    "clickThreshold": 0.75,
-    "sliderHoldThreshold": 0.45,
-    "spinnerHoldThreshold": 0.45
+    "clickThreshold": 0.5,
+    "sliderHoldThreshold": 0.5,
+    "spinnerHoldThreshold": 0.5
   },
   "logging": {
     "enabled": true,

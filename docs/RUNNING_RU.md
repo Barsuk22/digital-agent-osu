@@ -42,6 +42,35 @@ Phase 8 и Phase 9 шли вместе: Phase 8 обучила новый easy/g
 python -m src.apps.train_osu
 ```
 
+## Дообучение на точность (precision upgrade)
+
+Для сценария "сделать агента более метким" добавлен единый launcher:
+
+```powershell
+python -m src.apps.run_osu_lazer_precision_upgrade --run-name osu_lazer_transfer_precision_accuracy --updates 450
+```
+
+Что делает команда:
+
+1. запускает `train_osu_lazer_transfer` с профилем `precision`;
+2. берет лучший checkpoint из `artifacts/runs/<run-name>/checkpoints/best_lazer_transfer.pt`;
+3. делает eval выбранной карты (по умолчанию `Sentimental Love`);
+4. экспортирует ONNX в `artifacts/exports/onnx/lazer_transfer_generalization.onnx` (тот же путь, что в `runtime.onnx.live_play.agent_observed.gu.json`);
+5. по умолчанию **не** перезаписывает JSON runtime — живой запуск в OsuAgentStudio: `Launch Agent` + конфиг `agent_observed.gu`. Дополнительный runtime из шаблона: флаг `--write-runtime`.
+
+Полезные флаги:
+
+```powershell
+# только посмотреть шаги без запуска обучения
+python -m src.apps.run_osu_lazer_precision_upgrade --dry-run
+
+# использовать другое число апдейтов и map pool
+python -m src.apps.run_osu_lazer_precision_upgrade --updates 700 --levels beginner easy normal --max-maps 0
+
+# пропустить обучение и только пересобрать ONNX из уже обученного run
+python -m src.apps.run_osu_lazer_precision_upgrade --skip-train
+```
+
 Стартовая база:
 
 ```text

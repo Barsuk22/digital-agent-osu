@@ -90,6 +90,7 @@ public sealed record ControlConfig(
     double AimAssistStrength,
     double AimAssistMaxDistance,
     double AimAssistDeadzone,
+    double SpinnerOrbitSpeedMultiplier,
     double ClickThreshold,
     double SliderHoldThreshold,
     double SpinnerHoldThreshold);
@@ -166,6 +167,7 @@ public sealed record RuntimeConfig(
                 AimAssistStrength: 0.0,
                 AimAssistMaxDistance: 160.0,
                 AimAssistDeadzone: 18.0,
+                SpinnerOrbitSpeedMultiplier: 1.0,
                 ClickThreshold: 0.75,
                 SliderHoldThreshold: 0.45,
                 SpinnerHoldThreshold: 0.45),
@@ -190,5 +192,8 @@ public sealed record RuntimeConfig(
         {
             PlayfieldScaleX = config.PlayfieldScaleX > 0.0 ? config.PlayfieldScaleX : 1.0,
             PlayfieldScaleY = config.PlayfieldScaleY > 0.0 ? config.PlayfieldScaleY : 1.0,
+            SpinnerOrbitSpeedMultiplier = config.SpinnerOrbitSpeedMultiplier > 0.0
+                ? config.SpinnerOrbitSpeedMultiplier
+                : 1.0,
         };
 }

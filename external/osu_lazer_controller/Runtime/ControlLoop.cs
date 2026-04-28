@@ -16,9 +16,9 @@ public sealed record WarmupResult(bool Ok, double PolicyLatencyMs);
 
 public sealed class ControlLoop
 {
-    private const double LiveCursorResyncThresholdPx = 18.0;
-    private const double LiveCursorCorrectionAlpha = 0.35;
-    private const double LiveCursorMaxCorrectionPx = 6.0;
+    private const double LiveCursorResyncThresholdPx = 8.0;
+    private const double LiveCursorCorrectionAlpha = 0.60;
+    private const double LiveCursorMaxCorrectionPx = 10.0;
     private readonly RuntimeConfig _config;
     private readonly IPolicyBridge _policyBridge;
     private readonly TraceLogger _traceLogger;
@@ -167,6 +167,16 @@ public sealed class ControlLoop
             var primaryLabel = primary is null ? "none" : $"{primary.Kind}@{primary.TimeMs:0.0}";
             var applied = _actionApplier.Apply(window, snapshot, cursorX, cursorY, action);
             var trackedCursorValid = _cursorTracker.TryGetOsuPosition(playfield, out var trackedCursorX, out var trackedCursorY);
+            var hasImmediateTarget = snapshot.PrimaryObjectKind != "none" || snapshot.ActiveSlider || snapshot.ActiveSpinner;
+            _actionApplier.UpdateAdaptiveMovementCompensation(
+                hasImmediateTarget,
+                trackedCursorValid,
+                cursorX,
+                cursorY,
+                applied.NextCursorX,
+                applied.NextCursorY,
+                trackedCursorX,
+                trackedCursorY);
             var nextCursorX = applied.NextCursorX;
             var nextCursorY = applied.NextCursorY;
             if (useLiveCursor && trackedCursorValid)
@@ -347,6 +357,31 @@ public sealed class ControlLoop
                && _runtimeState.ActiveSpinner is null;
     }
 
+    // private bool ShouldPrintTick(
+    //     int tickIndex,
+    //     string primaryLabel,
+    //     bool activeSlider,
+    //     bool activeSpinner,
+    //     ref string lastPrintedPrimaryLabel,
+    //     ref bool lastPrintedActiveSlider,
+    //     ref bool lastPrintedActiveSpinner)
+    // {
+    //     var every = _config.Logging.TickConsoleEveryNTicks;
+    //     var stateChanged = !string.Equals(primaryLabel, lastPrintedPrimaryLabel, StringComparison.OrdinalIgnoreCase)
+    //         || activeSlider != lastPrintedActiveSlider
+    //         || activeSpinner != lastPrintedActiveSpinner;
+    //     var periodic = every > 0 && tickIndex % every == 0;
+    //     if (!stateChanged && !periodic)
+    //     {
+    //         return false;
+    //     }
+
+    //     lastPrintedPrimaryLabel = primaryLabel;
+    //     lastPrintedActiveSlider = activeSlider;
+    //     lastPrintedActiveSpinner = activeSpinner;
+    //     return true;
+    // }
+
     private bool ShouldPrintTick(
         int tickIndex,
         string primaryLabel,
@@ -356,20 +391,7 @@ public sealed class ControlLoop
         ref bool lastPrintedActiveSlider,
         ref bool lastPrintedActiveSpinner)
     {
-        var every = _config.Logging.TickConsoleEveryNTicks;
-        var stateChanged = !string.Equals(primaryLabel, lastPrintedPrimaryLabel, StringComparison.OrdinalIgnoreCase)
-            || activeSlider != lastPrintedActiveSlider
-            || activeSpinner != lastPrintedActiveSpinner;
-        var periodic = every > 0 && tickIndex % every == 0;
-        if (!stateChanged && !periodic)
-        {
-            return false;
-        }
-
-        lastPrintedPrimaryLabel = primaryLabel;
-        lastPrintedActiveSlider = activeSlider;
-        lastPrintedActiveSpinner = activeSpinner;
-        return true;
+        return false;
     }
 
     private bool IsOracleMode()

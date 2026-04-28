@@ -29,8 +29,8 @@ SPINNER_MIN_VALID_RADIUS = 42.0
 SPINNER_MAX_VALID_RADIUS = 125.0
 SPINNER_MAX_DELTA_PER_STEP = 0.78
 SPINNER_MIN_DELTA_PER_STEP = 0.035
-SPINNER_CLEAR_MIN_SPINS = 2.70
-SPINNER_PARTIAL_MIN_SPINS = 1.35
+SPINNER_CLEAR_MIN_SPINS = 3.15
+SPINNER_PARTIAL_MIN_SPINS = 1.75
 
 
 @dataclass(slots=True)
@@ -281,17 +281,19 @@ class OsuJudge:
         if timing_error <= hit_window_300(self.od):
             self.object_index += 1
             hit = self._register_scored_hit(300, "300", obj.circle.x, obj.circle.y)
-            hit.reward += 0.18 * precision_bonus
+            hit.reward += 0.24 * precision_bonus
             return hit
         if timing_error <= hit_window_100(self.od):
             self.object_index += 1
             hit = self._register_scored_hit(100, "100", obj.circle.x, obj.circle.y)
-            hit.reward += 0.10 * precision_bonus
+            hit.reward += 0.04 * precision_bonus
+            hit.reward -= 0.12
             return hit
         if timing_error <= hit_window_50(self.od):
             self.object_index += 1
             hit = self._register_scored_hit(50, "50", obj.circle.x, obj.circle.y)
-            hit.reward += 0.05 * precision_bonus
+            hit.reward += 0.02 * precision_bonus
+            hit.reward -= 0.22
             return hit
 
         return JudgeResult(
@@ -654,10 +656,11 @@ class OsuJudge:
             result.popup_y = hit.popup_y
         elif spins >= partial_spins:
             self._register_miss(result, None, center_x, center_y)
-            result.reward -= 0.25
+            result.reward -= 0.55
             result.judgement = "spinner_no_hold"
         else:
             self._register_miss(result, None, center_x, center_y)
+            result.reward -= 0.35
             result.judgement = "spinner_miss"
 
         self.active_spinner = None
@@ -678,7 +681,7 @@ class OsuJudge:
         self.score_sum += value
         self.score_max_sum += 300
 
-        reward = {300: 1.0, 100: 0.5, 50: 0.2, 10: 0.05}.get(value, 0.0)
+        reward = {300: 1.25, 100: 0.25, 50: 0.03, 10: 0.03}.get(value, 0.0)
         return JudgeResult(
             reward=reward,
             score_value=value,

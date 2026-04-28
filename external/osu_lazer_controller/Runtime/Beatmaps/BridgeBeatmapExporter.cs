@@ -1,10 +1,38 @@
 using System.Diagnostics;
+using System.Text.Json;
+using OsuLazerController.Models;
 
 namespace OsuLazerController.Runtime.Beatmaps;
 
 public sealed class BridgeBeatmapExporter
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     public bool TryExport(string osuPath, string outputJsonPath)
+    {
+        try
+        {
+            var beatmap = new OsuBeatmapParser().Parse(osuPath);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputJsonPath) ?? AppContext.BaseDirectory);
+            File.WriteAllText(outputJsonPath, JsonSerializer.Serialize(beatmap, JsonOptions));
+
+            Console.WriteLine($"[beatmap-auto] exported in C#: {outputJsonPath}");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[beatmap-auto] C# exporter failed: {ex.Message}");
+            Console.WriteLine("[beatmap-auto] trying legacy Python exporter...");
+            return TryExportWithPython(osuPath, outputJsonPath);
+        }
+    }
+
+    private bool TryExportWithPython(string osuPath, string outputJsonPath)
     {
         var projectRoot = FindProjectRoot();
         if (projectRoot is null)
@@ -14,6 +42,7 @@ public sealed class BridgeBeatmapExporter
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(outputJsonPath) ?? projectRoot);
+
         var startInfo = new ProcessStartInfo
         {
             FileName = "python",
@@ -22,6 +51,7 @@ public sealed class BridgeBeatmapExporter
             RedirectStandardOutput = true,
             RedirectStandardError = true,
         };
+
         startInfo.ArgumentList.Add("-m");
         startInfo.ArgumentList.Add("src.apps.export_osu_lazer_bridge_map");
         startInfo.ArgumentList.Add("--map");
@@ -43,19 +73,13 @@ public sealed class BridgeBeatmapExporter
             process.WaitForExit();
 
             if (!string.IsNullOrWhiteSpace(output))
-            {
                 Console.WriteLine(output.Trim());
-            }
 
             if (process.ExitCode == 0 && File.Exists(outputJsonPath))
-            {
                 return true;
-            }
 
             if (!string.IsNullOrWhiteSpace(error))
-            {
                 Console.WriteLine(error.Trim());
-            }
 
             Console.WriteLine($"[beatmap-auto] exporter failed with exit code {process.ExitCode}");
             return false;

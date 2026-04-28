@@ -5,11 +5,15 @@ namespace OsuLazerController.Runtime.Input;
 
 public sealed class ActionApplier
 {
+    private const double MinAdaptiveCompensation = 0.55;
+    private const double MaxAdaptiveCompensation = 1.45;
+    private const double AdaptiveCompensationAlpha = 0.08;
     private readonly ControlConfig _config;
     private readonly MouseController _mouseController;
     private bool _mouseIsDown;
     private double _smoothedDx;
     private double _smoothedDy;
+    private double _adaptiveMovementCompensation = 1.0;
 
     public ActionApplier(ControlConfig config, MouseController mouseController)
     {
@@ -28,12 +32,13 @@ public sealed class ActionApplier
         var assistedAction = ApplyAimAssist(snapshot, cursorX, cursorY, action, hasImmediateTarget);
         assistedAction = ApplySpinnerOrbitAssist(snapshot, cursorX, cursorY, assistedAction);
         var movementAction = SmoothMovement(assistedAction, hasImmediateTarget, snapshot.ActiveSpinner);
+        var effectiveSpeedScale = GetEffectiveSpeedScale();
         var nextCursorX = cursorX;
         var nextCursorY = cursorY;
         if (hasImmediateTarget)
         {
-            nextCursorX = Clamp(cursorX + movementAction.Dx * _config.CursorSpeedScale, 0.0, 512.0);
-            nextCursorY = Clamp(cursorY + movementAction.Dy * _config.CursorSpeedScale, 0.0, 384.0);
+            nextCursorX = Clamp(cursorX + movementAction.Dx * effectiveSpeedScale, 0.0, 512.0);
+            nextCursorY = Clamp(cursorY + movementAction.Dy * effectiveSpeedScale, 0.0, 384.0);
         }
 
         var rawClickDown = action.ClickStrength >= _config.ClickThreshold;
@@ -79,6 +84,7 @@ public sealed class ActionApplier
         _mouseIsDown = false;
         _smoothedDx = 0.0;
         _smoothedDy = 0.0;
+        _adaptiveMovementCompensation = 1.0;
     }
 
     public void MoveCursor(WindowInfo window, double osuX, double osuY)
@@ -87,6 +93,33 @@ public sealed class ActionApplier
         {
             _mouseController.MoveToOsu(window, osuX, osuY);
         }
+    }
+
+    public void UpdateAdaptiveMovementCompensation(
+        bool hasImmediateTarget,
+        bool trackedCursorValid,
+        double previousCursorX,
+        double previousCursorY,
+        double commandedCursorX,
+        double commandedCursorY,
+        double trackedCursorX,
+        double trackedCursorY)
+    {
+        if (!hasImmediateTarget || !trackedCursorValid)
+        {
+            return;
+        }
+
+        var commandedDelta = Distance(previousCursorX, previousCursorY, commandedCursorX, commandedCursorY);
+        var trackedDelta = Distance(previousCursorX, previousCursorY, trackedCursorX, trackedCursorY);
+        if (commandedDelta < 1.0 || trackedDelta < 0.25)
+        {
+            return;
+        }
+
+        var responseRatio = trackedDelta / commandedDelta;
+        var targetCompensation = Clamp(1.0 / Math.Max(0.1, responseRatio), MinAdaptiveCompensation, MaxAdaptiveCompensation);
+        _adaptiveMovementCompensation = Lerp(_adaptiveMovementCompensation, targetCompensation, AdaptiveCompensationAlpha);
     }
 
     private ActionPacket ApplyAimAssist(
@@ -115,10 +148,11 @@ public sealed class ActionApplier
             0.0,
             1.0);
 
-        var assistDx = Clamp(targetDxPx / Math.Max(1.0, _config.CursorSpeedScale), -1.0, 1.0);
-        var assistDy = Clamp(targetDyPx / Math.Max(1.0, _config.CursorSpeedScale), -1.0, 1.0);
-        var policyNextX = Clamp(cursorX + action.Dx * _config.CursorSpeedScale, 0.0, 512.0);
-        var policyNextY = Clamp(cursorY + action.Dy * _config.CursorSpeedScale, 0.0, 384.0);
+        var effectiveSpeedScale = GetEffectiveSpeedScale();
+        var assistDx = Clamp(targetDxPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
+        var assistDy = Clamp(targetDyPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
+        var policyNextX = Clamp(cursorX + action.Dx * effectiveSpeedScale, 0.0, 512.0);
+        var policyNextY = Clamp(cursorY + action.Dy * effectiveSpeedScale, 0.0, 384.0);
         var policyDistancePx = Math.Sqrt(
             Math.Pow(snapshot.AssistTargetX - policyNextX, 2) +
             Math.Pow(snapshot.AssistTargetY - policyNextY, 2));
@@ -174,13 +208,16 @@ public sealed class ActionApplier
         var ny = dy / radius;
         var tangentX = -ny;
         var tangentY = nx;
+        var spinnerSpeedMultiplier = Clamp(_config.SpinnerOrbitSpeedMultiplier, 0.7, 2.4);
         var radiusCorrection = Clamp((targetRadius - radius) * 0.18, -5.0, 5.0);
-        var orbitDxPx = (tangentX * 11.5) + (nx * radiusCorrection);
-        var orbitDyPx = (tangentY * 11.5) + (ny * radiusCorrection);
-        var orbitDx = Clamp(orbitDxPx / Math.Max(1.0, _config.CursorSpeedScale), -1.0, 1.0);
-        var orbitDy = Clamp(orbitDyPx / Math.Max(1.0, _config.CursorSpeedScale), -1.0, 1.0);
+        var orbitDxPx = (tangentX * 11.5 * spinnerSpeedMultiplier) + (nx * radiusCorrection);
+        var orbitDyPx = (tangentY * 11.5 * spinnerSpeedMultiplier) + (ny * radiusCorrection);
+        var effectiveSpeedScale = GetEffectiveSpeedScale();
+        var orbitDx = Clamp(orbitDxPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
+        var orbitDy = Clamp(orbitDyPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
         var policyMagnitude = Math.Sqrt((action.Dx * action.Dx) + (action.Dy * action.Dy));
-        var assistWeight = policyMagnitude < 0.28 || radius < 42.0 ? 0.78 : 0.36;
+        var assistWeightBase = policyMagnitude < 0.28 || radius < 42.0 ? 0.78 : 0.36;
+        var assistWeight = Clamp(assistWeightBase + ((spinnerSpeedMultiplier - 1.0) * 0.18), 0.30, 0.95);
         var clickStrength = Math.Max(action.ClickStrength, _config.SpinnerHoldThreshold + 0.12);
 
         return action with
@@ -207,6 +244,13 @@ public sealed class ActionApplier
     }
 
     private static double Clamp(double value, double min, double max) => Math.Max(min, Math.Min(max, value));
+    private static double Distance(double ax, double ay, double bx, double by)
+    {
+        var dx = ax - bx;
+        var dy = ay - by;
+        return Math.Sqrt((dx * dx) + (dy * dy));
+    }
+    private double GetEffectiveSpeedScale() => _config.CursorSpeedScale * _adaptiveMovementCompensation;
     private static double Lerp(double start, double end, double amount) => start + ((end - start) * amount);
 }
 

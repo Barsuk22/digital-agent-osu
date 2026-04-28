@@ -6,5 +6,24 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>1.0.3.0</Version>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ManagedProcess.cs" />
+    <Compile Remove="StudioPaths.cs" />
+    <Compile Remove="StudioStateStore.cs" />
+
+    <Content Include="app.ico" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+
+    <Content Include="..\..\AppImage\**\*.*"
+            Link="AppImage\%(RecursiveDir)%(Filename)%(Extension)"
+            CopyToOutputDirectory="PreserveNewest"
+            CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\osu_agent_studio_core\OsuAgentStudio.Core.csproj" />
+  </ItemGroup>
 </Project>

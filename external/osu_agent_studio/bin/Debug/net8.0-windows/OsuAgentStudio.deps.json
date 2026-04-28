@@ -6,15 +6,31 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "OsuAgentStudio/1.0.0": {
+      "OsuAgentStudio/1.0.3.0": {
+        "dependencies": {
+          "OsuAgentStudio.Core": "1.0.0"
+        },
         "runtime": {
           "OsuAgentStudio.dll": {}
+        }
+      },
+      "OsuAgentStudio.Core/1.0.0": {
+        "runtime": {
+          "OsuAgentStudio.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
         }
       }
     }
   },
   "libraries": {
-    "OsuAgentStudio/1.0.0": {
+    "OsuAgentStudio/1.0.3.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OsuAgentStudio.Core/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

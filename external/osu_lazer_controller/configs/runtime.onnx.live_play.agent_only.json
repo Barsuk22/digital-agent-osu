@@ -31,7 +31,7 @@
     "enableMouseMovement": true,
     "enableMouseClicks": true,
     "recenterCursorOnStart": true,
-    "useLiveCursorTracking": false,
+    "useLiveCursorTracking": true,
     "playfieldPadX": 0.0,
     "playfieldPadY": 0.0,
     "cursorSpeedScale": 14.0,

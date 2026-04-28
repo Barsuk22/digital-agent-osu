@@ -31,7 +31,7 @@ from src.skills.osu.parser.osu_parser import parse_beatmap
 
 
 ALLOWED_LEVELS = ("beginner", "easy")
-TRAINING_PROFILES = ("precision", "slider", "spinner", "mixed")
+TRAINING_PROFILES = ("precision", "slider", "spinner", "mixed", "precision_spinner")
 BLOCKED_KEYWORDS = (
     "hard",
     "insane",
@@ -59,7 +59,10 @@ def parse_args() -> argparse.Namespace:
         description="Safe fine-tune launcher for osu!lazer transfer/generalization without touching old checkpoints."
     )
     parser.add_argument("--run-name", default="osu_lazer_transfer_generalization")
-    parser.add_argument("--source-checkpoint", default=str(PATHS.phase8_easy_best_checkpoint))
+    parser.add_argument(
+        "--source-checkpoint",
+        default=str(PATHS.runs_dir / "osu_lazer_transfer_precision_accuracy" / "checkpoints" / "best_lazer_transfer.pt"),
+    )
     parser.add_argument("--profile", default="precision", choices=TRAINING_PROFILES)
     parser.add_argument("--levels", nargs="+", default=list(ALLOWED_LEVELS), choices=["beginner", "easy", "normal"])
     parser.add_argument("--updates", type=int, default=400)
@@ -234,6 +237,54 @@ def apply_profile_config(cfg: TrainConfig, profile: str) -> TrainConfig:
             spinner_stall_penalty=0.070,
             spinner_direction_flip_penalty=0.030,
         )
+    
+    if profile == "precision_spinner":
+        return replace(
+            cfg,
+            entropy_coef=0.0022,
+            clip_ratio=0.08,
+            learning_rate=cfg.learning_rate,
+
+            # точность кругов
+            hit_bonus=0.34,
+            great_bonus_extra=0.26,   # было 0.20
+            good_bonus_extra=0.000,   # было 0.015
+            miss_penalty=0.18,
+            timing_good_window_ms=42.0,
+            timing_ok_window_ms=88.0,
+            timing_focus_window_ms=145.0,
+            timing_good_bonus=0.052,
+            timing_ok_bonus=0.006,
+            timing_near_miss_penalty=0.026,
+            timing_off_window_penalty=0.055,
+            near_click_bonus=0.020,
+            settled_click_bonus=0.018,
+            unstable_click_penalty=0.026,
+            far_click_penalty=0.070,
+            off_window_click_penalty=0.060,
+
+            # спиннеры: менее щадящие
+            spinner_aux_loss_coef=0.34,          # было 0.28
+            spinner_aux_tangent_action=0.56,     # было 0.48
+            spinner_angular_delta_scale=0.480,   # было 0.440
+            spinner_speed_bonus=0.065,           # было 0.055
+            spinner_progress_bonus=0.175,        # было 0.155
+            spinner_stall_penalty=0.090,         # было 0.075
+            spinner_direction_consistency_bonus=0.040,
+            spinner_direction_flip_penalty=0.040,
+            spinner_clear_bonus=0.950,           # было 0.850
+            spinner_partial_bonus=0.060,         # было 0.120
+            spinner_miss_penalty=0.750,          # было 0.520
+            spinner_no_hold_penalty=0.620,       # было 0.480
+            spinner_click_release_penalty=0.060,
+
+            # движение не душим, но чуть держим аккуратность
+            jerk_penalty_scale=0.004,
+            overspeed_penalty_scale=0.003,
+            slider_path_delta_scale=0.055,
+            slider_stall_penalty=0.008,
+        )
+
     return cfg
 
 

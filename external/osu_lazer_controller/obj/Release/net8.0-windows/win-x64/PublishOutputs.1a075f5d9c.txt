@@ -1,2 +1,0 @@
-D:\Projects\digital_agent_osu_project\release\osu_lazer_controller\OsuLazerController.pdb
-D:\Projects\digital_agent_osu_project\release\osu_lazer_controller\OsuLazerController.exe

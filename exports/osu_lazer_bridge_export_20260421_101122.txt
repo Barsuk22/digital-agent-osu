@@ -1,0 +1,3847 @@
+=== OSU LAZER BRIDGE EXPORT ===
+Generated at: 20260421_101122
+
+================================================================================
+FILE: src/apps/serve_osu_policy.py
+================================================================================
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import signal
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import torch
+import torch.nn as nn
+import zmq
+
+from src.core.config.paths import PATHS
+
+
+OBS_DIM = 59
+ACTION_DIM = 3
+
+
+def default_checkpoint_path() -> str:
+    return os.environ.get(
+        "OSU_POLICY_CHECKPOINT",
+        str(PATHS.phase8_easy_best_checkpoint),
+    )
+
+
+@dataclass(slots=True)
+class ServerConfig:
+    checkpoint_path: str = default_checkpoint_path()
+    device: str = "cuda" if torch.cuda.is_available() else "cpu"
+    bind_address: str = "tcp://127.0.0.1:5555"
+    hidden_dim: int = 256
+    recv_timeout_ms: int = 1000
+    send_timeout_ms: int = 1000
+    linger_ms: int = 0
+    log_every_requests: int = 500
+
+
+class ActorCritic(nn.Module):
+    def __init__(self, obs_dim: int, hidden_dim: int = 256, action_dim: int = 3) -> None:
+        super().__init__()
+        self.backbone = nn.Sequential(
+            nn.Linear(obs_dim, hidden_dim),
+            nn.Tanh(),
+            nn.Linear(hidden_dim, hidden_dim),
+            nn.Tanh(),
+        )
+        self.actor_mean = nn.Linear(hidden_dim, action_dim)
+        self.critic = nn.Linear(hidden_dim, 1)
+        self.log_std = nn.Parameter(torch.full((action_dim,), -0.35))
+
+    def forward(self, obs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        features = self.backbone(obs)
+        mean = self.actor_mean(features)
+        value = self.critic(features).squeeze(-1)
+        clamped_log_std = torch.clamp(self.log_std, min=-0.9, max=0.45)
+        log_std = clamped_log_std.expand_as(mean)
+        return mean, log_std, value
+
+    def deterministic_action(self, obs: torch.Tensor) -> torch.Tensor:
+        mean, _, _ = self.forward(obs)
+        return torch.tanh(mean)
+
+
+def parse_args() -> ServerConfig:
+    parser = argparse.ArgumentParser(description="Serve osu! RL policy over ZeroMQ.")
+    parser.add_argument(
+        "--checkpoint",
+        default=default_checkpoint_path(),
+        help="Path to .pt checkpoint",
+    )
+    parser.add_argument(
+        "--bind",
+        default="tcp://127.0.0.1:5555",
+        help="ZeroMQ bind address, e.g. tcp://127.0.0.1:5555",
+    )
+    parser.add_argument(
+        "--device",
+        default="cuda" if torch.cuda.is_available() else "cpu",
+        help="torch device: cuda or cpu",
+    )
+    parser.add_argument(
+        "--hidden-dim",
+        type=int,
+        default=256,
+        help="Model hidden dimension",
+    )
+    parser.add_argument(
+        "--recv-timeout-ms",
+        type=int,
+        default=1000,
+        help="ZeroMQ receive timeout",
+    )
+    parser.add_argument(
+        "--send-timeout-ms",
+        type=int,
+        default=1000,
+        help="ZeroMQ send timeout",
+    )
+    parser.add_argument(
+        "--linger-ms",
+        type=int,
+        default=0,
+        help="ZeroMQ linger on close",
+    )
+    parser.add_argument(
+        "--log-every",
+        type=int,
+        default=500,
+        help="Log every N requests",
+    )
+
+    args = parser.parse_args()
+    return ServerConfig(
+        checkpoint_path=args.checkpoint,
+        device=args.device,
+        bind_address=args.bind,
+        hidden_dim=args.hidden_dim,
+        recv_timeout_ms=args.recv_timeout_ms,
+        send_timeout_ms=args.send_timeout_ms,
+        linger_ms=args.linger_ms,
+        log_every_requests=args.log_every,
+    )
+
+
+def load_model_state_compatible(model: ActorCritic, checkpoint: dict[str, Any]) -> None:
+    loaded_state = checkpoint["model_state_dict"]
+    model_state = model.state_dict()
+    compatible_state: dict[str, torch.Tensor] = {}
+    partial_keys: list[str] = []
+
+    for key, value in loaded_state.items():
+        if key not in model_state:
+            continue
+
+        if model_state[key].shape == value.shape:
+            compatible_state[key] = value
+            continue
+
+        if key == "backbone.0.weight" and value.ndim == 2 and model_state[key].ndim == 2:
+            expanded = model_state[key].clone()
+            shared_cols = min(expanded.shape[1], value.shape[1])
+            shared_rows = min(expanded.shape[0], value.shape[0])
+            expanded[:shared_rows, :shared_cols] = value[:shared_rows, :shared_cols]
+            compatible_state[key] = expanded
+            partial_keys.append(key)
+
+    model_state.update(compatible_state)
+    model.load_state_dict(model_state)
+
+    if partial_keys:
+        print(f"[partial checkpoint load] expanded keys: {', '.join(partial_keys)}")
+
+
+class PolicyRuntime:
+    def __init__(self, model: ActorCritic, device: torch.device) -> None:
+        self.model = model
+        self.device = device
+
+    def infer(self, obs: np.ndarray) -> dict[str, float]:
+        if obs.dtype != np.float32:
+            obs = obs.astype(np.float32, copy=False)
+
+        obs_t = torch.from_numpy(obs).to(self.device).unsqueeze(0)
+
+        with torch.no_grad():
+            action_t = self.model.deterministic_action(obs_t)
+
+        action = action_t.squeeze(0).detach().cpu().numpy()
+
+        dx = float(action[0])
+        dy = float(action[1])
+        click_strength = float((action[2] + 1.0) * 0.5)
+
+        return {
+            "dx": dx,
+            "dy": dy,
+            "click_strength": click_strength,
+        }
+
+
+def parse_observation(payload: dict[str, Any]) -> np.ndarray:
+    if "obs" not in payload:
+        raise ValueError("missing required field 'obs'")
+
+    obs_raw = payload["obs"]
+    if not isinstance(obs_raw, list):
+        raise ValueError("'obs' must be a JSON array")
+
+    if len(obs_raw) != OBS_DIM:
+        raise ValueError(f"'obs' must have length {OBS_DIM}, got {len(obs_raw)}")
+
+    try:
+        obs = np.asarray(obs_raw, dtype=np.float32)
+    except Exception as exc:
+        raise ValueError(f"failed to convert 'obs' to float32: {exc}") from exc
+
+    if obs.shape != (OBS_DIM,):
+        raise ValueError(f"'obs' must have shape ({OBS_DIM},), got {obs.shape}")
+
+    if not np.all(np.isfinite(obs)):
+        raise ValueError("'obs' contains non-finite values")
+
+    return obs
+
+
+def make_error_response(message: str, request_id: str | None = None) -> dict[str, Any]:
+    response: dict[str, Any] = {
+        "ok": False,
+        "error": message,
+    }
+    if request_id is not None:
+        response["request_id"] = request_id
+    return response
+
+
+def make_ok_response(
+    action: dict[str, float],
+    request_id: str | None = None,
+    latency_ms: float | None = None,
+) -> dict[str, Any]:
+    response: dict[str, Any] = {
+        "ok": True,
+        **action,
+    }
+    if request_id is not None:
+        response["request_id"] = request_id
+    if latency_ms is not None:
+        response["latency_ms"] = round(latency_ms, 3)
+    return response
+
+
+def load_runtime(cfg: ServerConfig) -> tuple[PolicyRuntime, Path]:
+    device = torch.device(cfg.device)
+    checkpoint_path = Path(cfg.checkpoint_path)
+
+    if not checkpoint_path.exists():
+        raise FileNotFoundError(f"checkpoint not found: {checkpoint_path}")
+
+    model = ActorCritic(
+        obs_dim=OBS_DIM,
+        hidden_dim=cfg.hidden_dim,
+        action_dim=ACTION_DIM,
+    ).to(device)
+
+    checkpoint = torch.load(checkpoint_path, map_location=device)
+    if "model_state_dict" not in checkpoint:
+        raise KeyError("checkpoint missing 'model_state_dict'")
+
+    load_model_state_compatible(model, checkpoint)
+    model.eval()
+
+    runtime = PolicyRuntime(model=model, device=device)
+    return runtime, checkpoint_path
+
+
+def install_signal_handlers(state: dict[str, bool]) -> None:
+    def _handle_signal(signum: int, _frame: Any) -> None:
+        state["stop"] = True
+        print(f"[signal] received {signum}, shutting down...")
+
+    signal.signal(signal.SIGINT, _handle_signal)
+    signal.signal(signal.SIGTERM, _handle_signal)
+
+
+def main() -> None:
+    cfg = parse_args()
+    runtime, checkpoint_path = load_runtime(cfg)
+
+    state = {"stop": False}
+    install_signal_handlers(state)
+
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.setsockopt(zmq.RCVTIMEO, cfg.recv_timeout_ms)
+    socket.setsockopt(zmq.SNDTIMEO, cfg.send_timeout_ms)
+    socket.setsockopt(zmq.LINGER, cfg.linger_ms)
+    socket.bind(cfg.bind_address)
+
+    print("=" * 80)
+    print("OSU POLICY SERVER STARTED")
+    print(f"Bind: {cfg.bind_address}")
+    print(f"Checkpoint: {checkpoint_path}")
+    print(f"Device: {cfg.device}")
+    print(f"Observation dim: {OBS_DIM}")
+    print(f"Action dim: {ACTION_DIM}")
+    print("=" * 80)
+
+    request_count = 0
+
+    try:
+        while not state["stop"]:
+            try:
+                payload = socket.recv_json()
+            except zmq.Again:
+                continue
+            except ValueError:
+                try:
+                    socket.send_json(make_error_response("invalid JSON payload"))
+                except zmq.ZMQError:
+                    pass
+                continue
+
+            request_count += 1
+            request_id = None
+
+            try:
+                if not isinstance(payload, dict):
+                    raise ValueError("payload must be a JSON object")
+
+                request_id_raw = payload.get("request_id")
+                if request_id_raw is not None:
+                    request_id = str(request_id_raw)
+
+                cmd = payload.get("cmd", "infer")
+
+                if cmd == "ping":
+                    socket.send_json(
+                        {
+                            "ok": True,
+                            "cmd": "pong",
+                            "request_id": request_id,
+                            "obs_dim": OBS_DIM,
+                            "action_dim": ACTION_DIM,
+                            "checkpoint": str(checkpoint_path),
+                        }
+                    )
+                    continue
+
+                if cmd != "infer":
+                    raise ValueError(f"unsupported cmd: {cmd!r}")
+
+                started = time.perf_counter()
+                obs = parse_observation(payload)
+                action = runtime.infer(obs)
+                latency_ms = (time.perf_counter() - started) * 1000.0
+
+                socket.send_json(
+                    make_ok_response(
+                        action=action,
+                        request_id=request_id,
+                        latency_ms=latency_ms,
+                    )
+                )
+
+                if cfg.log_every_requests > 0 and request_count % cfg.log_every_requests == 0:
+                    print(
+                        f"[server] requests={request_count} "
+                        f"last_latency_ms={latency_ms:.3f} "
+                        f"dx={action['dx']:.4f} "
+                        f"dy={action['dy']:.4f} "
+                        f"click={action['click_strength']:.4f}"
+                    )
+
+            except Exception as exc:
+                error_text = f"{type(exc).__name__}: {exc}"
+                try:
+                    socket.send_json(make_error_response(error_text, request_id=request_id))
+                except zmq.ZMQError:
+                    print(f"[send error] {error_text}")
+
+    finally:
+        try:
+            socket.close()
+        finally:
+            context.term()
+        print("[server] stopped cleanly")
+
+
+if __name__ == "__main__":
+    main()
+
+
+================================================================================
+FILE: src/apps/export_osu_lazer_bridge_map.py
+================================================================================
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from src.skills.osu.domain.osu_rules import (
+    base_timing_point_at,
+    inherited_timing_point_at,
+    slider_duration_ms,
+    slider_span_duration_ms,
+)
+from src.skills.osu.domain.slider_path import build_slider_path
+from src.skills.osu.parser.osu_parser import parse_beatmap
+from src.skills.osu.domain.models import HitObjectType
+
+
+def build_export_payload(beatmap_path: str) -> dict:
+    beatmap = parse_beatmap(beatmap_path)
+
+    objects: list[dict] = []
+    for index, obj in enumerate(beatmap.hit_objects):
+        entry = {
+            "index": index,
+            "time_ms": float(obj.time_ms),
+            "end_time_ms": float(obj.time_ms),
+            "kind": "unknown",
+            "x": 256.0,
+            "y": 192.0,
+            "combo_index": 0,
+            "combo_number": 0,
+            "hitsound": 0,
+        }
+
+        if obj.kind == HitObjectType.CIRCLE:
+            entry["kind"] = "circle"
+            entry["x"] = float(obj.circle.x)
+            entry["y"] = float(obj.circle.y)
+            entry["combo_index"] = int(obj.circle.combo_index)
+            entry["combo_number"] = int(obj.circle.combo_number)
+            entry["hitsound"] = int(obj.circle.hitsound)
+
+        elif obj.kind == HitObjectType.SLIDER:
+            duration_ms = slider_duration_ms(beatmap, obj.slider)
+            span_duration_ms = slider_span_duration_ms(beatmap, obj.slider)
+            end_time_ms = obj.slider.time_ms + duration_ms
+            base_tp = base_timing_point_at(beatmap, obj.slider.time_ms)
+            inherited_tp = inherited_timing_point_at(beatmap, obj.slider.time_ms)
+            path = build_slider_path(obj.slider)
+
+            entry["kind"] = "slider"
+            entry["x"] = float(obj.slider.x)
+            entry["y"] = float(obj.slider.y)
+            entry["end_time_ms"] = float(end_time_ms)
+            entry["combo_index"] = int(obj.slider.combo_index)
+            entry["combo_number"] = int(obj.slider.combo_number)
+            entry["hitsound"] = int(obj.slider.hitsound)
+            entry["slider"] = {
+                "curve_type": obj.slider.curve_type,
+                "control_points": [
+                    {"x": float(x), "y": float(y)}
+                    for x, y in obj.slider.control_points
+                ],
+                "repeats": int(obj.slider.repeats),
+                "pixel_length": float(obj.slider.pixel_length),
+                "duration_ms": float(duration_ms),
+                "span_duration_ms": float(span_duration_ms),
+                "path_total_length": float(path.total_length),
+                "sampled_points": [
+                    {"x": float(x), "y": float(y)}
+                    for x, y in path.sampled_points
+                ],
+                "edge_sounds": [int(v) for v in obj.slider.edge_sounds],
+                "edge_sets": list(obj.slider.edge_sets),
+                "base_beat_length": float(base_tp.beat_length),
+                "slider_velocity_multiplier": float(
+                    1.0 if inherited_tp is None else inherited_tp.slider_velocity_multiplier
+                ),
+            }
+
+        elif obj.kind == HitObjectType.SPINNER:
+            entry["kind"] = "spinner"
+            entry["x"] = float(obj.spinner.x)
+            entry["y"] = float(obj.spinner.y)
+            entry["end_time_ms"] = float(obj.spinner.end_time_ms)
+            entry["combo_index"] = int(obj.spinner.combo_index)
+            entry["combo_number"] = int(obj.spinner.combo_number)
+            entry["hitsound"] = int(obj.spinner.hitsound)
+            entry["spinner"] = {
+                "end_time_ms": float(obj.spinner.end_time_ms),
+                "duration_ms": float(obj.spinner.end_time_ms - obj.spinner.time_ms),
+            }
+
+        objects.append(entry)
+
+    payload = {
+        "beatmap": {
+            "source_path": str(beatmap.beatmap_path),
+            "artist": beatmap.artist,
+            "title": beatmap.title,
+            "version": beatmap.version,
+            "ar": float(beatmap.difficulty.ar),
+            "cs": float(beatmap.difficulty.cs),
+            "od": float(beatmap.difficulty.od),
+            "hp": float(beatmap.difficulty.hp),
+            "slider_multiplier": float(beatmap.difficulty.slider_multiplier),
+            "slider_tick_rate": float(beatmap.difficulty.slider_tick_rate),
+        },
+        "timing_points": [
+            {
+                "time_ms": float(tp.time_ms),
+                "beat_length": float(tp.beat_length),
+                "meter": int(tp.meter),
+                "sample_set": int(tp.sample_set),
+                "sample_index": int(tp.sample_index),
+                "volume": int(tp.volume),
+                "uninherited": bool(tp.uninherited),
+                "effects": int(tp.effects),
+                "slider_velocity_multiplier": float(tp.slider_velocity_multiplier),
+            }
+            for tp in beatmap.timing_points
+        ],
+        "objects": objects,
+    }
+    return payload
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Export bridge JSON for osu!lazer controller.")
+    parser.add_argument("--beatmap", required=True, help="Path to .osu file")
+    parser.add_argument("--out", required=True, help="Output JSON path")
+    args = parser.parse_args()
+
+    payload = build_export_payload(args.beatmap)
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    print(f"[exported] {out_path}")
+    print(f"[objects] {len(payload['objects'])}")
+    print(f"[beatmap] {payload['beatmap']['artist']} - {payload['beatmap']['title']} [{payload['beatmap']['version']}]")
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: src/apps/compare_osu_lazer_bridge_obs.py
+================================================================================
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+
+OBS_DIM = 59
+UPCOMING_COUNT = 5
+SPINNER_CENTER_X = 256.0
+SPINNER_CENTER_Y = 192.0
+SPINNER_TARGET_RADIUS = 76.0
+SPINNER_CLEAR_MIN_SPINS = 2.0
+
+
+def kind_to_id(kind: str) -> int:
+    kind_normalized = kind.lower()
+    if kind_normalized == "circle":
+        return 0
+    if kind_normalized == "slider":
+        return 1
+    if kind_normalized == "spinner":
+        return 2
+    return -1
+
+
+def object_end_time(obj: dict[str, Any]) -> float:
+    time_ms = float(obj.get("time_ms", 0.0))
+    end_time_ms = float(obj.get("end_time_ms", time_ms))
+    if end_time_ms > time_ms:
+        return end_time_ms
+
+    slider = obj.get("slider")
+    if isinstance(slider, dict):
+        duration_ms = float(slider.get("duration_ms", 0.0))
+        if duration_ms > 0.0:
+            return time_ms + duration_ms
+
+    spinner = obj.get("spinner")
+    if isinstance(spinner, dict):
+        spinner_end = float(spinner.get("end_time_ms", time_ms))
+        if spinner_end > time_ms:
+            return spinner_end
+
+    return time_ms
+
+
+def is_object_active(obj: dict[str, Any], current_time_ms: float) -> bool:
+    time_ms = float(obj["time_ms"])
+    kind = obj["kind"].lower()
+    if kind == "circle":
+        return abs(time_ms - current_time_ms) <= 80.0
+    return time_ms <= current_time_ms <= object_end_time(obj)
+
+
+def get_upcoming_objects(objects: list[dict[str, Any]], current_time_ms: float) -> list[dict[str, Any]]:
+    visible_past_window_ms = 220.0
+    result = [
+        obj
+        for obj in objects
+        if current_time_ms <= object_end_time(obj) + visible_past_window_ms
+        and (
+            float(obj["time_ms"]) >= current_time_ms - visible_past_window_ms
+            or is_object_active(obj, current_time_ms)
+        )
+    ]
+    result.sort(key=lambda obj: float(obj["time_ms"]))
+    return result[:UPCOMING_COUNT]
+
+
+def osu_circle_radius(cs: float) -> float:
+    return 54.4 - 4.48 * cs
+
+
+def slider_progress_at_time(start_time_ms: float, end_time_ms: float, current_time_ms: float) -> float:
+    if end_time_ms <= start_time_ms:
+        return 1.0
+    return max(0.0, min(1.0, (current_time_ms - start_time_ms) / (end_time_ms - start_time_ms)))
+
+
+def slider_local_progress(progress: float, repeats: int) -> tuple[float, int]:
+    repeats = max(1, repeats)
+    span_progress = max(0.0, min(1.0, progress)) * repeats
+    span_index = min(repeats - 1, int(span_progress))
+    local_progress = span_progress - span_index
+    if span_index % 2 == 1:
+        local_progress = 1.0 - local_progress
+    return local_progress, span_index
+
+
+def cumulative_lengths(points: list[dict[str, float]]) -> list[float]:
+    result = [0.0 for _ in points]
+    total = 0.0
+    for idx in range(1, len(points)):
+        dx = float(points[idx]["x"]) - float(points[idx - 1]["x"])
+        dy = float(points[idx]["y"]) - float(points[idx - 1]["y"])
+        total += math.hypot(dx, dy)
+        result[idx] = total
+    return result
+
+
+def position_at_distance(
+    points: list[dict[str, float]],
+    cumulative: list[float],
+    distance_value: float,
+) -> tuple[float, float]:
+    total = cumulative[-1]
+    d = max(0.0, min(total, distance_value))
+
+    for idx in range(1, len(cumulative)):
+        prev_len = cumulative[idx - 1]
+        curr_len = cumulative[idx]
+        if d > curr_len:
+            continue
+
+        seg_len = curr_len - prev_len
+        if seg_len <= 1e-9:
+            return float(points[idx]["x"]), float(points[idx]["y"])
+
+        t = (d - prev_len) / seg_len
+        ax = float(points[idx - 1]["x"])
+        ay = float(points[idx - 1]["y"])
+        bx = float(points[idx]["x"])
+        by = float(points[idx]["y"])
+        return ax + (bx - ax) * t, ay + (by - ay) * t
+
+    return float(points[-1]["x"]), float(points[-1]["y"])
+
+
+def position_at_progress(points: list[dict[str, float]], progress: float) -> tuple[float, float]:
+    if not points:
+        return 0.0, 0.0
+    if len(points) == 1:
+        return float(points[0]["x"]), float(points[0]["y"])
+
+    cumulative = cumulative_lengths(points)
+    total = cumulative[-1]
+    if total <= 1e-6:
+        return float(points[0]["x"]), float(points[0]["y"])
+
+    return position_at_distance(points, cumulative, max(0.0, min(1.0, progress)) * total)
+
+
+def tangent_at_progress(points: list[dict[str, float]], progress: float) -> tuple[float, float]:
+    if len(points) < 2:
+        return 0.0, 0.0
+
+    cumulative = cumulative_lengths(points)
+    total = cumulative[-1]
+    if total <= 1e-6:
+        return 0.0, 0.0
+
+    center_d = max(0.0, min(1.0, progress)) * total
+    ax, ay = position_at_distance(points, cumulative, max(0.0, center_d - 8.0))
+    bx, by = position_at_distance(points, cumulative, min(total, center_d + 8.0))
+    dx = bx - ax
+    dy = by - ay
+    norm = math.hypot(dx, dy)
+    if norm <= 1e-6:
+        return 0.0, 0.0
+    return dx / norm, dy / norm
+
+
+def build_observation(
+    bridge: dict[str, Any],
+    current_time_ms: float,
+    cursor_x: float,
+    cursor_y: float,
+) -> list[float]:
+    objects = bridge["objects"]
+    upcoming = get_upcoming_objects(objects, current_time_ms)
+    primary = upcoming[0] if upcoming else None
+    primary_is_slider = primary is not None and primary["kind"].lower() == "slider"
+    primary_is_spinner = primary is not None and primary["kind"].lower() == "spinner"
+
+    values: list[float] = [
+        current_time_ms / 10000.0,
+        cursor_x / 512.0,
+        cursor_y / 384.0,
+    ]
+
+    for item in upcoming:
+        dx = float(item["x"]) - cursor_x
+        dy = float(item["y"]) - cursor_y
+        dist = math.hypot(dx, dy)
+        values.extend(
+            [
+                float(kind_to_id(item["kind"])),
+                float(item["x"]) / 512.0,
+                float(item["y"]) / 384.0,
+                (float(item["time_ms"]) - current_time_ms) / 1000.0,
+                dist / 512.0,
+                1.0 if is_object_active(item, current_time_ms) else 0.0,
+            ]
+        )
+
+    while (len(values) - 3) // 6 < UPCOMING_COUNT:
+        values.extend([-1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+
+    values.extend(build_slider_state(bridge, current_time_ms, cursor_x, cursor_y, primary_is_slider))
+    values.extend(build_spinner_state(bridge, current_time_ms, cursor_x, cursor_y, primary_is_spinner))
+
+    if len(values) != OBS_DIM:
+        raise ValueError(f"observation length must be {OBS_DIM}, got {len(values)}")
+
+    return values
+
+
+def build_slider_state(
+    bridge: dict[str, Any],
+    current_time_ms: float,
+    cursor_x: float,
+    cursor_y: float,
+    primary_is_slider: bool,
+) -> list[float]:
+    follow_radius = osu_circle_radius(float(bridge["beatmap"]["cs"])) * 1.65
+    active = next(
+        (
+            obj
+            for obj in bridge["objects"]
+            if obj["kind"].lower() == "slider"
+            and isinstance(obj.get("slider"), dict)
+            and float(obj["time_ms"]) <= current_time_ms <= object_end_time(obj)
+        ),
+        None,
+    )
+
+    if active is None:
+        return [
+            0.0,
+            1.0 if primary_is_slider else 0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            follow_radius / 512.0,
+        ]
+
+    slider = active["slider"]
+    end_time = object_end_time(active)
+    progress = slider_progress_at_time(float(active["time_ms"]), end_time, current_time_ms)
+    local_progress, span_index = slider_local_progress(progress, int(slider["repeats"]))
+    target_x, target_y = position_at_progress(slider["sampled_points"], local_progress)
+    tangent_x, tangent_y = tangent_at_progress(slider["sampled_points"], local_progress)
+
+    if span_index % 2 == 1:
+        tangent_x = -tangent_x
+        tangent_y = -tangent_y
+
+    dist = math.hypot(target_x - cursor_x, target_y - cursor_y)
+    return [
+        1.0,
+        1.0 if primary_is_slider else 0.0,
+        progress,
+        target_x / 512.0,
+        target_y / 384.0,
+        dist / 512.0,
+        dist / 512.0,
+        1.0 if dist <= follow_radius else 0.0,
+        1.0 if current_time_ms >= float(active["time_ms"]) else 0.0,
+        max(0.0, end_time - current_time_ms) / 1000.0,
+        tangent_x,
+        tangent_y,
+        follow_radius / 512.0,
+    ]
+
+
+def build_spinner_state(
+    bridge: dict[str, Any],
+    current_time_ms: float,
+    cursor_x: float,
+    cursor_y: float,
+    primary_is_spinner: bool,
+) -> list[float]:
+    active = next(
+        (
+            obj
+            for obj in bridge["objects"]
+            if obj["kind"].lower() == "spinner"
+            and isinstance(obj.get("spinner"), dict)
+            and float(obj["time_ms"]) <= current_time_ms <= object_end_time(obj)
+        ),
+        None,
+    )
+
+    dx = cursor_x - SPINNER_CENTER_X
+    dy = cursor_y - SPINNER_CENTER_Y
+    dist = math.hypot(dx, dy)
+    angle = math.atan2(dy, dx) if dist > 1e-6 else 0.0
+    radius_error = abs(dist - SPINNER_TARGET_RADIUS)
+
+    if active is None:
+        return [
+            0.0,
+            1.0 if primary_is_spinner else 0.0,
+            0.0,
+            0.0,
+            SPINNER_CLEAR_MIN_SPINS / 8.0,
+            0.0,
+            SPINNER_CENTER_X / 512.0,
+            SPINNER_CENTER_Y / 384.0,
+            dist / 256.0,
+            radius_error / 256.0,
+            math.sin(angle),
+            math.cos(angle),
+            0.0,
+        ]
+
+    end_time = object_end_time(active)
+    duration = max(1.0, end_time - float(active["time_ms"]))
+    progress = max(0.0, min(1.0, (current_time_ms - float(active["time_ms"])) / duration))
+    return [
+        1.0,
+        1.0 if primary_is_spinner else 0.0,
+        progress,
+        0.0,
+        SPINNER_CLEAR_MIN_SPINS / 8.0,
+        max(0.0, end_time - current_time_ms) / 1000.0,
+        SPINNER_CENTER_X / 512.0,
+        SPINNER_CENTER_Y / 384.0,
+        dist / 256.0,
+        radius_error / 256.0,
+        math.sin(angle),
+        math.cos(angle),
+        0.0,
+    ]
+
+
+def load_json(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Compare C# osu!lazer bridge observation dump.")
+    parser.add_argument("--bridge", required=True, help="Path to bridge_map.json")
+    parser.add_argument("--dump", required=True, help="Path to C# observation dump JSON")
+    parser.add_argument("--tolerance", type=float, default=1e-5, help="Max allowed absolute difference")
+    args = parser.parse_args()
+
+    bridge = load_json(args.bridge)
+    dump = load_json(args.dump)
+    observations = dump.get("observations", [])
+
+    if not observations:
+        raise SystemExit("dump contains no observations")
+
+    worst_diff = 0.0
+    worst_case: tuple[int, int, float, float, float] | None = None
+
+    for case_index, item in enumerate(observations):
+        expected = build_observation(
+            bridge=bridge,
+            current_time_ms=float(item["time_ms"]),
+            cursor_x=float(item["cursor_x"]),
+            cursor_y=float(item["cursor_y"]),
+        )
+        actual = [float(v) for v in item["obs"]]
+
+        if len(actual) != OBS_DIM:
+            raise SystemExit(f"case {case_index}: actual observation length is {len(actual)}, expected {OBS_DIM}")
+
+        for obs_index, (a, e) in enumerate(zip(actual, expected)):
+            diff = abs(a - e)
+            if diff > worst_diff:
+                worst_diff = diff
+                worst_case = (case_index, obs_index, a, e, diff)
+
+    print(f"[parity] observations={len(observations)} max_abs_diff={worst_diff:.8f}")
+    if worst_case is not None:
+        case_index, obs_index, actual, expected, diff = worst_case
+        print(
+            "[parity] worst "
+            f"case={case_index} obs_index={obs_index} "
+            f"actual={actual:.8f} expected={expected:.8f} diff={diff:.8f}"
+        )
+
+    if worst_diff > args.tolerance:
+        raise SystemExit(f"[parity] FAILED: max diff {worst_diff:.8f} > tolerance {args.tolerance:.8f}")
+
+    print("[parity] OK")
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+================================================================================
+FILE: src/skills/osu/env/osu_env.py
+================================================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import List
+
+from src.skills.osu.domain.math_utils import clamp_position, distance
+from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap
+from src.skills.osu.domain.osu_rules import ar_to_preempt_ms, slider_duration_ms
+from src.skills.osu.env.types import OsuAction, OsuObservation, SliderStateView, SpinnerStateView, UpcomingObjectView
+from src.skills.osu.reward.judgement import OsuJudge
+from src.skills.osu.viewer.replay_models import ReplayFrame
+
+
+@dataclass(slots=True)
+class EnvStepResult:
+    observation: OsuObservation
+    reward: float
+    done: bool
+    info: dict
+
+
+class OsuEnv:
+    def __init__(
+        self,
+        beatmap: ParsedBeatmap,
+        dt_ms: float = 16.6667,
+        upcoming_count: int = 5,
+        cursor_start_x: float = 256.0,
+        cursor_start_y: float = 192.0,
+        click_threshold: float = 0.75,
+        slider_hold_threshold: float = 0.45,
+        spinner_hold_threshold: float = 0.45,
+        cursor_speed_scale: float = 14.0,
+    ) -> None:
+        self.beatmap = beatmap
+        self.dt_ms = dt_ms
+        self.upcoming_count = upcoming_count
+        self.click_threshold = click_threshold
+        self.slider_hold_threshold = slider_hold_threshold
+        self.spinner_hold_threshold = spinner_hold_threshold
+        self.cursor_speed_scale = cursor_speed_scale
+        self.judge = OsuJudge(beatmap)
+
+        self.cursor_start_x = cursor_start_x
+        self.cursor_start_y = cursor_start_y
+
+        self.time_ms = 0.0
+        self.cursor_x = cursor_start_x
+        self.cursor_y = cursor_start_y
+        self.done = False
+        self.last_click_down = False
+        self.last_raw_click_down = False
+        self.current_click_down = False
+        self.last_info: dict = {}
+        self.replay_frames: list[ReplayFrame] = []
+        self.recent_judgements: list[dict] = []
+
+    def reset(self) -> OsuObservation:
+        self.time_ms = 0.0
+        self.cursor_x = self.cursor_start_x
+        self.cursor_y = self.cursor_start_y
+        self.done = False
+        self.last_click_down = False
+        self.last_raw_click_down = False
+        self.current_click_down = False
+        self.last_info = {}
+        self.replay_frames = []
+        self.recent_judgements = []
+        self.judge.reset()
+        return self._build_observation()
+
+    def step(self, action: OsuAction, dt_ms_override: float | None = None) -> EnvStepResult:
+        if self.done:
+            obs = self._build_observation()
+            return EnvStepResult(
+                observation=obs,
+                reward=0.0,
+                done=True,
+                info={"message": "env already done", **self.last_info},
+            )
+
+        dt_step = self.dt_ms if dt_ms_override is None else max(0.1, float(dt_ms_override))
+
+        new_x = self.cursor_x + action.dx * self.cursor_speed_scale
+        new_y = self.cursor_y + action.dy * self.cursor_speed_scale
+        self.cursor_x, self.cursor_y = clamp_position(new_x, new_y)
+
+        raw_click_down = action.click_strength >= self.click_threshold
+        slider_hold_down = self.judge.active_slider is not None and action.click_strength >= self.slider_hold_threshold
+        spinner_hold_down = self.judge.active_spinner is not None and action.click_strength >= self.spinner_hold_threshold
+        click_down = raw_click_down or slider_hold_down or spinner_hold_down
+        just_pressed = raw_click_down and not self.last_raw_click_down
+        self.current_click_down = click_down
+
+        judge_result = self.judge.update(
+            time_ms=self.time_ms,
+            cursor_x=self.cursor_x,
+            cursor_y=self.cursor_y,
+            just_pressed=just_pressed,
+            click_down=click_down,
+            dt_ms=dt_step,
+        )
+
+        self.last_click_down = click_down
+        self.last_raw_click_down = raw_click_down
+        self.time_ms += dt_step
+
+        if self.judge.is_finished(self.time_ms):
+            self.done = True
+
+        obs = self._build_observation()
+        slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
+        spinner_state = self.judge.active_spinner_state(self.time_ms, self.cursor_x, self.cursor_y)
+
+        info = {
+            "score_value": judge_result.score_value,
+            "judgement": judge_result.judgement,
+            "combo": self.judge.combo,
+            "max_combo": self.judge.max_combo,
+            "accuracy": self.judge.accuracy(),
+            "hit_count": self.judge.hit_count,
+            "miss_count": self.judge.miss_count,
+            "time_ms": self.time_ms,
+            "cursor_x": self.cursor_x,
+            "cursor_y": self.cursor_y,
+            "click_down": click_down,
+            "raw_click_down": raw_click_down,
+            "slider_hold_down": slider_hold_down,
+            "spinner_hold_down": spinner_hold_down,
+            "click_strength": action.click_strength,
+            "click_threshold": self.click_threshold,
+            "slider_hold_threshold": self.slider_hold_threshold,
+            "spinner_hold_threshold": self.spinner_hold_threshold,
+            "popup_x": judge_result.popup_x,
+            "popup_y": judge_result.popup_y,
+            "slider_state": slider_state,
+            "spinner_state": spinner_state,
+        }
+        self.last_info = info
+
+        if judge_result.judgement != "none":
+            self.recent_judgements.append(
+                {
+                    "time_ms": self.time_ms,
+                    "judgement": judge_result.judgement,
+                    "score_value": judge_result.score_value,
+                    "popup_x": judge_result.popup_x,
+                    "popup_y": judge_result.popup_y,
+                }
+            )
+            self.recent_judgements = self.recent_judgements[-20:]
+
+        self.replay_frames.append(
+            ReplayFrame(
+                time_ms=self.time_ms,
+                cursor_x=self.cursor_x,
+                cursor_y=self.cursor_y,
+                click_down=click_down,
+                judgement=judge_result.judgement,
+                combo=self.judge.combo,
+                accuracy=self.judge.accuracy(),
+                reward=judge_result.reward,
+                score_value=judge_result.score_value,
+                popup_x=judge_result.popup_x,
+                popup_y=judge_result.popup_y,
+            )
+        )
+
+        return EnvStepResult(
+            observation=obs,
+            reward=judge_result.reward,
+            done=self.done,
+            info=info,
+        )
+
+    def get_visible_objects(self) -> List[HitObject]:
+        preempt = ar_to_preempt_ms(self.beatmap.difficulty.ar)
+        visible: List[HitObject] = []
+
+        for obj in self.beatmap.hit_objects:
+            start_visible = obj.time_ms - preempt
+
+            if obj.kind == HitObjectType.CIRCLE:
+                end_visible = obj.time_ms + 220.0
+            elif obj.kind == HitObjectType.SLIDER:
+                end_visible = obj.slider.time_ms + slider_duration_ms(self.beatmap, obj.slider) + 220.0
+            else:
+                end_visible = obj.spinner.end_time_ms + 220.0
+
+            if self.time_ms < start_visible:
+                if visible:
+                    break
+                continue
+
+            if self.time_ms <= end_visible:
+                visible.append(obj)
+
+        return visible
+
+    def consume_recent_judgements(self, now_ms: float, ttl_ms: float = 700.0) -> list[dict]:
+        active = [j for j in self.recent_judgements if now_ms - j["time_ms"] <= ttl_ms]
+        self.recent_judgements = active
+        return active
+
+    def _build_observation(self) -> OsuObservation:
+        upcoming = self.judge.peek_upcoming_objects(self.time_ms, self.upcoming_count)
+        primary_is_slider = 1.0 if upcoming and upcoming[0].kind == HitObjectType.SLIDER else 0.0
+        primary_is_spinner = 1.0 if upcoming and upcoming[0].kind == HitObjectType.SPINNER else 0.0
+
+        views: List[UpcomingObjectView] = []
+        for obj in upcoming:
+            x, y = self._object_anchor(obj)
+            kind_id = self._kind_to_id(obj.kind)
+
+            if obj.kind == HitObjectType.CIRCLE:
+                is_active = 1.0 if abs(obj.circle.time_ms - self.time_ms) <= 80.0 else 0.0
+            elif obj.kind == HitObjectType.SLIDER:
+                is_active = 1.0 if self.time_ms >= obj.slider.time_ms else 0.0
+            else:
+                is_active = 1.0 if self.time_ms >= obj.spinner.time_ms else 0.0
+
+            views.append(
+                UpcomingObjectView(
+                    kind_id=kind_id,
+                    x=x,
+                    y=y,
+                    time_to_hit_ms=obj.time_ms - self.time_ms,
+                    distance_to_cursor=distance(self.cursor_x, self.cursor_y, x, y),
+                    is_active=is_active,
+                )
+            )
+
+        while len(views) < self.upcoming_count:
+            views.append(
+                UpcomingObjectView(
+                    kind_id=-1,
+                    x=0.0,
+                    y=0.0,
+                    time_to_hit_ms=0.0,
+                    distance_to_cursor=0.0,
+                    is_active=0.0,
+                )
+            )
+
+        slider_state = self.judge.active_slider_state(self.time_ms, self.cursor_x, self.cursor_y)
+        spinner_state = self.judge.active_spinner_state(self.time_ms, self.cursor_x, self.cursor_y)
+
+        return OsuObservation(
+            time_ms=self.time_ms,
+            cursor_x=self.cursor_x,
+            cursor_y=self.cursor_y,
+            upcoming=views,
+            slider=SliderStateView(
+                active_slider=1.0 if slider_state["active_slider"] else 0.0,
+                primary_is_slider=primary_is_slider,
+                progress=float(slider_state["progress"]),
+                target_x=float(slider_state["target_x"]),
+                target_y=float(slider_state["target_y"]),
+                distance_to_target=float(slider_state["distance_to_target"]),
+                distance_to_ball=float(slider_state["distance_to_ball"]),
+                inside_follow=1.0 if slider_state["inside_follow"] else 0.0,
+                head_hit=1.0 if slider_state["head_hit"] else 0.0,
+                time_to_end_ms=float(slider_state["time_to_end_ms"]),
+                tangent_x=float(slider_state["tangent_x"]),
+                tangent_y=float(slider_state["tangent_y"]),
+                follow_radius=float(slider_state["follow_radius"]),
+            ),
+            spinner=SpinnerStateView(
+                active_spinner=1.0 if spinner_state["active_spinner"] else 0.0,
+                primary_is_spinner=primary_is_spinner,
+                progress=float(spinner_state["progress"]),
+                spins=float(spinner_state["spins"]),
+                target_spins=float(spinner_state["target_spins"]),
+                time_to_end_ms=float(spinner_state["time_to_end_ms"]),
+                center_x=float(spinner_state["center_x"]),
+                center_y=float(spinner_state["center_y"]),
+                distance_to_center=float(spinner_state["distance_to_center"]),
+                radius_error=float(spinner_state["radius_error"]),
+                angle_sin=float(spinner_state["angle_sin"]),
+                angle_cos=float(spinner_state["angle_cos"]),
+                angular_velocity=float(spinner_state["angular_velocity"]),
+            ),
+        )
+
+    @staticmethod
+    def _kind_to_id(kind: HitObjectType) -> int:
+        if kind == HitObjectType.CIRCLE:
+            return 0
+        if kind == HitObjectType.SLIDER:
+            return 1
+        if kind == HitObjectType.SPINNER:
+            return 2
+        return -1
+
+    @staticmethod
+    def _object_anchor(obj: HitObject) -> tuple[float, float]:
+        if obj.kind == HitObjectType.CIRCLE:
+            return obj.circle.x, obj.circle.y
+        if obj.kind == HitObjectType.SLIDER:
+            return obj.slider.x, obj.slider.y
+        return obj.spinner.x, obj.spinner.y
+
+
+
+================================================================================
+FILE: src/skills/osu/domain/slider_path.py
+================================================================================
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import List, Sequence, Tuple
+
+from src.skills.osu.domain.models import SliderObject
+
+Vec2 = Tuple[float, float]
+
+
+def _lerp(a: Vec2, b: Vec2, t: float) -> Vec2:
+    return (a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t)
+
+
+def _distance(a: Vec2, b: Vec2) -> float:
+    return math.hypot(b[0] - a[0], b[1] - a[1])
+
+
+def _bezier_point(points: Sequence[Vec2], t: float) -> Vec2:
+    pts = list(points)
+    while len(pts) > 1:
+        pts = [_lerp(pts[i], pts[i + 1], t) for i in range(len(pts) - 1)]
+    return pts[0]
+
+
+def _sample_line(points: Sequence[Vec2], samples_per_segment: int = 32) -> List[Vec2]:
+    result: List[Vec2] = []
+    for i in range(len(points) - 1):
+        a = points[i]
+        b = points[i + 1]
+        for s in range(samples_per_segment):
+            t = s / samples_per_segment
+            result.append(_lerp(a, b, t))
+    result.append(points[-1])
+    return result
+
+
+def _circle_from_three_points(a: Vec2, b: Vec2, c: Vec2) -> tuple[Vec2, float] | None:
+    ax, ay = a
+    bx, by = b
+    cx, cy = c
+    det = 2.0 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    if abs(det) <= 1e-6:
+        return None
+
+    aa = ax * ax + ay * ay
+    bb = bx * bx + by * by
+    cc = cx * cx + cy * cy
+    ux = (aa * (by - cy) + bb * (cy - ay) + cc * (ay - by)) / det
+    uy = (aa * (cx - bx) + bb * (ax - cx) + cc * (bx - ax)) / det
+    center = (ux, uy)
+    return center, _distance(center, a)
+
+
+def _sample_bezier_segment(points: Sequence[Vec2], samples: int = 96) -> List[Vec2]:
+    if len(points) == 1:
+        return [points[0]]
+    return [_bezier_point(points, i / (samples - 1)) for i in range(samples)]
+
+
+def _sample_bezier(points: Sequence[Vec2]) -> List[Vec2]:
+    if len(points) <= 2:
+        return _sample_line(points)
+
+    result: List[Vec2] = []
+    segment: List[Vec2] = []
+    for point in points:
+        if segment and _distance(segment[-1], point) <= 1e-6:
+            sampled = _sample_bezier_segment(segment)
+            if result and sampled:
+                sampled = sampled[1:]
+            result.extend(sampled)
+            segment = [point]
+            continue
+        segment.append(point)
+
+    if segment:
+        sampled = _sample_bezier_segment(segment)
+        if result and sampled:
+            sampled = sampled[1:]
+        result.extend(sampled)
+
+    return result if result else list(points)
+
+
+def _sample_passthrough(points: Sequence[Vec2], samples: int = 144) -> List[Vec2]:
+    if len(points) != 3:
+        return _sample_bezier(points)
+
+    circle = _circle_from_three_points(points[0], points[1], points[2])
+    if circle is None:
+        return _sample_line(points)
+
+    center, radius = circle
+    start = math.atan2(points[0][1] - center[1], points[0][0] - center[0])
+    mid = math.atan2(points[1][1] - center[1], points[1][0] - center[0])
+    end = math.atan2(points[2][1] - center[1], points[2][0] - center[0])
+
+    ccw_delta = (end - start) % math.tau
+    mid_delta = (mid - start) % math.tau
+    sweep = ccw_delta if mid_delta <= ccw_delta else -((start - end) % math.tau)
+
+    return [
+        (
+            center[0] + math.cos(start + sweep * (i / (samples - 1))) * radius,
+            center[1] + math.sin(start + sweep * (i / (samples - 1))) * radius,
+        )
+        for i in range(samples)
+    ]
+
+
+def sample_slider_curve(slider: SliderObject) -> List[Vec2]:
+    points: List[Vec2] = [(slider.x, slider.y), *slider.control_points]
+
+    if len(points) < 2:
+        return points
+
+    curve_type = slider.curve_type.upper()
+
+    if curve_type == "L":
+        return _sample_line(points)
+    if curve_type == "B":
+        return _sample_bezier(points)
+    if curve_type == "P":
+        return _sample_passthrough(points)
+
+    return _sample_bezier(points)
+
+
+@dataclass(slots=True)
+class SliderPath:
+    sampled_points: List[Vec2]
+    cumulative_lengths: List[float]
+    total_length: float
+
+    def position_at_distance(self, distance_value: float) -> Vec2:
+        if not self.sampled_points:
+            return (0.0, 0.0)
+
+        if self.total_length <= 1e-6:
+            return self.sampled_points[0]
+
+        d = max(0.0, min(self.total_length, distance_value))
+
+        for i in range(1, len(self.cumulative_lengths)):
+            prev_len = self.cumulative_lengths[i - 1]
+            curr_len = self.cumulative_lengths[i]
+            if d <= curr_len:
+                seg_len = curr_len - prev_len
+                if seg_len <= 1e-9:
+                    return self.sampled_points[i]
+                t = (d - prev_len) / seg_len
+                return _lerp(self.sampled_points[i - 1], self.sampled_points[i], t)
+
+        return self.sampled_points[-1]
+
+    def position_at_progress(self, progress_0_1: float) -> Vec2:
+        if self.total_length <= 1e-6:
+            return self.sampled_points[0] if self.sampled_points else (0.0, 0.0)
+        d = max(0.0, min(1.0, progress_0_1)) * self.total_length
+        return self.position_at_distance(d)
+
+    def tangent_at_progress(self, progress_0_1: float, lookahead_px: float = 8.0) -> Vec2:
+        if self.total_length <= 1e-6:
+            return (0.0, 0.0)
+
+        center_d = max(0.0, min(1.0, progress_0_1)) * self.total_length
+        a = self.position_at_distance(max(0.0, center_d - lookahead_px))
+        b = self.position_at_distance(min(self.total_length, center_d + lookahead_px))
+        dx = b[0] - a[0]
+        dy = b[1] - a[1]
+        norm = math.hypot(dx, dy)
+        if norm <= 1e-6:
+            return (0.0, 0.0)
+        return (dx / norm, dy / norm)
+
+
+def build_slider_path(slider: SliderObject) -> SliderPath:
+    sampled = sample_slider_curve(slider)
+
+    if not sampled:
+        sampled = [(slider.x, slider.y)]
+
+    cumulative = [0.0]
+    total = 0.0
+
+    for i in range(1, len(sampled)):
+        total += _distance(sampled[i - 1], sampled[i])
+        cumulative.append(total)
+
+    if total > 1e-6 and slider.pixel_length > 0:
+        target_length = slider.pixel_length
+
+        if total >= target_length:
+            trimmed_points: List[Vec2] = [sampled[0]]
+            trimmed_cumulative: List[float] = [0.0]
+
+            for i in range(1, len(sampled)):
+                prev_len = cumulative[i - 1]
+                curr_len = cumulative[i]
+
+                if curr_len < target_length:
+                    trimmed_points.append(sampled[i])
+                    trimmed_cumulative.append(curr_len)
+                    continue
+
+                seg_len = curr_len - prev_len
+                if seg_len <= 1e-9:
+                    trimmed_points.append(sampled[i])
+                    trimmed_cumulative.append(target_length)
+                    break
+
+                t = (target_length - prev_len) / seg_len
+                cut_point = _lerp(sampled[i - 1], sampled[i], t)
+                trimmed_points.append(cut_point)
+                trimmed_cumulative.append(target_length)
+                break
+
+            return SliderPath(
+                sampled_points=trimmed_points,
+                cumulative_lengths=trimmed_cumulative,
+                total_length=target_length,
+            )
+
+    return SliderPath(
+        sampled_points=sampled,
+        cumulative_lengths=cumulative,
+        total_length=total,
+    )
+
+
+def slider_progress_at_time(
+    start_time_ms: float,
+    end_time_ms: float,
+    current_time_ms: float,
+) -> float:
+    if end_time_ms <= start_time_ms:
+        return 1.0
+    return max(0.0, min(1.0, (current_time_ms - start_time_ms) / (end_time_ms - start_time_ms)))
+
+
+def slider_local_progress(progress_0_1: float, repeats: int) -> tuple[float, int]:
+    if repeats <= 0:
+        return 0.0, 0
+
+    total_progress = max(0.0, min(1.0, progress_0_1))
+    span_progress = total_progress * repeats
+    span_index = min(repeats - 1, int(span_progress))
+    local_progress = span_progress - span_index
+
+    if span_index % 2 == 1:
+        local_progress = 1.0 - local_progress
+
+    return local_progress, span_index
+
+
+def slider_ball_position(
+    path: SliderPath,
+    repeats: int,
+    start_time_ms: float,
+    end_time_ms: float,
+    current_time_ms: float,
+) -> Vec2:
+    progress = slider_progress_at_time(start_time_ms, end_time_ms, current_time_ms)
+    local_progress, _ = slider_local_progress(progress, repeats)
+    return path.position_at_progress(local_progress)
+
+
+
+================================================================================
+FILE: src/skills/osu/reward/judgement.py
+================================================================================
+
+from __future__ import annotations
+
+import math
+from dataclasses import dataclass
+from typing import Optional
+
+from src.skills.osu.domain.math_utils import distance, osu_circle_radius
+from src.skills.osu.domain.models import HitObject, HitObjectType, ParsedBeatmap, SliderObject
+from src.skills.osu.domain.osu_rules import (
+    hit_window_100,
+    hit_window_300,
+    hit_window_50,
+    slider_duration_ms,
+    slider_span_duration_ms,
+)
+from src.skills.osu.domain.slider_path import (
+    build_slider_path,
+    slider_ball_position,
+    slider_local_progress,
+    slider_progress_at_time,
+)
+
+
+SPINNER_CENTER_X = 256.0
+SPINNER_CENTER_Y = 192.0
+SPINNER_TARGET_RADIUS = 76.0
+SPINNER_GOOD_RADIUS_TOLERANCE = 26.0
+SPINNER_MIN_VALID_RADIUS = 42.0
+SPINNER_MAX_VALID_RADIUS = 125.0
+SPINNER_MAX_DELTA_PER_STEP = 0.50
+SPINNER_MIN_DELTA_PER_STEP = 0.025
+SPINNER_CLEAR_MIN_SPINS = 2.0
+SPINNER_PARTIAL_MIN_SPINS = 0.9
+
+
+@dataclass(slots=True)
+class JudgeResult:
+    reward: float = 0.0
+    score_value: int = 0
+    judgement: str = "none"
+    popup_x: float | None = None
+    popup_y: float | None = None
+
+
+class OsuJudge:
+    def __init__(self, beatmap: ParsedBeatmap) -> None:
+        self.beatmap = beatmap
+        self.objects = beatmap.hit_objects
+        self.cs = beatmap.difficulty.cs
+        self.od = beatmap.difficulty.od
+        self.radius = osu_circle_radius(self.cs)
+
+        self.object_index = 0
+        self.combo = 0
+        self.max_combo = 0
+        self.hit_count = 0
+        self.miss_count = 0
+        self.score_sum = 0
+        self.score_max_sum = 0
+
+        self.active_slider: Optional[dict] = None
+        self.active_spinner: Optional[dict] = None
+
+    def reset(self) -> None:
+        self.object_index = 0
+        self.combo = 0
+        self.max_combo = 0
+        self.hit_count = 0
+        self.miss_count = 0
+        self.score_sum = 0
+        self.score_max_sum = 0
+        self.active_slider = None
+        self.active_spinner = None
+
+    def accuracy(self) -> float:
+        if self.score_max_sum <= 0:
+            return 1.0
+        return self.score_sum / self.score_max_sum
+
+    def is_finished(self, time_ms: float) -> bool:
+        if self.object_index < len(self.objects):
+            return False
+        if self.active_slider is not None:
+            return False
+        if self.active_spinner is not None:
+            return False
+        return True
+
+    def peek_upcoming_objects(self, time_ms: float, count: int):
+        result = []
+        idx = self.object_index
+        while idx < len(self.objects) and len(result) < count:
+            result.append(self.objects[idx])
+            idx += 1
+        return result
+
+    def update(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        just_pressed: bool,
+        click_down: bool,
+        dt_ms: float,
+    ) -> JudgeResult:
+        result = JudgeResult()
+
+        self._expire_missed_objects(time_ms, result)
+        self._update_active_slider(time_ms, cursor_x, cursor_y, click_down, dt_ms, result)
+        self._update_active_spinner(time_ms, cursor_x, cursor_y, click_down, dt_ms, result)
+
+        if self.object_index >= len(self.objects):
+            return result
+
+        obj = self.objects[self.object_index]
+
+        if obj.kind == HitObjectType.CIRCLE and just_pressed:
+            return self._try_hit_circle(obj, time_ms, cursor_x, cursor_y)
+
+        if obj.kind == HitObjectType.SLIDER and just_pressed:
+            return self._try_start_slider(obj, time_ms, cursor_x, cursor_y)
+
+        if obj.kind == HitObjectType.SPINNER:
+            return self._try_start_spinner(obj, time_ms)
+
+        return result
+
+    def current_slider_ball_position(self, time_ms: float) -> tuple[float, float] | None:
+        if self.active_slider is None:
+            return None
+
+        return slider_ball_position(
+            path=self.active_slider["path"],
+            repeats=self.active_slider["slider"].repeats,
+            start_time_ms=self.active_slider["start_time"],
+            end_time_ms=self.active_slider["end_time"],
+            current_time_ms=time_ms,
+        )
+
+    def active_slider_state(self, time_ms: float, cursor_x: float, cursor_y: float) -> dict:
+        if self.active_slider is None:
+            return {
+                "active_slider": False,
+                "progress": 0.0,
+                "target_x": 0.0,
+                "target_y": 0.0,
+                "distance_to_target": 0.0,
+                "distance_to_ball": 0.0,
+                "inside_follow": False,
+                "head_hit": False,
+                "time_to_end_ms": 0.0,
+                "tangent_x": 0.0,
+                "tangent_y": 0.0,
+                "follow_radius": self.radius * 1.65,
+            }
+
+        slider: SliderObject = self.active_slider["slider"]
+        path = self.active_slider["path"]
+        start_time = self.active_slider["start_time"]
+        end_time = self.active_slider["end_time"]
+        progress = slider_progress_at_time(start_time, end_time, time_ms)
+        local_progress, _ = slider_local_progress(progress, slider.repeats)
+        ball_x, ball_y = path.position_at_progress(local_progress)
+        tangent_x, tangent_y = path.tangent_at_progress(local_progress)
+        if slider.repeats > 0 and int(min(slider.repeats - 1, progress * slider.repeats)) % 2 == 1:
+            tangent_x = -tangent_x
+            tangent_y = -tangent_y
+        follow_radius = self.radius * 1.65
+        dist = distance(cursor_x, cursor_y, ball_x, ball_y)
+
+        return {
+            "active_slider": True,
+            "progress": progress,
+            "target_x": ball_x,
+            "target_y": ball_y,
+            "distance_to_target": dist,
+            "distance_to_ball": dist,
+            "inside_follow": dist <= follow_radius,
+            "head_hit": bool(self.active_slider.get("head_hit", False)),
+            "time_to_end_ms": max(0.0, end_time - time_ms),
+            "tangent_x": tangent_x,
+            "tangent_y": tangent_y,
+            "follow_radius": follow_radius,
+        }
+
+    def active_spinner_state(self, time_ms: float, cursor_x: float, cursor_y: float) -> dict:
+        center_x, center_y = SPINNER_CENTER_X, SPINNER_CENTER_Y
+        target_radius = SPINNER_TARGET_RADIUS
+        dx = cursor_x - center_x
+        dy = cursor_y - center_y
+        dist = math.hypot(dx, dy)
+        angle = math.atan2(dy, dx) if dist > 1e-6 else 0.0
+
+        if self.active_spinner is None:
+            return {
+                "active_spinner": False,
+                "progress": 0.0,
+                "spins": 0.0,
+                "target_spins": SPINNER_CLEAR_MIN_SPINS,
+                "time_to_end_ms": 0.0,
+                "center_x": center_x,
+                "center_y": center_y,
+                "distance_to_center": dist,
+                "radius_error": abs(dist - target_radius),
+                "angle_sin": math.sin(angle),
+                "angle_cos": math.cos(angle),
+                "angular_velocity": 0.0,
+            }
+
+        start_time = float(self.active_spinner["start_time"])
+        end_time = float(self.active_spinner["end_time"])
+        duration = max(1.0, end_time - start_time)
+        progress = max(0.0, min(1.0, (time_ms - start_time) / duration))
+        spins = float(self.active_spinner["spin_progress"]) / (2.0 * math.pi)
+        target_spins = float(self.active_spinner.get("target_spins", SPINNER_CLEAR_MIN_SPINS))
+        angular_velocity = float(self.active_spinner.get("last_angular_velocity", 0.0))
+
+        return {
+            "active_spinner": True,
+            "progress": progress,
+            "spins": spins,
+            "target_spins": target_spins,
+            "time_to_end_ms": max(0.0, end_time - time_ms),
+            "center_x": center_x,
+            "center_y": center_y,
+            "distance_to_center": dist,
+            "radius_error": abs(dist - target_radius),
+            "angle_sin": math.sin(angle),
+            "angle_cos": math.cos(angle),
+            "angular_velocity": angular_velocity,
+        }
+
+    def _object_anchor(self, obj: HitObject) -> tuple[float, float]:
+        if obj.kind == HitObjectType.CIRCLE:
+            return obj.circle.x, obj.circle.y
+        if obj.kind == HitObjectType.SLIDER:
+            return obj.slider.x, obj.slider.y
+        return obj.spinner.x, obj.spinner.y
+
+    def _expire_missed_objects(self, time_ms: float, result: JudgeResult) -> None:
+        while self.object_index < len(self.objects):
+            obj = self.objects[self.object_index]
+
+            if obj.kind == HitObjectType.SPINNER:
+                break
+            if obj.kind == HitObjectType.SLIDER and self.active_slider is not None:
+                break
+
+            miss_deadline = obj.time_ms + hit_window_50(self.od)
+
+            if time_ms <= miss_deadline:
+                break
+
+            if obj.kind in (HitObjectType.CIRCLE, HitObjectType.SLIDER):
+                self._register_miss(result, obj)
+                self.object_index += 1
+                continue
+
+            break
+
+    def _try_hit_circle(
+        self,
+        obj: HitObject,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+    ) -> JudgeResult:
+        timing_error = abs(time_ms - obj.circle.time_ms)
+        dist = distance(cursor_x, cursor_y, obj.circle.x, obj.circle.y)
+
+        if dist > self.radius:
+            return JudgeResult(
+                reward=-0.15,
+                score_value=0,
+                judgement="click_outside",
+                popup_x=obj.circle.x,
+                popup_y=obj.circle.y,
+            )
+
+        if timing_error <= hit_window_300(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(300, "300", obj.circle.x, obj.circle.y)
+        if timing_error <= hit_window_100(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(100, "100", obj.circle.x, obj.circle.y)
+        if timing_error <= hit_window_50(self.od):
+            self.object_index += 1
+            return self._register_scored_hit(50, "50", obj.circle.x, obj.circle.y)
+
+        return JudgeResult(
+            reward=-0.05,
+            score_value=0,
+            judgement="bad_timing",
+            popup_x=obj.circle.x,
+            popup_y=obj.circle.y,
+        )
+
+    def _try_start_slider(
+        self,
+        obj: HitObject,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+    ) -> JudgeResult:
+        slider = obj.slider
+        timing_error = abs(time_ms - slider.time_ms)
+        dist = distance(cursor_x, cursor_y, slider.x, slider.y)
+
+        if dist > self.radius:
+            return JudgeResult(
+                reward=-0.15,
+                score_value=0,
+                judgement="slider_head_outside",
+                popup_x=slider.x,
+                popup_y=slider.y,
+            )
+
+        if timing_error > hit_window_50(self.od):
+            return JudgeResult(
+                reward=-0.05,
+                score_value=0,
+                judgement="slider_bad_timing",
+                popup_x=slider.x,
+                popup_y=slider.y,
+            )
+
+        total_duration_ms = slider_duration_ms(self.beatmap, slider)
+        span_duration_ms = slider_span_duration_ms(self.beatmap, slider)
+        path = build_slider_path(slider)
+
+        tick_times = self._build_slider_tick_times(slider, span_duration_ms)
+
+        self.active_slider = {
+            "slider": slider,
+            "path": path,
+            "start_time": slider.time_ms,
+            "end_time": slider.time_ms + total_duration_ms,
+            "tick_times": tick_times,
+            "next_tick_index": 0,
+            "tick_hits": 0,
+            "tick_misses": 0,
+            "head_hit": True,
+            "follow_samples": 0,
+            "inside_samples": 0,
+            "follow_dist_total": 0.0,
+            "lost_follow_count": 0,
+            "last_inside": True,
+            "last_progress": 0.0,
+        }
+
+        self.object_index += 1
+
+        head_value = self._score_value_from_timing_error(timing_error)
+        hit = self._register_scored_hit(head_value, "slider_head", slider.x, slider.y)
+        hit.reward += 0.15
+        return hit
+
+    def _build_slider_tick_times(self, slider: SliderObject, span_duration_ms: float) -> list[float]:
+        tick_times: list[float] = []
+
+        tick_rate = max(0.0, self.beatmap.difficulty.slider_tick_rate)
+        if tick_rate <= 0.0:
+            return tick_times
+
+        base_tp = self.beatmap.timing_points[0]
+        for tp in self.beatmap.timing_points:
+            if tp.time_ms > slider.time_ms:
+                break
+            if tp.uninherited:
+                base_tp = tp
+
+        tick_interval = abs(base_tp.beat_length) / tick_rate
+        if tick_interval <= 1e-6:
+            return tick_times
+
+        ticks_per_span = max(0, int(math.floor((span_duration_ms - 1.0) / tick_interval)))
+        if ticks_per_span <= 0:
+            return tick_times
+
+        for span_idx in range(slider.repeats):
+            span_start = slider.time_ms + span_idx * span_duration_ms
+            for i in range(1, ticks_per_span + 1):
+                tick_time = span_start + i * tick_interval
+                if tick_time < span_start + span_duration_ms - 1.0:
+                    tick_times.append(tick_time)
+
+        return tick_times
+
+    def _update_active_slider(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        click_down: bool,
+        dt_ms: float,
+        result: JudgeResult,
+    ) -> None:
+        if self.active_slider is None:
+            return
+
+        slider: SliderObject = self.active_slider["slider"]
+        path = self.active_slider["path"]
+        start_time = self.active_slider["start_time"]
+        end_time = self.active_slider["end_time"]
+
+        ball_x, ball_y = slider_ball_position(
+            path=path,
+            repeats=slider.repeats,
+            start_time_ms=start_time,
+            end_time_ms=end_time,
+            current_time_ms=time_ms,
+        )
+
+        dist = distance(cursor_x, cursor_y, ball_x, ball_y)
+        follow_radius = self.radius * 1.65
+        progress = slider_progress_at_time(start_time, end_time, time_ms)
+        inside = click_down and dist <= follow_radius
+
+        self.active_slider["follow_samples"] += 1
+        self.active_slider["follow_dist_total"] += dist
+        if inside:
+            self.active_slider["inside_samples"] += 1
+        elif self.active_slider.get("last_inside", True) and time_ms > start_time + dt_ms * 0.5:
+            self.active_slider["lost_follow_count"] += 1
+        self.active_slider["last_inside"] = inside
+
+        if time_ms < end_time:
+            step_scale = dt_ms / 16.6667
+            closeness = max(0.0, 1.0 - dist / max(1.0, follow_radius))
+            progress_gain = max(0.0, progress - float(self.active_slider.get("last_progress", 0.0)))
+            if inside:
+                result.reward += (0.018 + 0.016 * closeness) * step_scale
+                result.reward += min(0.035, progress_gain * 0.45)
+                if result.judgement == "none":
+                    result.judgement = "slider_follow"
+                    result.popup_x = ball_x
+                    result.popup_y = ball_y
+            else:
+                result.reward -= 0.0015 * step_scale
+                if dist > follow_radius * 3.0:
+                    result.reward -= 0.0025 * step_scale
+
+            self.active_slider["last_progress"] = progress
+
+        tick_times = self.active_slider["tick_times"]
+        while self.active_slider["next_tick_index"] < len(tick_times):
+            tick_time = tick_times[self.active_slider["next_tick_index"]]
+
+            if time_ms < tick_time:
+                break
+
+            tick_x, tick_y = slider_ball_position(
+                path=path,
+                repeats=slider.repeats,
+                start_time_ms=start_time,
+                end_time_ms=end_time,
+                current_time_ms=tick_time,
+            )
+            tick_dist = distance(cursor_x, cursor_y, tick_x, tick_y)
+
+            if click_down and tick_dist <= follow_radius:
+                result.reward += 0.14
+                result.score_value = max(result.score_value, 10)
+                result.judgement = "slider_tick"
+                result.popup_x = tick_x
+                result.popup_y = tick_y
+                self.active_slider["tick_hits"] += 1
+            else:
+                result.reward -= 0.015
+                if result.judgement == "none":
+                    result.judgement = "slider_tick_miss"
+                    result.popup_x = tick_x
+                    result.popup_y = tick_y
+                self.active_slider["tick_misses"] += 1
+
+            self.active_slider["next_tick_index"] += 1
+
+        if time_ms < end_time:
+            return
+
+        if click_down and dist <= follow_radius:
+            result.reward += 0.55
+            if result.judgement == "none":
+                result.judgement = "slider_finish"
+                result.popup_x = ball_x
+                result.popup_y = ball_y
+        else:
+            result.reward -= 0.12
+            if result.judgement == "none":
+                result.judgement = "slider_drop"
+                result.popup_x = ball_x
+                result.popup_y = ball_y
+
+        self.active_slider = None
+
+    def _try_start_spinner(self, obj: HitObject, time_ms: float) -> JudgeResult:
+        spinner = obj.spinner
+
+        if self.active_spinner is None and time_ms >= spinner.time_ms:
+            self.active_spinner = {
+                "start_time": spinner.time_ms,
+                "end_time": spinner.end_time_ms,
+                "spin_progress": 0.0,
+                "last_angle": None,
+                "last_angular_velocity": 0.0,
+                "target_spins": SPINNER_CLEAR_MIN_SPINS,
+                "samples": 0,
+                "hold_samples": 0,
+                "valid_radius_samples": 0,
+                "good_radius_samples": 0,
+                "excess_delta_samples": 0,
+                "direction_flips": 0,
+                "last_delta_sign": 0,
+            }
+            self.object_index += 1
+            return JudgeResult(reward=0.05, score_value=0, judgement="spinner_start", popup_x=256.0, popup_y=192.0)
+
+        return JudgeResult()
+
+    def _update_active_spinner(
+        self,
+        time_ms: float,
+        cursor_x: float,
+        cursor_y: float,
+        click_down: bool,
+        dt_ms: float,
+        result: JudgeResult,
+    ) -> None:
+        if self.active_spinner is None:
+            return
+
+        center_x, center_y = SPINNER_CENTER_X, SPINNER_CENTER_Y
+        target_radius = SPINNER_TARGET_RADIUS
+        angle = math.atan2(cursor_y - center_y, cursor_x - center_x)
+        radius = distance(cursor_x, cursor_y, center_x, center_y)
+        radius_error = abs(radius - target_radius)
+        step_scale = dt_ms / 16.6667
+        valid_radius = SPINNER_MIN_VALID_RADIUS <= radius <= SPINNER_MAX_VALID_RADIUS
+        good_radius = radius_error <= SPINNER_GOOD_RADIUS_TOLERANCE
+        self.active_spinner["samples"] += 1
+        if click_down:
+            self.active_spinner["hold_samples"] += 1
+        if valid_radius:
+            self.active_spinner["valid_radius_samples"] += 1
+        if good_radius:
+            self.active_spinner["good_radius_samples"] += 1
+
+        radius_score = max(0.0, 1.0 - radius_error / SPINNER_GOOD_RADIUS_TOLERANCE)
+        result.reward += 0.0015 * radius_score * step_scale
+        if click_down:
+            result.reward += 0.0015 * step_scale
+        else:
+            result.reward -= 0.010 * step_scale
+        if radius < SPINNER_MIN_VALID_RADIUS:
+            center_excess = (SPINNER_MIN_VALID_RADIUS - radius) / SPINNER_MIN_VALID_RADIUS
+            result.reward -= 0.028 * (1.0 + center_excess) * step_scale
+        elif radius > SPINNER_MAX_VALID_RADIUS:
+            result.reward -= 0.010 * step_scale
+
+        if self.active_spinner["last_angle"] is not None:
+            delta = angle - self.active_spinner["last_angle"]
+
+            while delta > math.pi:
+                delta -= 2 * math.pi
+            while delta < -math.pi:
+                delta += 2 * math.pi
+
+            delta_abs = abs(delta)
+            delta_sign = 1 if delta > SPINNER_MIN_DELTA_PER_STEP else -1 if delta < -SPINNER_MIN_DELTA_PER_STEP else 0
+            last_delta_sign = int(self.active_spinner.get("last_delta_sign", 0))
+            if last_delta_sign != 0 and delta_sign != 0 and delta_sign != last_delta_sign:
+                self.active_spinner["direction_flips"] += 1
+                result.reward -= 0.010 * step_scale
+            if delta_sign != 0:
+                self.active_spinner["last_delta_sign"] = delta_sign
+
+            too_fast = delta_abs > SPINNER_MAX_DELTA_PER_STEP
+            if too_fast:
+                self.active_spinner["excess_delta_samples"] += 1
+                result.reward -= min(0.040, (delta_abs - SPINNER_MAX_DELTA_PER_STEP) * 0.035) * step_scale
+
+            effective_delta = min(delta_abs, SPINNER_MAX_DELTA_PER_STEP)
+            if click_down and valid_radius and not too_fast and effective_delta >= SPINNER_MIN_DELTA_PER_STEP:
+                self.active_spinner["spin_progress"] += effective_delta
+            angular_velocity = delta_abs / max(1e-6, dt_ms / 1000.0)
+            self.active_spinner["last_angular_velocity"] = angular_velocity
+            if click_down and good_radius and not too_fast:
+                result.reward += min(0.070, effective_delta * 0.250)
+            elif click_down and valid_radius and not too_fast:
+                result.reward += min(0.030, effective_delta * 0.120)
+            elif click_down and valid_radius:
+                result.reward -= 0.012 * step_scale
+            if SPINNER_MIN_DELTA_PER_STEP <= delta_abs <= SPINNER_MAX_DELTA_PER_STEP and good_radius and click_down:
+                result.reward += 0.010 * step_scale
+        else:
+            self.active_spinner["last_angular_velocity"] = 0.0
+
+        self.active_spinner["last_angle"] = angle
+
+        if time_ms < self.active_spinner["end_time"]:
+            return
+
+        spins = self.active_spinner["spin_progress"] / (2.0 * math.pi)
+        samples = max(1, int(self.active_spinner.get("samples", 0)))
+        hold_samples = int(self.active_spinner.get("hold_samples", 0))
+        valid_radius_samples = int(self.active_spinner.get("valid_radius_samples", 0))
+        good_radius_samples = int(self.active_spinner.get("good_radius_samples", 0))
+        direction_flips = int(self.active_spinner.get("direction_flips", 0))
+        excess_delta_samples = int(self.active_spinner.get("excess_delta_samples", 0))
+        hold_ratio = hold_samples / samples
+        valid_radius_ratio = valid_radius_samples / samples
+        good_radius_ratio = good_radius_samples / samples
+        flip_ratio = direction_flips / samples
+        excess_delta_ratio = excess_delta_samples / samples
+
+        clean_orbit = (
+            valid_radius_ratio >= 0.60
+            and good_radius_ratio >= 0.28
+            and flip_ratio <= 0.40
+            and excess_delta_ratio <= 0.20
+        )
+        partial_orbit = valid_radius_ratio >= 0.40 and flip_ratio <= 0.55 and excess_delta_ratio <= 0.35
+
+        target_spins = float(self.active_spinner.get("target_spins", SPINNER_CLEAR_MIN_SPINS))
+        partial_spins = max(SPINNER_PARTIAL_MIN_SPINS, target_spins * 0.5)
+
+        if spins >= target_spins and hold_ratio >= 0.65 and clean_orbit:
+            hit = self._register_scored_hit(300, "spinner_clear", center_x, center_y)
+            result.reward += hit.reward + 0.5
+            result.score_value = hit.score_value
+            result.judgement = hit.judgement
+            result.popup_x = hit.popup_x
+            result.popup_y = hit.popup_y
+        elif spins >= partial_spins and hold_ratio >= 0.45 and partial_orbit:
+            hit = self._register_scored_hit(100, "spinner_partial", center_x, center_y)
+            result.reward += hit.reward + 0.2
+            result.score_value = hit.score_value
+            result.judgement = hit.judgement
+            result.popup_x = hit.popup_x
+            result.popup_y = hit.popup_y
+        elif spins >= partial_spins:
+            self._register_miss(result, None, center_x, center_y)
+            result.reward -= 0.25
+            result.judgement = "spinner_no_hold"
+        else:
+            self._register_miss(result, None, center_x, center_y)
+            result.judgement = "spinner_miss"
+
+        self.active_spinner = None
+
+    def _score_value_from_timing_error(self, timing_error: float) -> int:
+        if timing_error <= hit_window_300(self.od):
+            return 300
+        if timing_error <= hit_window_100(self.od):
+            return 100
+        if timing_error <= hit_window_50(self.od):
+            return 50
+        return 0
+
+    def _register_scored_hit(self, value: int, judgement: str, x: float, y: float) -> JudgeResult:
+        self.combo += 1
+        self.max_combo = max(self.max_combo, self.combo)
+        self.hit_count += 1
+        self.score_sum += value
+        self.score_max_sum += 300
+
+        reward = {300: 1.0, 100: 0.5, 50: 0.2, 10: 0.05}.get(value, 0.0)
+        return JudgeResult(
+            reward=reward,
+            score_value=value,
+            judgement=judgement,
+            popup_x=x,
+            popup_y=y,
+        )
+
+    def _register_miss(
+        self,
+        result: JudgeResult,
+        obj: HitObject | None = None,
+        popup_x: float | None = None,
+        popup_y: float | None = None,
+    ) -> None:
+        self.combo = 0
+        self.miss_count += 1
+        self.score_max_sum += 300
+        result.reward -= 1.0
+        result.score_value = 0
+        result.judgement = "miss"
+
+        if obj is not None:
+            x, y = self._object_anchor(obj)
+            result.popup_x = x
+            result.popup_y = y
+        else:
+            result.popup_x = popup_x
+            result.popup_y = popup_y
+
+
+
+================================================================================
+FILE: src/skills/osu/parser/osu_parser.py
+================================================================================
+
+from __future__ import annotations
+
+import re
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
+from src.skills.osu.domain.models import (
+    CircleObject,
+    DifficultySettings,
+    HitObject,
+    HitObjectType,
+    ParsedBeatmap,
+    SliderObject,
+    SpinnerObject,
+    TimingPoint,
+)
+
+TYPE_CIRCLE = 1
+TYPE_SLIDER = 2
+TYPE_NEW_COMBO = 4
+TYPE_SPINNER = 8
+
+
+def parse_key_value_section(lines: List[str]) -> Dict[str, str]:
+    data: Dict[str, str] = {}
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        data[key.strip()] = value.strip()
+    return data
+
+
+def split_sections(text: str) -> Dict[str, List[str]]:
+    sections: Dict[str, List[str]] = {}
+    current: Optional[str] = None
+
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line:
+            if current is not None:
+                sections[current].append("")
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            current = line[1:-1]
+            sections[current] = []
+            continue
+
+        if current is not None:
+            sections[current].append(line)
+
+    return sections
+
+
+def parse_timing_points(lines: List[str]) -> List[TimingPoint]:
+    result: List[TimingPoint] = []
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+        parts = line.split(",")
+        if len(parts) < 8:
+            continue
+
+        result.append(
+            TimingPoint(
+                time_ms=float(parts[0]),
+                beat_length=float(parts[1]),
+                meter=int(parts[2]),
+                sample_set=int(parts[3]),
+                sample_index=int(parts[4]),
+                volume=int(parts[5]),
+                uninherited=parts[6] == "1",
+                effects=int(parts[7]),
+            )
+        )
+
+    result.sort(key=lambda tp: tp.time_ms)
+    return result
+
+
+def parse_slider_path(raw: str) -> Tuple[str, List[Tuple[float, float]]]:
+    parts = raw.split("|")
+    curve_type = parts[0]
+    control_points: List[Tuple[float, float]] = []
+    for point_raw in parts[1:]:
+        px, py = point_raw.split(":")
+        control_points.append((float(px), float(py)))
+    return curve_type, control_points
+
+
+def parse_hit_objects(lines: List[str]) -> List[HitObject]:
+    result: List[HitObject] = []
+
+    combo_index = 0
+    combo_number = 0
+    first_object = True
+
+    for line in lines:
+        if not line or line.startswith("//"):
+            continue
+
+        parts = line.split(",")
+        if len(parts) < 5:
+            continue
+
+        x = float(parts[0])
+        y = float(parts[1])
+        time_ms = float(parts[2])
+        object_type = int(parts[3])
+        hitsound = int(parts[4])
+
+        is_new_combo = first_object or bool(object_type & TYPE_NEW_COMBO)
+
+        if is_new_combo:
+            if not first_object:
+                combo_skip = (object_type >> 4) & 0b111
+                combo_index += 1 + combo_skip
+            combo_number = 1
+        else:
+            combo_number += 1
+
+        if object_type & TYPE_CIRCLE:
+            result.append(
+                HitObject(
+                    kind=HitObjectType.CIRCLE,
+                    circle=CircleObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+        if object_type & TYPE_SLIDER:
+            curve_raw = parts[5]
+            repeats = int(parts[6])
+            pixel_length = float(parts[7])
+            edge_sounds = list(map(int, parts[8].split("|"))) if len(parts) > 8 and parts[8] else []
+            edge_sets = parts[9].split("|") if len(parts) > 9 and parts[9] else []
+
+            curve_type, control_points = parse_slider_path(curve_raw)
+
+            result.append(
+                HitObject(
+                    kind=HitObjectType.SLIDER,
+                    slider=SliderObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                        curve_type=curve_type,
+                        control_points=control_points,
+                        repeats=repeats,
+                        pixel_length=pixel_length,
+                        edge_sounds=edge_sounds,
+                        edge_sets=edge_sets,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+        if object_type & TYPE_SPINNER:
+            end_time_ms = float(parts[5])
+            result.append(
+                HitObject(
+                    kind=HitObjectType.SPINNER,
+                    spinner=SpinnerObject(
+                        x=x,
+                        y=y,
+                        time_ms=time_ms,
+                        combo_index=combo_index,
+                        combo_number=combo_number,
+                        hitsound=hitsound,
+                        end_time_ms=end_time_ms,
+                    ),
+                )
+            )
+            first_object = False
+            continue
+
+    return result
+
+
+def parse_background_filename(events_lines: List[str]) -> Optional[str]:
+    bg_pattern = re.compile(r'^\s*0\s*,\s*0\s*,\s*"([^"]+)"')
+    for line in events_lines:
+        if not line or line.startswith("//"):
+            continue
+        m = bg_pattern.match(line)
+        if m:
+            return m.group(1)
+    return None
+
+
+def parse_video_event(events_lines: List[str]) -> Tuple[Optional[str], float]:
+    patterns = (
+        re.compile(r'^\s*Video\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*"([^"]+)"', re.IGNORECASE),
+        re.compile(r'^\s*1\s*,\s*(-?\d+(?:\.\d+)?)\s*,\s*"([^"]+)"'),
+    )
+    for line in events_lines:
+        if not line or line.startswith("//"):
+            continue
+        for pattern in patterns:
+            match = pattern.match(line)
+            if match:
+                return match.group(2), float(match.group(1))
+    return None, 0.0
+
+
+def resolve_audio_path(beatmap_dir: Path, audio_filename: str) -> Optional[Path]:
+    if audio_filename:
+        candidate = beatmap_dir / audio_filename
+        if candidate.exists():
+            return candidate
+
+    fallback_names = ["audio.mp3", "audio.ogg", "audio.wav"]
+    for name in fallback_names:
+        candidate = beatmap_dir / name
+        if candidate.exists():
+            return candidate
+
+    return None
+
+
+def resolve_video_path(beatmap_dir: Path, video_filename: Optional[str]) -> Optional[Path]:
+    if video_filename:
+        candidate = beatmap_dir / video_filename
+        if candidate.exists():
+            return candidate
+
+    for ext in ("*.mp4", "*.avi", "*.mkv", "*.mov", "*.wmv"):
+        matches = list(beatmap_dir.glob(ext))
+        if matches:
+            return matches[0]
+
+    return None
+
+
+def resolve_background_path(beatmap_dir: Path, background_filename: Optional[str]) -> Optional[Path]:
+    if background_filename:
+        candidate = beatmap_dir / background_filename
+        if candidate.exists():
+            return candidate
+
+    for ext in ("*.jpg", "*.jpeg", "*.png", "*.webp"):
+        matches = list(beatmap_dir.glob(ext))
+        if matches:
+            return matches[0]
+
+    return None
+
+
+def parse_beatmap(path: str | Path) -> ParsedBeatmap:
+    beatmap_path = Path(path)
+    beatmap_dir = beatmap_path.parent
+
+    text = beatmap_path.read_text(encoding="utf-8")
+    sections = split_sections(text)
+
+    general = parse_key_value_section(sections.get("General", []))
+    metadata = parse_key_value_section(sections.get("Metadata", []))
+    difficulty_raw = parse_key_value_section(sections.get("Difficulty", []))
+
+    difficulty = DifficultySettings(
+        hp=float(difficulty_raw.get("HPDrainRate", 5)),
+        cs=float(difficulty_raw.get("CircleSize", 5)),
+        od=float(difficulty_raw.get("OverallDifficulty", 5)),
+        ar=float(difficulty_raw.get("ApproachRate", difficulty_raw.get("OverallDifficulty", 5))),
+        slider_multiplier=float(difficulty_raw.get("SliderMultiplier", 1.4)),
+        slider_tick_rate=float(difficulty_raw.get("SliderTickRate", 1.0)),
+    )
+
+    audio_filename = general.get("AudioFilename", "")
+    events_lines = sections.get("Events", [])
+    background_filename = parse_background_filename(events_lines)
+    video_filename, video_start_time_ms = parse_video_event(events_lines)
+
+    return ParsedBeatmap(
+        beatmap_path=beatmap_path,
+        beatmap_dir=beatmap_dir,
+        audio_filename=audio_filename,
+        audio_path=resolve_audio_path(beatmap_dir, audio_filename),
+        background_filename=background_filename,
+        background_path=resolve_background_path(beatmap_dir, background_filename),
+        video_filename=video_filename,
+        video_path=resolve_video_path(beatmap_dir, video_filename),
+        video_start_time_ms=video_start_time_ms,
+        title=metadata.get("Title", ""),
+        artist=metadata.get("Artist", ""),
+        version=metadata.get("Version", ""),
+        difficulty=difficulty,
+        timing_points=parse_timing_points(sections.get("TimingPoints", [])),
+        hit_objects=parse_hit_objects(sections.get("HitObjects", [])),
+    )
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/Observation/ObservationBuilder.cs
+================================================================================
+
+using OsuLazerController.Domain;
+using OsuLazerController.Loop;
+
+namespace OsuLazerController.Observation;
+
+public sealed class ObservationBuilder
+{
+    private readonly ObservationConfig _config;
+    private const double SpinnerCenterX = 256.0;
+    private const double SpinnerCenterY = 192.0;
+    private const double SpinnerTargetRadius = 76.0;
+    private const double SpinnerClearMinSpins = 2.0;
+
+    public ObservationBuilder(ObservationConfig config)
+    {
+        _config = config;
+    }
+
+    public float[] Build(
+        BeatmapSession session,
+        double currentTimeMs,
+        RuntimeCursorState cursor)
+    {
+        var obs = new List<float>(59)
+        {
+            (float)(currentTimeMs / 10000.0f),
+            (float)(cursor.PlayfieldX / 512.0),
+            (float)(cursor.PlayfieldY / 384.0),
+        };
+
+        var upcoming = session.GetUpcomingObjects(currentTimeMs, _config.UpcomingCount);
+        var primary = upcoming.Count > 0 ? upcoming[0] : null;
+        var primaryIsSlider = primary is not null && primary.Kind.Equals("slider", StringComparison.OrdinalIgnoreCase);
+        var primaryIsSpinner = primary is not null && primary.Kind.Equals("spinner", StringComparison.OrdinalIgnoreCase);
+
+        foreach (var item in upcoming)
+        {
+            var kindId = KindToId(item.Kind);
+            var dx = item.X - cursor.PlayfieldX;
+            var dy = item.Y - cursor.PlayfieldY;
+            var dist = Math.Sqrt(dx * dx + dy * dy);
+
+            var isActive = IsObjectActive(item, currentTimeMs);
+
+            obs.Add(kindId);
+            obs.Add((float)(item.X / 512.0));
+            obs.Add((float)(item.Y / 384.0));
+            obs.Add((float)((item.TimeMs - currentTimeMs) / 1000.0));
+            obs.Add((float)(dist / 512.0));
+            obs.Add(isActive ? 1.0f : 0.0f);
+        }
+
+        while ((obs.Count - 3) / 6 < _config.UpcomingCount)
+        {
+            obs.Add(-1.0f);
+            obs.Add(0.0f);
+            obs.Add(0.0f);
+            obs.Add(0.0f);
+            obs.Add(0.0f);
+            obs.Add(0.0f);
+        }
+
+        var sliderState = BuildSliderState(session, currentTimeMs, cursor, primaryIsSlider);
+        obs.AddRange(sliderState);
+
+        var spinnerState = BuildSpinnerState(session, currentTimeMs, cursor, primaryIsSpinner);
+        obs.AddRange(spinnerState);
+
+        if (obs.Count != 59)
+            throw new InvalidOperationException($"Observation length must be 59, got {obs.Count}");
+
+        return obs.ToArray();
+    }
+
+    private static int KindToId(string kind)
+    {
+        return kind.ToLowerInvariant() switch
+        {
+            "circle" => 0,
+            "slider" => 1,
+            "spinner" => 2,
+            _ => -1
+        };
+    }
+
+    private static bool IsObjectActive(BeatmapObject item, double currentTimeMs)
+    {
+        if (item.Kind.Equals("circle", StringComparison.OrdinalIgnoreCase))
+            return Math.Abs(item.TimeMs - currentTimeMs) <= 80.0;
+
+        return currentTimeMs >= item.TimeMs && currentTimeMs <= ObjectEndTime(item);
+    }
+
+    private static double ObjectEndTime(BeatmapObject item)
+    {
+        if (item.EndTimeMs > item.TimeMs)
+            return item.EndTimeMs;
+
+        if (item.Slider is not null && item.Slider.DurationMs > 0.0)
+            return item.TimeMs + item.Slider.DurationMs;
+
+        if (item.Spinner is not null && item.Spinner.EndTimeMs > item.TimeMs)
+            return item.Spinner.EndTimeMs;
+
+        return item.TimeMs;
+    }
+
+    private static float[] BuildSliderState(
+        BeatmapSession session,
+        double currentTimeMs,
+        RuntimeCursorState cursor,
+        bool primaryIsSlider)
+    {
+        var active = session.Data.Objects.FirstOrDefault(o =>
+            o.Kind.Equals("slider", StringComparison.OrdinalIgnoreCase) &&
+            o.Slider is not null &&
+            currentTimeMs >= o.TimeMs &&
+            currentTimeMs <= ObjectEndTime(o));
+
+        var followRadius = OsuCircleRadius(session.Data.Beatmap.Cs) * 1.65;
+
+        if (active is null || active.Slider is null)
+        {
+            return
+            [
+                0.0f,
+                primaryIsSlider ? 1.0f : 0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                (float)(followRadius / 512.0),
+            ];
+        }
+
+        var endTime = ObjectEndTime(active);
+        var progress = SliderProgressAtTime(active.TimeMs, endTime, currentTimeMs);
+        var localProgress = SliderLocalProgress(progress, Math.Max(1, active.Slider.Repeats));
+        var target = PositionAtProgress(active.Slider.SampledPoints, localProgress);
+        var tangent = TangentAtProgress(active.Slider.SampledPoints, localProgress);
+
+        var spanIndex = Math.Min(Math.Max(1, active.Slider.Repeats) - 1, (int)(progress * Math.Max(1, active.Slider.Repeats)));
+        if (spanIndex % 2 == 1)
+        {
+            tangent = (-tangent.X, -tangent.Y);
+        }
+
+        var dx = target.X - cursor.PlayfieldX;
+        var dy = target.Y - cursor.PlayfieldY;
+        var dist = Math.Sqrt(dx * dx + dy * dy);
+
+        return
+        [
+            1.0f,
+            primaryIsSlider ? 1.0f : 0.0f,
+            (float)progress,
+            (float)(target.X / 512.0),
+            (float)(target.Y / 384.0),
+            (float)(dist / 512.0),
+            (float)(dist / 512.0),
+            dist <= followRadius ? 1.0f : 0.0f,
+            currentTimeMs >= active.TimeMs ? 1.0f : 0.0f,
+            (float)(Math.Max(0.0, endTime - currentTimeMs) / 1000.0),
+            (float)tangent.X,
+            (float)tangent.Y,
+            (float)(followRadius / 512.0),
+        ];
+    }
+
+    private static float[] BuildSpinnerState(
+        BeatmapSession session,
+        double currentTimeMs,
+        RuntimeCursorState cursor,
+        bool primaryIsSpinner)
+    {
+        var active = session.Data.Objects.FirstOrDefault(o =>
+            o.Kind.Equals("spinner", StringComparison.OrdinalIgnoreCase) &&
+            o.Spinner is not null &&
+            currentTimeMs >= o.TimeMs &&
+            currentTimeMs <= ObjectEndTime(o));
+
+        var dx = cursor.PlayfieldX - SpinnerCenterX;
+        var dy = cursor.PlayfieldY - SpinnerCenterY;
+        var dist = Math.Sqrt(dx * dx + dy * dy);
+        var angle = dist > 1e-6 ? Math.Atan2(dy, dx) : 0.0;
+        var radiusError = Math.Abs(dist - SpinnerTargetRadius);
+
+        if (active is null)
+        {
+            return
+            [
+                0.0f,
+                primaryIsSpinner ? 1.0f : 0.0f,
+                0.0f,
+                0.0f,
+                (float)(SpinnerClearMinSpins / 8.0),
+                0.0f,
+                (float)(SpinnerCenterX / 512.0),
+                (float)(SpinnerCenterY / 384.0),
+                (float)(dist / 256.0),
+                (float)(radiusError / 256.0),
+                (float)Math.Sin(angle),
+                (float)Math.Cos(angle),
+                0.0f,
+            ];
+        }
+
+        var endTime = ObjectEndTime(active);
+        var duration = Math.Max(1.0, endTime - active.TimeMs);
+        var progress = Math.Clamp((currentTimeMs - active.TimeMs) / duration, 0.0, 1.0);
+
+        return
+        [
+            1.0f,
+            primaryIsSpinner ? 1.0f : 0.0f,
+            (float)progress,
+            0.0f,
+            (float)(SpinnerClearMinSpins / 8.0),
+            (float)(Math.Max(0.0, endTime - currentTimeMs) / 1000.0),
+            (float)(SpinnerCenterX / 512.0),
+            (float)(SpinnerCenterY / 384.0),
+            (float)(dist / 256.0),
+            (float)(radiusError / 256.0),
+            (float)Math.Sin(angle),
+            (float)Math.Cos(angle),
+            0.0f,
+        ];
+    }
+
+    private static double OsuCircleRadius(double cs) => 54.4 - 4.48 * cs;
+
+    private static double SliderProgressAtTime(double startTimeMs, double endTimeMs, double currentTimeMs)
+    {
+        if (endTimeMs <= startTimeMs)
+            return 1.0;
+
+        return Math.Clamp((currentTimeMs - startTimeMs) / (endTimeMs - startTimeMs), 0.0, 1.0);
+    }
+
+    private static double SliderLocalProgress(double progress, int repeats)
+    {
+        var spanProgress = Math.Clamp(progress, 0.0, 1.0) * repeats;
+        var spanIndex = Math.Min(repeats - 1, (int)spanProgress);
+        var localProgress = spanProgress - spanIndex;
+
+        if (spanIndex % 2 == 1)
+            localProgress = 1.0 - localProgress;
+
+        return localProgress;
+    }
+
+    private static (double X, double Y) PositionAtProgress(IReadOnlyList<BridgePoint> points, double progress)
+    {
+        if (points.Count == 0)
+            return (0.0, 0.0);
+
+        if (points.Count == 1)
+            return (points[0].X, points[0].Y);
+
+        var cumulative = BuildCumulativeLengths(points);
+        var total = cumulative[^1];
+        if (total <= 1e-6)
+            return (points[0].X, points[0].Y);
+
+        return PositionAtDistance(points, cumulative, Math.Clamp(progress, 0.0, 1.0) * total);
+    }
+
+    private static (double X, double Y) TangentAtProgress(IReadOnlyList<BridgePoint> points, double progress)
+    {
+        if (points.Count < 2)
+            return (0.0, 0.0);
+
+        var cumulative = BuildCumulativeLengths(points);
+        var total = cumulative[^1];
+        if (total <= 1e-6)
+            return (0.0, 0.0);
+
+        var centerD = Math.Clamp(progress, 0.0, 1.0) * total;
+        var a = PositionAtDistance(points, cumulative, Math.Max(0.0, centerD - 8.0));
+        var b = PositionAtDistance(points, cumulative, Math.Min(total, centerD + 8.0));
+        var dx = b.X - a.X;
+        var dy = b.Y - a.Y;
+        var norm = Math.Sqrt(dx * dx + dy * dy);
+        if (norm <= 1e-6)
+            return (0.0, 0.0);
+
+        return (dx / norm, dy / norm);
+    }
+
+    private static double[] BuildCumulativeLengths(IReadOnlyList<BridgePoint> points)
+    {
+        var cumulative = new double[points.Count];
+        var total = 0.0;
+
+        for (var i = 1; i < points.Count; i++)
+        {
+            var dx = points[i].X - points[i - 1].X;
+            var dy = points[i].Y - points[i - 1].Y;
+            total += Math.Sqrt(dx * dx + dy * dy);
+            cumulative[i] = total;
+        }
+
+        return cumulative;
+    }
+
+    private static (double X, double Y) PositionAtDistance(
+        IReadOnlyList<BridgePoint> points,
+        IReadOnlyList<double> cumulative,
+        double distance)
+    {
+        var total = cumulative[^1];
+        var d = Math.Clamp(distance, 0.0, total);
+
+        for (var i = 1; i < cumulative.Count; i++)
+        {
+            var prevLen = cumulative[i - 1];
+            var currLen = cumulative[i];
+            if (d > currLen)
+                continue;
+
+            var segLen = currLen - prevLen;
+            if (segLen <= 1e-9)
+                return (points[i].X, points[i].Y);
+
+            var t = (d - prevLen) / segLen;
+            return (
+                points[i - 1].X + (points[i].X - points[i - 1].X) * t,
+                points[i - 1].Y + (points[i].Y - points[i - 1].Y) * t
+            );
+        }
+
+        return (points[^1].X, points[^1].Y);
+    }
+}
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/Loop/RuntimeLoop.cs
+================================================================================
+
+using System.Diagnostics;
+using System.Text.Json;
+using OsuLazerController.Domain;
+using OsuLazerController.IPC;
+using OsuLazerController.Input;
+using OsuLazerController.Mapping;
+using OsuLazerController.Observation;
+using OsuLazerController.Timing;
+using OsuLazerController.Windowing;
+
+namespace OsuLazerController.Loop;
+
+public sealed class RuntimeLoop
+{
+    private readonly PolicyClient _policyClient;
+    private readonly MapClock _clock;
+    private readonly ObservationBuilder _observationBuilder;
+    private readonly BeatmapSession _beatmapSession;
+    private readonly MouseController _mouseController;
+    private readonly PlayfieldMapper _playfieldMapper;
+    private readonly int _targetHz;
+    private readonly bool _logEachTick;
+    private readonly string? _tracePath;
+
+    public RuntimeLoop(
+        PolicyClient policyClient,
+        MapClock clock,
+        ObservationBuilder observationBuilder,
+        BeatmapSession beatmapSession,
+        MouseController mouseController,
+        PlayfieldMapper playfieldMapper,
+        int targetHz = 60,
+        bool logEachTick = true,
+        string? tracePath = null)
+    {
+        _policyClient = policyClient;
+        _clock = clock;
+        _observationBuilder = observationBuilder;
+        _beatmapSession = beatmapSession;
+        _mouseController = mouseController;
+        _playfieldMapper = playfieldMapper;
+        _targetHz = targetHz;
+        _logEachTick = logEachTick;
+        _tracePath = tracePath;
+    }
+
+    public void Run(WindowInfo window, CancellationToken cancellationToken, int maxTicks = 300)
+    {
+        Console.WriteLine($"[loop] ready at {_targetHz} Hz");
+        Console.WriteLine("[loop] keep osu! focused");
+        Console.WriteLine("[loop] press F8 to start map clock, F9 to stop loop");
+
+        var hotkeys = new HotkeyGate();
+
+        while (!cancellationToken.IsCancellationRequested && !hotkeys.ConsumeStartPressed())
+        {
+            Thread.Sleep(10);
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
+        _clock.Start();
+        Console.WriteLine("[loop] map clock started");
+
+        var playfieldRect = _playfieldMapper.GetPlayfieldRect(window);
+        Console.WriteLine($"[mapper] playfield rect = {playfieldRect}");
+
+        var tickIntervalMs = 1000.0 / _targetHz;
+        var sw = new Stopwatch();
+        var cursor = new RuntimeCursorState();
+        var mouseDown = false;
+        var traceFrames = new List<object>();
+        var loopStartedAt = DateTimeOffset.UtcNow;
+
+        try
+        {
+            for (var tick = 0; tick < maxTicks; tick++)
+            {
+                if (cancellationToken.IsCancellationRequested || hotkeys.ConsumeStopPressed())
+                    break;
+
+                sw.Restart();
+
+                var currentTimeMs = _clock.CurrentTimeMs();
+                var obs = _observationBuilder.Build(_beatmapSession, currentTimeMs, cursor);
+
+                using var response = _policyClient.Infer(obs, $"tick-{tick}");
+
+                var root = response.RootElement;
+                var ok = root.GetProperty("ok").GetBoolean();
+                if (!ok)
+                {
+                    var error = root.TryGetProperty("error", out var errEl)
+                        ? errEl.GetString()
+                        : "unknown policy error";
+                    throw new InvalidOperationException($"Policy error at tick {tick}: {error}");
+                }
+
+                var dx = root.GetProperty("dx").GetDouble();
+                var dy = root.GetProperty("dy").GetDouble();
+                var click = root.GetProperty("click_strength").GetDouble();
+                var policyLatencyMs = root.TryGetProperty("latency_ms", out var latEl)
+                    ? latEl.GetDouble()
+                    : -1.0;
+
+                cursor.PlayfieldX = Math.Clamp(cursor.PlayfieldX + dx * 14.0, 0.0, 512.0);
+                cursor.PlayfieldY = Math.Clamp(cursor.PlayfieldY + dy * 14.0, 0.0, 384.0);
+
+                var screenPoint = _playfieldMapper.PlayfieldToScreen(window, cursor.PlayfieldX, cursor.PlayfieldY);
+                _mouseController.MoveMouseTo(screenPoint.X, screenPoint.Y);
+
+                var sliderActive = obs[33] > 0.5f;
+                var spinnerActive = obs[46] > 0.5f;
+                var nextMouseDown = click >= 0.75 ||
+                    (sliderActive && click >= 0.45) ||
+                    (spinnerActive && click >= 0.45);
+
+                if (nextMouseDown && !mouseDown)
+                {
+                    _mouseController.LeftDown();
+                    mouseDown = true;
+                }
+                else if (!nextMouseDown && mouseDown)
+                {
+                    _mouseController.LeftUp();
+                    mouseDown = false;
+                }
+
+                sw.Stop();
+                var tickWorkMs = sw.Elapsed.TotalMilliseconds;
+                traceFrames.Add(new
+                {
+                    tick,
+                    time_ms = currentTimeMs,
+                    cursor_x = cursor.PlayfieldX,
+                    cursor_y = cursor.PlayfieldY,
+                    screen_x = screenPoint.X,
+                    screen_y = screenPoint.Y,
+                    dx,
+                    dy,
+                    click_strength = click,
+                    mouse_down = mouseDown,
+                    slider_active = sliderActive,
+                    slider_progress = obs[35],
+                    slider_target_x = obs[36] * 512.0,
+                    slider_target_y = obs[37] * 384.0,
+                    slider_distance = obs[38] * 512.0,
+                    slider_inside_follow = obs[40] > 0.5f,
+                    spinner_active = spinnerActive,
+                    spinner_progress = obs[48],
+                    spinner_distance_to_center = obs[54] * 256.0,
+                    first_kind = obs[3],
+                    first_time_to_hit_ms = obs[6] * 1000.0,
+                    policy_latency_ms = policyLatencyMs,
+                    loop_work_ms = tickWorkMs,
+                });
+
+                if (_logEachTick)
+                {
+                    Console.WriteLine(
+                        $"[tick {tick:0000}] " +
+                        $"t={currentTimeMs,8:0.0}ms " +
+                        $"cx={cursor.PlayfieldX,7:0.0} " +
+                        $"cy={cursor.PlayfieldY,7:0.0} " +
+                        $"sx={screenPoint.X,5} " +
+                        $"sy={screenPoint.Y,5} " +
+                        $"dx={dx,7:0.000} " +
+                        $"dy={dy,7:0.000} " +
+                        $"click={click,6:0.000} " +
+                        $"down={(mouseDown ? 1 : 0)} " +
+                        $"sl={(sliderActive ? 1 : 0)} " +
+                        $"sp={(spinnerActive ? 1 : 0)} " +
+                        $"policy={policyLatencyMs,7:0.000}ms " +
+                        $"loop={tickWorkMs,7:0.000}ms"
+                    );
+                }
+
+                var sleepMs = tickIntervalMs - tickWorkMs;
+                if (sleepMs > 0.5)
+                    Thread.Sleep((int)Math.Floor(sleepMs));
+            }
+        }
+        finally
+        {
+            if (mouseDown)
+                _mouseController.LeftUp();
+        }
+
+        _clock.Stop();
+        WriteTrace(window, playfieldRect, loopStartedAt, traceFrames);
+        Console.WriteLine("[loop] runtime loop finished");
+    }
+
+    private void WriteTrace(
+        WindowInfo window,
+        System.Drawing.Rectangle playfieldRect,
+        DateTimeOffset loopStartedAt,
+        IReadOnlyList<object> frames)
+    {
+        if (string.IsNullOrWhiteSpace(_tracePath))
+            return;
+
+        var fullPath = Path.GetFullPath(_tracePath);
+        var parent = Path.GetDirectoryName(fullPath);
+        if (!string.IsNullOrWhiteSpace(parent))
+            Directory.CreateDirectory(parent);
+
+        var payload = new
+        {
+            created_at_utc = DateTimeOffset.UtcNow,
+            loop_started_at_utc = loopStartedAt,
+            target_hz = _targetHz,
+            frame_count = frames.Count,
+            beatmap = new
+            {
+                _beatmapSession.Data.Beatmap.Artist,
+                _beatmapSession.Data.Beatmap.Title,
+                _beatmapSession.Data.Beatmap.Version,
+                _beatmapSession.Data.Beatmap.Ar,
+                _beatmapSession.Data.Beatmap.Cs,
+                _beatmapSession.Data.Beatmap.Od,
+                _beatmapSession.Data.Beatmap.Hp,
+            },
+            window = new
+            {
+                window.Title,
+                client = new
+                {
+                    window.ClientRectScreen.X,
+                    window.ClientRectScreen.Y,
+                    window.ClientRectScreen.Width,
+                    window.ClientRectScreen.Height,
+                },
+                playfield = new
+                {
+                    playfieldRect.X,
+                    playfieldRect.Y,
+                    playfieldRect.Width,
+                    playfieldRect.Height,
+                },
+            },
+            frames,
+        };
+
+        var json = JsonSerializer.Serialize(
+            payload,
+            new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+
+        File.WriteAllText(fullPath, json);
+        Console.WriteLine($"[trace] wrote {frames.Count} frames: {fullPath}");
+    }
+}
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/Domain/BeatmapSession.cs
+================================================================================
+
+using System.Text.Json;
+
+namespace OsuLazerController.Domain;
+
+public sealed class BeatmapSession
+{
+    public BeatmapBridgeFile Data { get; }
+
+    private BeatmapSession(BeatmapBridgeFile data)
+    {
+        Data = data;
+    }
+
+    public static BeatmapSession LoadFromJson(string path)
+    {
+        if (!File.Exists(path))
+            throw new FileNotFoundException("Beatmap bridge JSON not found.", path);
+
+        var json = File.ReadAllText(path);
+        var data = JsonSerializer.Deserialize<BeatmapBridgeFile>(
+            json,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+        if (data is null)
+            throw new InvalidOperationException("Failed to deserialize beatmap bridge JSON.");
+
+        if (data.Objects.Count == 0)
+            throw new InvalidOperationException("Beatmap bridge JSON contains no hit objects.");
+
+        foreach (var obj in data.Objects)
+        {
+            if (string.IsNullOrWhiteSpace(obj.Kind))
+                throw new InvalidOperationException($"Beatmap object {obj.Index} is missing kind.");
+
+            if (obj.Kind.Equals("slider", StringComparison.OrdinalIgnoreCase) && obj.Slider is null)
+                throw new InvalidOperationException($"Slider object {obj.Index} is missing slider payload.");
+
+            if (obj.Kind.Equals("spinner", StringComparison.OrdinalIgnoreCase) && obj.Spinner is null)
+                throw new InvalidOperationException($"Spinner object {obj.Index} is missing spinner payload.");
+        }
+
+        return new BeatmapSession(data);
+    }
+
+    public IReadOnlyList<BeatmapObject> GetUpcomingObjects(double currentTimeMs, int count)
+    {
+        const double visiblePastWindowMs = 220.0;
+
+        return Data.Objects
+            .Where(o => currentTimeMs <= ObjectEndTime(o) + visiblePastWindowMs)
+            .Where(o => o.TimeMs >= currentTimeMs - visiblePastWindowMs || IsActive(o, currentTimeMs))
+            .OrderBy(o => o.TimeMs)
+            .Take(count)
+            .ToList();
+    }
+
+    private static double ObjectEndTime(BeatmapObject obj)
+    {
+        if (obj.EndTimeMs > obj.TimeMs)
+            return obj.EndTimeMs;
+
+        if (obj.Spinner is not null && obj.Spinner.EndTimeMs > obj.TimeMs)
+            return obj.Spinner.EndTimeMs;
+
+        if (obj.Slider is not null && obj.Slider.DurationMs > 0.0)
+            return obj.TimeMs + obj.Slider.DurationMs;
+
+        return obj.TimeMs;
+    }
+
+    private static bool IsActive(BeatmapObject obj, double currentTimeMs)
+    {
+        return currentTimeMs >= obj.TimeMs && currentTimeMs <= ObjectEndTime(obj);
+    }
+}
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/Domain/BeatmapModels.cs
+================================================================================
+
+namespace OsuLazerController.Domain;
+
+using System.Text.Json.Serialization;
+
+public sealed class BeatmapBridgeFile
+{
+    [JsonPropertyName("beatmap")]
+    public BeatmapMetadata Beatmap { get; init; } = new();
+
+    [JsonPropertyName("timing_points")]
+    public List<TimingPoint> TimingPoints { get; init; } = [];
+
+    [JsonPropertyName("objects")]
+    public List<BeatmapObject> Objects { get; init; } = [];
+}
+
+public sealed class BeatmapMetadata
+{
+    [JsonPropertyName("source_path")]
+    public string SourcePath { get; init; } = string.Empty;
+
+    [JsonPropertyName("artist")]
+    public string Artist { get; init; } = string.Empty;
+
+    [JsonPropertyName("title")]
+    public string Title { get; init; } = string.Empty;
+
+    [JsonPropertyName("version")]
+    public string Version { get; init; } = string.Empty;
+
+    [JsonPropertyName("ar")]
+    public double Ar { get; init; }
+
+    [JsonPropertyName("cs")]
+    public double Cs { get; init; }
+
+    [JsonPropertyName("od")]
+    public double Od { get; init; }
+
+    [JsonPropertyName("hp")]
+    public double Hp { get; init; }
+
+    [JsonPropertyName("slider_multiplier")]
+    public double SliderMultiplier { get; init; }
+
+    [JsonPropertyName("slider_tick_rate")]
+    public double SliderTickRate { get; init; }
+}
+
+public sealed class TimingPoint
+{
+    [JsonPropertyName("time_ms")]
+    public double TimeMs { get; init; }
+
+    [JsonPropertyName("beat_length")]
+    public double BeatLength { get; init; }
+
+    [JsonPropertyName("meter")]
+    public int Meter { get; init; }
+
+    [JsonPropertyName("sample_set")]
+    public int SampleSet { get; init; }
+
+    [JsonPropertyName("sample_index")]
+    public int SampleIndex { get; init; }
+
+    [JsonPropertyName("volume")]
+    public int Volume { get; init; }
+
+    [JsonPropertyName("uninherited")]
+    public bool Uninherited { get; init; }
+
+    [JsonPropertyName("effects")]
+    public int Effects { get; init; }
+
+    [JsonPropertyName("slider_velocity_multiplier")]
+    public double SliderVelocityMultiplier { get; init; }
+}
+
+public sealed class BeatmapObject
+{
+    [JsonPropertyName("index")]
+    public int Index { get; init; }
+
+    [JsonPropertyName("time_ms")]
+    public double TimeMs { get; init; }
+
+    [JsonPropertyName("end_time_ms")]
+    public double EndTimeMs { get; init; }
+
+    [JsonPropertyName("kind")]
+    public string Kind { get; init; } = string.Empty;
+
+    [JsonPropertyName("x")]
+    public double X { get; init; }
+
+    [JsonPropertyName("y")]
+    public double Y { get; init; }
+
+    [JsonPropertyName("combo_index")]
+    public int ComboIndex { get; init; }
+
+    [JsonPropertyName("combo_number")]
+    public int ComboNumber { get; init; }
+
+    [JsonPropertyName("hitsound")]
+    public int Hitsound { get; init; }
+
+    [JsonPropertyName("slider")]
+    public SliderBridgeData? Slider { get; init; }
+
+    [JsonPropertyName("spinner")]
+    public SpinnerBridgeData? Spinner { get; init; }
+}
+
+public sealed class SliderBridgeData
+{
+    [JsonPropertyName("curve_type")]
+    public string CurveType { get; init; } = string.Empty;
+
+    [JsonPropertyName("control_points")]
+    public List<BridgePoint> ControlPoints { get; init; } = [];
+
+    [JsonPropertyName("repeats")]
+    public int Repeats { get; init; }
+
+    [JsonPropertyName("pixel_length")]
+    public double PixelLength { get; init; }
+
+    [JsonPropertyName("duration_ms")]
+    public double DurationMs { get; init; }
+
+    [JsonPropertyName("span_duration_ms")]
+    public double SpanDurationMs { get; init; }
+
+    [JsonPropertyName("path_total_length")]
+    public double PathTotalLength { get; init; }
+
+    [JsonPropertyName("sampled_points")]
+    public List<BridgePoint> SampledPoints { get; init; } = [];
+
+    [JsonPropertyName("edge_sounds")]
+    public List<int> EdgeSounds { get; init; } = [];
+
+    [JsonPropertyName("edge_sets")]
+    public List<string> EdgeSets { get; init; } = [];
+
+    [JsonPropertyName("base_beat_length")]
+    public double BaseBeatLength { get; init; }
+
+    [JsonPropertyName("slider_velocity_multiplier")]
+    public double SliderVelocityMultiplier { get; init; }
+}
+
+public sealed class SpinnerBridgeData
+{
+    [JsonPropertyName("end_time_ms")]
+    public double EndTimeMs { get; init; }
+
+    [JsonPropertyName("duration_ms")]
+    public double DurationMs { get; init; }
+}
+
+public sealed class BridgePoint
+{
+    [JsonPropertyName("x")]
+    public double X { get; init; }
+
+    [JsonPropertyName("y")]
+    public double Y { get; init; }
+}
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/Mapping/PlayfieldMapper.cs
+================================================================================
+
+using System.Drawing;
+using OsuLazerController.Windowing;
+
+namespace OsuLazerController.Mapping;
+
+public sealed class PlayfieldMapper
+{
+    public Rectangle GetPlayfieldRect(WindowInfo window)
+    {
+        var client = window.ClientRectScreen;
+
+        const double playfieldAspect = 4.0 / 3.0;
+        var clientAspect = (double)client.Width / Math.Max(1, client.Height);
+
+        int width;
+        int height;
+        int x;
+        int y;
+
+        if (clientAspect > playfieldAspect)
+        {
+            height = client.Height;
+            width = (int)Math.Round(height * playfieldAspect);
+            x = client.Left + (client.Width - width) / 2;
+            y = client.Top;
+        }
+        else
+        {
+            width = client.Width;
+            height = (int)Math.Round(width / playfieldAspect);
+            x = client.Left;
+            y = client.Top + (client.Height - height) / 2;
+        }
+
+        return new Rectangle(x, y, width, height);
+    }
+
+    public Point PlayfieldToScreen(WindowInfo window, double playfieldX, double playfieldY)
+    {
+        var rect = GetPlayfieldRect(window);
+
+        var nx = Math.Clamp(playfieldX / 512.0, 0.0, 1.0);
+        var ny = Math.Clamp(playfieldY / 384.0, 0.0, 1.0);
+
+        var sx = rect.Left + (int)Math.Round(nx * rect.Width);
+        var sy = rect.Top + (int)Math.Round(ny * rect.Height);
+
+        return new Point(sx, sy);
+    }
+}
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/IPC/PolicyClient.cs
+================================================================================
+
+using NetMQ;
+using NetMQ.Sockets;
+using System.Text.Json;
+
+namespace OsuLazerController.IPC;
+
+public sealed class PolicyClient : IDisposable
+{
+    private readonly RequestSocket _socket;
+    private readonly TimeSpan _timeout;
+
+    public PolicyClient(string address, int timeoutMs)
+    {
+        _timeout = TimeSpan.FromMilliseconds(timeoutMs);
+        _socket = new RequestSocket();
+        _socket.Connect(address);
+    }
+
+    public JsonDocument Ping(string requestId = "ping-csharp")
+    {
+        var payload = new
+        {
+            cmd = "ping",
+            request_id = requestId
+        };
+
+        return SendAndReceive(payload);
+    }
+
+    public JsonDocument Infer(float[] obs, string requestId = "infer-csharp")
+    {
+        var payload = new
+        {
+            cmd = "infer",
+            request_id = requestId,
+            obs = obs
+        };
+
+        return SendAndReceive(payload);
+    }
+
+    private JsonDocument SendAndReceive(object payload)
+    {
+        var json = JsonSerializer.Serialize(payload);
+
+        if (!_socket.TrySendFrame(_timeout, json))
+            throw new TimeoutException("Failed to send request to policy server.");
+
+        if (!_socket.TryReceiveFrameString(_timeout, out var response))
+            throw new TimeoutException("Timed out waiting for policy server response.");
+
+        return JsonDocument.Parse(response);
+    }
+
+    public void Dispose()
+    {
+        _socket.Dispose();
+    }
+}
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/App/ControllerApp.cs
+================================================================================
+
+using OsuLazerController.Capture;
+using OsuLazerController.Domain;
+using OsuLazerController.IPC;
+using OsuLazerController.Input;
+using OsuLazerController.Loop;
+using OsuLazerController.Observation;
+using OsuLazerController.Timing;
+using OsuLazerController.Windowing;
+using OsuLazerController.Mapping;
+using System.Text.Json;
+
+namespace OsuLazerController.App;
+
+public sealed class ControllerApp
+{
+    private readonly RuntimeConfig _config;
+
+    public ControllerApp(RuntimeConfig config)
+    {
+        _config = config;
+    }
+
+    public void Run(string[] args)
+    {
+        if (args.Any(a => string.Equals(a, "--dump-bridge", StringComparison.OrdinalIgnoreCase)) ||
+            args.Any(a => string.Equals(a, "--dump-obs-json", StringComparison.OrdinalIgnoreCase)))
+        {
+            DumpBridgeObservations(args);
+            return;
+        }
+
+        Console.WriteLine("OsuLazerController starting...");
+        Console.WriteLine("[window] search candidates: " + string.Join(", ", _config.WindowTitleCandidates));
+
+        var finder = new OsuWindowFinder();
+        WindowInfo? window = null;
+
+        for (var i = 0; i < _config.SearchRetryCount; i++)
+        {
+            window = finder.FindFirst(_config.WindowTitleCandidates);
+            if (window is not null)
+                break;
+
+            Console.WriteLine($"[window] not found, retry {i + 1}/{_config.SearchRetryCount}");
+            Thread.Sleep(_config.SearchRetryDelayMs);
+        }
+
+        if (window is null)
+        {
+            if (_config.DumpVisibleWindowsOnFailure)
+            {
+                Console.WriteLine("[window] visible windows dump:");
+                foreach (var item in finder.ListVisibleWindows().OrderBy(w => w.Title))
+                {
+                    Console.WriteLine($"  - {item.Title} | {item.ClientRectScreen}");
+                }
+            }
+
+            throw new InvalidOperationException("Could not find osu!lazer window.");
+        }
+
+        Console.WriteLine("[window] found: " + window);
+
+        using var policyClient = new PolicyClient(_config.PolicyAddress, _config.PolicyTimeoutMs);
+        using var pong = policyClient.Ping();
+        Console.WriteLine("[policy] ping ok: " + pong.RootElement);
+
+        var capture = new ScreenCapture();
+        var captureSize = capture.CaptureClient(window);
+        Console.WriteLine($"[capture] ok: {captureSize.Width}x{captureSize.Height}");
+
+        var beatmapSession = BeatmapSession.LoadFromJson(_config.BridgeBeatmapJsonPath);
+        Console.WriteLine(
+            $"[beatmap] {beatmapSession.Data.Beatmap.Artist} - " +
+            $"{beatmapSession.Data.Beatmap.Title} [{beatmapSession.Data.Beatmap.Version}] " +
+            $"objects={beatmapSession.Data.Objects.Count}"
+        );
+
+        var mouse = new MouseController();
+        if (!args.Any(a => string.Equals(a, "--no-smoke", StringComparison.OrdinalIgnoreCase)))
+        {
+            RunMouseSmoke(window, mouse);
+        }
+        else
+        {
+            Console.WriteLine("[mouse] smoke skipped");
+        }
+
+        using var cts = new CancellationTokenSource();
+        var mapClock = new MapClock();
+        var observationBuilder = new ObservationBuilder(ObservationConfig.Default());
+        var playfieldMapper = new PlayfieldMapper();
+        var maxTicks = GetIntArgValue(args, "--ticks") ?? _config.RuntimeDummyTicks;
+        var tracePath = GetArgValue(args, "--trace") ?? _config.RuntimeTracePath;
+
+        var runtimeLoop = new RuntimeLoop(
+            policyClient,
+            mapClock,
+            observationBuilder,
+            beatmapSession,
+            mouse,
+            playfieldMapper,
+            targetHz: _config.RuntimeTargetHz,
+            logEachTick: _config.RuntimeLogEachTick,
+            tracePath: tracePath
+        );
+
+        runtimeLoop.Run(window, cts.Token, maxTicks);
+
+        Console.WriteLine("[done] smoke test completed");
+    }
+
+    private void RunMouseSmoke(WindowInfo window, MouseController mouse)
+    {
+        var center = window.ClientCenter;
+        var radius = _config.SmokeCircleRadiusPx;
+        var steps = _config.SmokeSteps;
+
+        Console.WriteLine("[mouse] smoke circle start");
+        for (var i = 0; i < steps; i++)
+        {
+            var angle = i * Math.PI * 2.0 / steps;
+            var x = center.X + (int)Math.Round(Math.Cos(angle) * radius);
+            var y = center.Y + (int)Math.Round(Math.Sin(angle) * radius);
+
+            mouse.MoveMouseTo(x, y);
+
+            if (i % 30 == 0)
+                mouse.Click();
+
+            Thread.Sleep(_config.SmokeStepDelayMs);
+        }
+
+        mouse.MoveMouseTo(center.X, center.Y);
+        Console.WriteLine("[mouse] smoke circle end");
+    }
+
+    private void DumpBridgeObservations(string[] args)
+    {
+        Console.WriteLine("[dump] loading bridge map: " + _config.BridgeBeatmapJsonPath);
+
+        var beatmapSession = BeatmapSession.LoadFromJson(_config.BridgeBeatmapJsonPath);
+        Console.WriteLine(
+            $"[beatmap] {beatmapSession.Data.Beatmap.Artist} - " +
+            $"{beatmapSession.Data.Beatmap.Title} [{beatmapSession.Data.Beatmap.Version}] " +
+            $"objects={beatmapSession.Data.Objects.Count} " +
+            $"timing_points={beatmapSession.Data.TimingPoints.Count}"
+        );
+
+        var sliders = beatmapSession.Data.Objects.Count(o => o.Kind.Equals("slider", StringComparison.OrdinalIgnoreCase));
+        var spinners = beatmapSession.Data.Objects.Count(o => o.Kind.Equals("spinner", StringComparison.OrdinalIgnoreCase));
+        Console.WriteLine($"[objects] sliders={sliders} spinners={spinners}");
+
+        var firstSlider = beatmapSession.Data.Objects.FirstOrDefault(o => o.Slider is not null);
+        if (firstSlider is not null && firstSlider.Slider is not null)
+        {
+            Console.WriteLine(
+                $"[first-slider] index={firstSlider.Index} " +
+                $"time={firstSlider.TimeMs:0.0} end={firstSlider.EndTimeMs:0.0} " +
+                $"duration={firstSlider.Slider.DurationMs:0.0} " +
+                $"repeats={firstSlider.Slider.Repeats} " +
+                $"samples={firstSlider.Slider.SampledPoints.Count}"
+            );
+        }
+
+        var builder = new ObservationBuilder(ObservationConfig.Default());
+        var cursor = new RuntimeCursorState();
+        var probeTimes = BuildProbeTimes(beatmapSession);
+        var obsDump = new List<object>();
+
+        foreach (var t in probeTimes.Distinct().OrderBy(v => v))
+        {
+            var obs = builder.Build(beatmapSession, t, cursor);
+            obsDump.Add(new
+            {
+                time_ms = t,
+                cursor_x = cursor.PlayfieldX,
+                cursor_y = cursor.PlayfieldY,
+                obs = obs,
+            });
+
+            Console.WriteLine(
+                $"[obs] t={t:0.0} len={obs.Length} " +
+                $"first_kind={obs[3]:0.###} first_tth={obs[6]:0.###} " +
+                $"slider_active={obs[33]:0.###} slider_progress={obs[35]:0.###} " +
+                $"slider_target=({obs[36] * 512.0:0.0},{obs[37] * 384.0:0.0}) " +
+                $"spinner_active={obs[46]:0.###} spinner_progress={obs[48]:0.###}"
+            );
+        }
+
+        var dumpPath = GetArgValue(args, "--dump-obs-json");
+        if (dumpPath is null)
+            return;
+
+        var payload = new
+        {
+            bridge_map_path = _config.BridgeBeatmapJsonPath,
+            beatmap = new
+            {
+                beatmapSession.Data.Beatmap.Artist,
+                beatmapSession.Data.Beatmap.Title,
+                beatmapSession.Data.Beatmap.Version,
+                beatmapSession.Data.Beatmap.Ar,
+                beatmapSession.Data.Beatmap.Cs,
+                beatmapSession.Data.Beatmap.Od,
+                beatmapSession.Data.Beatmap.Hp,
+            },
+            observations = obsDump,
+        };
+
+        var json = JsonSerializer.Serialize(
+            payload,
+            new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+
+        var fullPath = Path.GetFullPath(dumpPath);
+        var parent = Path.GetDirectoryName(fullPath);
+        if (!string.IsNullOrWhiteSpace(parent))
+            Directory.CreateDirectory(parent);
+
+        File.WriteAllText(fullPath, json);
+        Console.WriteLine("[dump] wrote observation JSON: " + fullPath);
+    }
+
+    private static IReadOnlyList<double> BuildProbeTimes(BeatmapSession session)
+    {
+        var result = new List<double> { 0.0 };
+
+        foreach (var obj in session.Data.Objects.Take(20))
+        {
+            result.Add(obj.TimeMs);
+
+            if (obj.EndTimeMs > obj.TimeMs)
+            {
+                result.Add(obj.TimeMs + (obj.EndTimeMs - obj.TimeMs) * 0.5);
+                result.Add(obj.EndTimeMs);
+            }
+        }
+
+        var firstSpinner = session.Data.Objects.FirstOrDefault(o => o.Spinner is not null);
+        if (firstSpinner is not null)
+        {
+            result.Add(firstSpinner.TimeMs);
+            result.Add(firstSpinner.TimeMs + (firstSpinner.EndTimeMs - firstSpinner.TimeMs) * 0.5);
+            result.Add(firstSpinner.EndTimeMs);
+        }
+
+        return result;
+    }
+
+    private static string? GetArgValue(string[] args, string name)
+    {
+        for (var i = 0; i < args.Length - 1; i++)
+        {
+            if (string.Equals(args[i], name, StringComparison.OrdinalIgnoreCase))
+                return args[i + 1];
+        }
+
+        return null;
+    }
+
+    private static int? GetIntArgValue(string[] args, string name)
+    {
+        var value = GetArgValue(args, name);
+        if (value is null)
+            return null;
+
+        if (!int.TryParse(value, out var parsed) || parsed <= 0)
+            throw new ArgumentException($"{name} must be a positive integer.");
+
+        return parsed;
+    }
+}
+
+
+
+================================================================================
+FILE: external/osu_lazer_controller/OsuLazerController/App/RuntimeConfig.cs
+================================================================================
+
+namespace OsuLazerController.App;
+
+public sealed class RuntimeConfig
+{
+    public string[] WindowTitleCandidates { get; init; } =
+    [
+        "osu!(lazer)",
+        "osu!"
+    ];
+
+    public string PolicyAddress { get; init; } = "tcp://127.0.0.1:5555";
+    public int PolicyTimeoutMs { get; init; } = 2000;
+    public int SearchRetryCount { get; init; } = 20;
+    public int SearchRetryDelayMs { get; init; } = 500;
+
+    public int SmokeCircleRadiusPx { get; init; } = 120;
+    public int SmokeSteps { get; init; } = 120;
+    public int SmokeStepDelayMs { get; init; } = 16;
+
+    public bool DumpVisibleWindowsOnFailure { get; init; } = true;
+
+    public int RuntimeTargetHz { get; init; } = 60;
+    public int RuntimeDummyTicks { get; init; } = 180;
+    public bool RuntimeLogEachTick { get; init; } = true;
+    public string RuntimeTracePath { get; init; } =
+        @"D:\Projects\digital_agent_osu_project\external\osu_lazer_controller\logs\runtime_trace_latest.json";
+
+    public string BridgeBeatmapJsonPath { get; init; } =
+        @"D:\Projects\digital_agent_osu_project\external\osu_lazer_controller\maps\bridge_map.json";
+
+    public static RuntimeConfig Default() => new();
+}
+
+
+

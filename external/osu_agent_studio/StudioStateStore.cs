@@ -84,6 +84,10 @@ internal static class StudioStateStore
         state.SelectedConfigPath = string.IsNullOrWhiteSpace(state.SelectedConfigPath)
             ? StudioPaths.AgentConfig
             : state.SelectedConfigPath;
+        if (state.SelectedConfigPath.Contains("runtime.onnx.live_play.precision_accuracy", StringComparison.OrdinalIgnoreCase))
+        {
+            state.SelectedConfigPath = StudioPaths.AgentConfig;
+        }
         state.SelectedMaps ??= [];
     }
 }

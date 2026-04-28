@@ -29,6 +29,9 @@ internal sealed class ManagedProcess
             CreateNoWindow = true,
         };
 
+        startInfo.Environment["PYTHONUNBUFFERED"] = "1";
+        startInfo.Environment["PYTHONIOENCODING"] = "utf-8";
+
         foreach (var arg in args)
         {
             startInfo.ArgumentList.Add(arg);
@@ -39,13 +42,24 @@ internal sealed class ManagedProcess
         process.ErrorDataReceived += (_, e) => Emit(name, e.Data);
         process.Exited += (_, _) =>
         {
-            var code = process.ExitCode;
-            OutputReceived?.Invoke($"[{name}] exited with code {code}.");
-            StatusChanged?.Invoke("Idle");
-            process.Dispose();
-            if (ReferenceEquals(_process, process))
+            try
             {
-                _process = null;
+                var code = -1;
+                try { code = process.ExitCode; } catch { }
+
+                OutputReceived?.Invoke($"[{name}] exited with code {code}.");
+                StatusChanged?.Invoke("Idle");
+            }
+            catch (Exception ex)
+            {
+                OutputReceived?.Invoke($"[{name}] exit handler failed: {ex.Message}");
+            }
+            finally
+            {
+                if (ReferenceEquals(_process, process))
+                    _process = null;
+
+                try { process.Dispose(); } catch { }
             }
         };
 

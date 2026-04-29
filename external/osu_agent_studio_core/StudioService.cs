@@ -103,16 +103,9 @@ public sealed class StudioService
         {
             "-m", "src.apps.train_osu_lazer_transfer",
             "--run-name", StudioPaths.PrecisionRunName,
-            "--source-checkpoint",
-            Path.Combine(
-                StudioPaths.ProjectRoot,
-                "artifacts", "runs",
-                "osu_lazer_transfer_problem_normals_v1",
-                "checkpoints",
-                "best_lazer_transfer.pt"
-            ),
+            "--source-checkpoint", StudioPaths.SourceBestCheckpoint,
             "--profile", "precision_spinner",
-            "--resume-latest",
+            // "--resume-latest",
             "--updates", options.Updates.ToString(CultureInfo.InvariantCulture),
             "--save-every", options.SaveEvery.ToString(CultureInfo.InvariantCulture),
             "--cursor-speed", options.CursorSpeed.ToString(CultureInfo.InvariantCulture),
@@ -159,7 +152,11 @@ public sealed class StudioService
     public FileStatus GetFileStatus()
     {
         var latest = File.Exists(StudioPaths.LatestCheckpoint) ? File.GetLastWriteTime(StudioPaths.LatestCheckpoint).ToString("HH:mm") : "missing";
-        var best = File.Exists(StudioPaths.BestCheckpoint) ? File.GetLastWriteTime(StudioPaths.BestCheckpoint).ToString("HH:mm") : "missing";
+        var best = File.Exists(StudioPaths.BestCheckpoint)
+            ? File.GetLastWriteTime(StudioPaths.BestCheckpoint).ToString("HH:mm")
+            : File.Exists(StudioPaths.SourceBestCheckpoint)
+                ? $"source {File.GetLastWriteTime(StudioPaths.SourceBestCheckpoint):HH:mm}"
+                : "missing";
         return new FileStatus(latest, best);
     }
 

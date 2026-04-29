@@ -4,7 +4,9 @@
 [CmdletBinding()]
 param(
     [string] $OutputRoot = "dist",
-    [string] $Version = ""
+    [string] $Version = "",
+    [ValidateSet("Avalonia", "WinForms")]
+    [string] $Studio = "Avalonia"
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,7 +14,13 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 Set-Location $repoRoot
 
 if (-not $Version) {
-    [xml] $csproj = Get-Content (Join-Path $repoRoot "external\osu_agent_studio\OsuAgentStudio.csproj")
+    $versionProject = if ($Studio -eq "Avalonia") {
+        Join-Path $repoRoot "external\osu_agent_studio_avalonia\OsuAgentStudio.Avalonia.csproj"
+    } else {
+        Join-Path $repoRoot "external\osu_agent_studio\OsuAgentStudio.csproj"
+    }
+
+    [xml] $csproj = Get-Content $versionProject
     $Version = $csproj.Project.PropertyGroup.Version | Select-Object -First 1
     if (-not $Version) { $Version = "1.0.0" }
 }
@@ -29,8 +37,14 @@ $configsSrc = Join-Path $repoRoot "external\osu_lazer_controller\configs"
 New-Item -ItemType Directory -Path $appDir -Force | Out-Null
 New-Item -ItemType Directory -Path $publishController -Force | Out-Null
 
-Write-Host "[publish] OsuAgentStudio -> $appDir"
-dotnet publish (Join-Path $repoRoot "external\osu_agent_studio\OsuAgentStudio.csproj") `
+$studioProject = if ($Studio -eq "Avalonia") {
+    Join-Path $repoRoot "external\osu_agent_studio_avalonia\OsuAgentStudio.Avalonia.csproj"
+} else {
+    Join-Path $repoRoot "external\osu_agent_studio\OsuAgentStudio.csproj"
+}
+
+Write-Host "[publish] OsuAgentStudio ($Studio) -> $appDir"
+dotnet publish $studioProject `
     -c Release -r win-x64 --self-contained true `
     -o $appDir `
     /p:PublishSingleFile=false | Write-Host
@@ -69,6 +83,8 @@ Osu Agent — тестовый бандл v$Version
 - artifacts\  — чекпоинты / onnx (Они будут обновляца сами. Махия)
 
 Запуск: открой app\OsuAgentStudio.exe из этой папки ($bundleName). Корень должен содержать папку external\ — не переноси только exe в другое место без остального. (логично, да?) Ну а чо, а вдруг додумаешься вынести екзешник в жопу мира)
+
+Studio UI: $Studio.
 
 Обучение в Studio будет неактивно (нет src/). Play / Launch Agent — Вот эти хоть как и хоть куды пользуйся.
 

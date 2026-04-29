@@ -74,9 +74,12 @@ Thumbs.db
 # =========================
 projectDocs/
 
+exports/
+
 # =========================
 # Misc
 # =========================
 .dotnet_home
 
 external/osu_private_server/upstream/
+

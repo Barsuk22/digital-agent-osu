@@ -2,7 +2,8 @@ namespace OsuAgentStudio.Core;
 
 public static class StudioPaths
 {
-    public const string PrecisionRunName = "osu_lazer_precision_spinner_v2";
+    public const string PreviousPrecisionRunName = "osu_lazer_precision_spinner_v2";
+    public const string PrecisionRunName = "osu_lazer_precision_spinner_v3";
     public const string LiveOnnxFileName = "lazer_transfer_generalization.onnx";
 
     public static string ProjectRoot => FindProjectRoot();
@@ -14,8 +15,11 @@ public static class StudioPaths
     public static string AgentConfig => Path.Combine(ControllerConfigsDir, "runtime.onnx.live_play.agent_observed.gu.json");
     public static string OracleConfig => Path.Combine(ControllerConfigsDir, "runtime.oracle.live_play.json");
     public static string CheckpointsDir => Path.Combine(ProjectRoot, "artifacts", "runs", PrecisionRunName, "checkpoints");
+    public static string PreviousCheckpointsDir => Path.Combine(ProjectRoot, "artifacts", "runs", PreviousPrecisionRunName, "checkpoints");
     public static string LatestCheckpoint => Path.Combine(CheckpointsDir, "latest_lazer_transfer.pt");
     public static string BestCheckpoint => Path.Combine(CheckpointsDir, "best_lazer_transfer.pt");
+    public static string SourceBestCheckpoint => Path.Combine(PreviousCheckpointsDir, "best_lazer_transfer.pt");
+    public static string ExportBestCheckpoint => File.Exists(BestCheckpoint) ? BestCheckpoint : SourceBestCheckpoint;
     public static string OnnxOutput => Path.Combine(ProjectRoot, "artifacts", "exports", "onnx", LiveOnnxFileName);
     public static string LogsDir => Path.Combine(ProjectRoot, "external", "osu_lazer_controller", "bin", "Debug", "net8.0-windows", "logs");
     public static string StudioLogsDir => Path.Combine(ProjectRoot, "artifacts", "logs");

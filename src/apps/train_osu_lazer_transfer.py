@@ -49,7 +49,6 @@ SAFE_DEFAULT_CURSOR_SPEED = 10.5
 SAFE_MIN_SAVE_EVERY = 10
 SAFE_MIN_LEARNING_RATE = 3e-6
 SAFE_DEFAULT_LEARNING_RATE = 1e-5
-LATEST_REGRESSION_MARGIN = 2.5
 EARLY_STOP_REGRESSION_MARGIN = 6.0
 EARLY_STOP_BAD_CYCLES = 2
 
@@ -368,6 +367,7 @@ def main() -> None:
     train_map_count = max(1, len(cfg.train_beatmap_paths))
 
     for update_idx in range(start_update + 1, cfg.updates + 1):
+        saved_latest_this_update = False
         env = build_env(cfg, select_train_beatmap_path(cfg, update_idx))
         buffer = RolloutBuffer()
         stats = run_episode(cfg, env, model, device, buffer)
@@ -385,7 +385,7 @@ def main() -> None:
                 bad_cycle_streak += 1
                 print(
                     f"[safety] severe regression cycle={cycle_score:.3f} best={best_reward:.3f} "
-                    f"streak={bad_cycle_streak}/{EARLY_STOP_BAD_CYCLES}; latest will not be overwritten."
+                    f"streak={bad_cycle_streak}/{EARLY_STOP_BAD_CYCLES}; best is protected."
                 )
             else:
                 bad_cycle_streak = 0
@@ -400,15 +400,25 @@ def main() -> None:
                     best_reward=best_reward,
                 )
                 print(f"[best saved cycle] {best_ckpt}")
+            save_checkpoint(
+                model=model,
+                optimizer=optimizer,
+                cfg=cfg,
+                path=latest_ckpt,
+                update_idx=update_idx,
+                best_reward=best_reward,
+            )
+            saved_latest_this_update = True
+            print(f"[latest saved cycle] {latest_ckpt}")
             cycle_scores.clear()
             if bad_cycle_streak >= EARLY_STOP_BAD_CYCLES:
                 print("[safety] stopping training after repeated severe regression; keep/export best checkpoint.")
                 break
 
-        if update_idx % cfg.save_every == 0 or update_idx == start_update + 1:
+        if not saved_latest_this_update and (update_idx % cfg.save_every == 0 or update_idx == start_update + 1):
             if last_cycle_score is None:
                 print("[latest skipped] waiting for first full map cycle before saving latest.")
-            elif best_reward <= -1e17 or last_cycle_score >= best_reward - LATEST_REGRESSION_MARGIN:
+            else:
                 save_checkpoint(
                     model=model,
                     optimizer=optimizer,
@@ -417,10 +427,7 @@ def main() -> None:
                     update_idx=update_idx,
                     best_reward=best_reward,
                 )
-            else:
-                print(
-                    f"[latest skipped] cycle score {last_cycle_score:.3f} is too far below best {best_reward:.3f}."
-                )
+                print(f"[latest saved periodic] {latest_ckpt}")
 
         print_concise_update(update_idx, selection_reward, stats, env, train_metrics)
 

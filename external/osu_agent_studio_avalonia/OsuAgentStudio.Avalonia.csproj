@@ -16,7 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.0.1" />
     <PackageReference Include="Avalonia.Desktop" Version="12.0.1" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.0.1" /> 
   </ItemGroup>
 
   <ItemGroup>
@@ -25,6 +25,10 @@
 
   <ItemGroup>
     <Content Include="..\osu_agent_studio\app.ico" Link="app.ico" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <Content Include="..\..\AppImage\**\*.*"
+             Link="AppImage\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

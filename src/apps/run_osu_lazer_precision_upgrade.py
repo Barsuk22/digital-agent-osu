@@ -160,7 +160,7 @@ def main() -> None:
             str(Path(args.source_checkpoint).resolve()), 
             "--profile",
             "precision_spinner",
-            "--resume-latest",
+            # "--resume-latest",
             "--updates",
             str(args.updates),
             "--save-every",

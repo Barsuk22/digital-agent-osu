@@ -1,41 +1,104 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="OsuAgentStudio.Avalonia.MainWindow"
-        Title="{Binding Title}"
-        Width="1360"
-        Height="840"
+        Title="{Binding AppName}"
+        Width="1440"
+        Height="900"
         MinWidth="1180"
         MinHeight="760"
-        Background="#070912"
-        Icon="/app.ico">
+        Background="#080910"
+        WindowDecorations="None"
+        ExtendClientAreaToDecorationsHint="True">
   <Window.Resources>
-    <SolidColorBrush x:Key="BackBrush" Color="#070912" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#111422" />
-    <SolidColorBrush x:Key="Surface2Brush" Color="#171B2C" />
-    <SolidColorBrush x:Key="TextMainBrush" Color="#F4F7FF" />
-    <SolidColorBrush x:Key="TextMutedBrush" Color="#99A2C3" />
-    <SolidColorBrush x:Key="CyanBrush" Color="#57CAFF" />
+    <SolidColorBrush x:Key="BackBrush" Color="#080910" />
+    <SolidColorBrush x:Key="ShellBrush" Color="#10111A" />
+    <SolidColorBrush x:Key="PanelBrush" Color="#171924" />
+    <SolidColorBrush x:Key="Panel2Brush" Color="#1B1E2B" />
+    <SolidColorBrush x:Key="InkBrush" Color="#F7F7FB" />
+    <SolidColorBrush x:Key="MutedBrush" Color="#969BAD" />
+    <SolidColorBrush x:Key="DimBrush" Color="#696F83" />
+    <SolidColorBrush x:Key="PurpleBrush" Color="#9A3CFF" />
+    <SolidColorBrush x:Key="Purple2Brush" Color="#7525D8" />
     <SolidColorBrush x:Key="PinkBrush" Color="#E04AD1" />
-    <SolidColorBrush x:Key="YellowBrush" Color="#FFCD4B" />
+    <SolidColorBrush x:Key="CyanBrush" Color="#57CAFF" />
     <SolidColorBrush x:Key="BlueBrush" Color="#7380FF" />
     <SolidColorBrush x:Key="GreenBrush" Color="#5BEB97" />
+    <SolidColorBrush x:Key="YellowBrush" Color="#FFCD4B" />
     <SolidColorBrush x:Key="RedBrush" Color="#FF567A" />
   </Window.Resources>
 
   <Window.Styles>
     <Style Selector="TextBlock">
-      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
       <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="FontFamily" Value="Segoe UI" />
     </Style>
     <Style Selector="Button">
-      <Setter Property="Height" Value="38" />
-      <Setter Property="Margin" Value="0,4" />
-      <Setter Property="Padding" Value="14,6" />
-      <Setter Property="Background" Value="{StaticResource Surface2Brush}" />
-      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
-      <Setter Property="BorderBrush" Value="#2A304A" />
+      <Setter Property="Height" Value="40" />
+      <Setter Property="Padding" Value="14,7" />
+      <Setter Property="Background" Value="#1A1D2A" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+      <Setter Property="BorderBrush" Value="#303348" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="CornerRadius" Value="9" />
+    </Style>
+    <Style Selector="Button:pointerover">
+      <Setter Property="Background" Value="#24273A" />
+      <Setter Property="BorderBrush" Value="{StaticResource PurpleBrush}" />
+    </Style>
+    <Style Selector="Button.launch">
+      <Setter Property="Background" Value="#182244" />
+      <Setter Property="BorderBrush" Value="#7E7BFF" />
+      <Setter Property="Foreground" Value="#E9ECFF" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.launch:pointerover">
+      <Setter Property="Background" Value="#26306B" />
+      <Setter Property="BorderBrush" Value="{StaticResource CyanBrush}" />
+    </Style>
+    <Style Selector="Button.exportGold">
+      <Setter Property="Background" Value="#3A2811" />
+      <Setter Property="BorderBrush" Value="{StaticResource YellowBrush}" />
+      <Setter Property="Foreground" Value="#FFE7A1" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.exportGold:pointerover">
+      <Setter Property="Background" Value="#533B16" />
+      <Setter Property="BorderBrush" Value="#FFF09B" />
+    </Style>
+    <Style Selector="Button.stop">
+      <Setter Property="Background" Value="#351321" />
+      <Setter Property="BorderBrush" Value="{StaticResource RedBrush}" />
+      <Setter Property="Foreground" Value="#FFB2C1" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="Button.stop:pointerover">
+      <Setter Property="Background" Value="#512033" />
+      <Setter Property="BorderBrush" Value="#FF7E98" />
+    </Style>
+    <Style Selector="Button.nav">
+      <Setter Property="Height" Value="50" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+    </Style>
+    <Style Selector="Button.nav:pointerover">
+      <Setter Property="Background" Value="#221838" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+    </Style>
+    <Style Selector="Button.window">
+      <Setter Property="Width" Value="46" />
+      <Setter Property="Height" Value="42" />
+      <Setter Property="CornerRadius" Value="16" />
+      <Setter Property="Background" Value="#171A27" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="#8D93A7" />
+
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button.cyan">
       <Setter Property="BorderBrush" Value="{StaticResource CyanBrush}" />
@@ -62,185 +125,543 @@
       <Setter Property="Foreground" Value="{StaticResource RedBrush}" />
     </Style>
     <Style Selector="TextBox, ComboBox, NumericUpDown">
-      <Setter Property="Background" Value="{StaticResource Surface2Brush}" />
-      <Setter Property="Foreground" Value="{StaticResource TextMainBrush}" />
-      <Setter Property="BorderBrush" Value="#2A304A" />
+      <Setter Property="Background" Value="#1B1E2B" />
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+      <Setter Property="BorderBrush" Value="#34384F" />
       <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="6" />
-      <Setter Property="Height" Value="34" />
+      <Setter Property="CornerRadius" Value="7" />
+      <Setter Property="Height" Value="36" />
+    </Style>
+    <Style Selector="ProgressBar">
+      <Setter Property="Height" Value="6" />
+      <Setter Property="Foreground" Value="{StaticResource PurpleBrush}" />
+      <Setter Property="Background" Value="#252838" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+      <Setter Property="Padding" Value="12,8" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style Selector="TabItem:selected">
+      <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
   </Window.Styles>
 
-  <Grid RowDefinitions="94,*,220" Margin="20">
-    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" RowDefinitions="*,Auto">
-      <StackPanel Grid.Column="0" VerticalAlignment="Center">
-        <TextBlock Text="osu! Agent Studio"
-                   FontSize="28"
-                   FontWeight="SemiBold"
-                   Foreground="{StaticResource TextMainBrush}" />
-        <TextBlock Text="{Binding Title}"
-                   Margin="0,5,0,0"
-                   Foreground="{StaticResource TextMutedBrush}" />
-      </StackPanel>
-
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource CyanBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-          <StackPanel>
-            <TextBlock Text="Agent" Foreground="{StaticResource CyanBrush}" FontSize="12" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding AgentStatus}" />
-          </StackPanel>
-        </Border>
-        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource PinkBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-          <StackPanel>
-            <TextBlock Text="Training" Foreground="{StaticResource PinkBrush}" FontSize="12" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding TrainingStatus}" />
-          </StackPanel>
-        </Border>
-        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource YellowBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8">
-          <StackPanel>
-            <TextBlock Text="Export" Foreground="{StaticResource YellowBrush}" FontSize="12" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding ExportStatus}" />
-          </StackPanel>
-        </Border>
-        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource GreenBrush}" BorderThickness="1" CornerRadius="8" Padding="12,8" MinWidth="170">
-          <StackPanel>
-            <TextBlock Text="Files" Foreground="{StaticResource GreenBrush}" FontSize="12" FontWeight="SemiBold" />
-            <TextBlock Text="{Binding FilesStatus}" />
-          </StackPanel>
-        </Border>
-      </StackPanel>
-    </Grid>
-
-    <TabControl Grid.Row="1"
-                SelectedIndex="{Binding SelectedTabIndex}"
-                Background="{StaticResource BackBrush}"
-                Foreground="{StaticResource TextMainBrush}">
-      <TabItem Header="Play">
-        <Grid ColumnDefinitions="*,*" Margin="0,14,0,0">
-          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
-            <StackPanel>
-              <TextBlock Text="Live Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource CyanBrush}" />
-              <TextBlock Text="Runtime config" Margin="0,18,0,5" Foreground="{StaticResource TextMutedBrush}" />
-              <ComboBox ItemsSource="{Binding Configs}" SelectedItem="{Binding SelectedConfig}" />
-              <Button Content="Launch Agent" Classes="cyan" Command="{Binding LaunchAgentCommand}" />
-              <Button Content="Launch Oracle" Classes="cyan" Command="{Binding LaunchOracleCommand}" />
-              <Button Content="Stop / Kill Agent" Classes="red" Command="{Binding StopAgentCommand}" />
-              <Button Content="Open Live Logs" Classes="blue" Command="{Binding OpenLiveLogsCommand}" />
+  <Grid>
+    <Grid RowDefinitions="102,*,44" Background="{StaticResource BackBrush}">
+      <Grid Grid.Row="0" ColumnDefinitions="360,*,690" PointerPressed="TitleBar_PointerPressed" Background="#090A11">
+        <Grid ColumnDefinitions="76,*" Margin="20,0,0,0">
+          <Image Source="{Binding LogoEllipseImage}" Width="58" Height="58" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <TextBlock Text="{Binding AppName}" FontSize="29" FontWeight="Bold" LetterSpacing="0" />
+              <Border Background="#281647" CornerRadius="5" Padding="7,2" VerticalAlignment="Center">
+                <TextBlock Text="Dev Build" Foreground="{StaticResource PurpleBrush}" FontSize="10" FontWeight="Bold" />
+              </Border>
             </StackPanel>
-          </Border>
-          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
-            <StackPanel>
-              <TextBlock Text="Runtime Notes" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
-              <TextBlock Margin="0,18,0,0"
-                         Foreground="{StaticResource TextMutedBrush}"
-                         Text="Auto map mode resolves the current osu!lazer map after gameplay starts.&#x0a;&#x0a;Pause/stop events are watched from osu!lazer runtime logs, so the controller releases input instead of playing through menus.&#x0a;&#x0a;Sensitivity in osu!lazer should stay at 1.0." />
-            </StackPanel>
-          </Border>
+            <TextBlock Text="{Binding VersionText}" Foreground="{StaticResource PurpleBrush}" FontSize="14" FontWeight="SemiBold" />
+          </StackPanel>
         </Grid>
-      </TabItem>
 
-      <TabItem Header="Training">
-        <Grid ColumnDefinitions="420,*" Margin="0,14,0,0">
-          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
-            <StackPanel>
-              <TextBlock Text="Training Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PinkBrush}" />
-              <TextBlock Text="Updates" Margin="0,14,0,5" Foreground="{StaticResource TextMutedBrush}" />
-              <NumericUpDown Minimum="1" Maximum="100000" Increment="1" Value="{Binding Updates}" />
-              <TextBlock Text="Save every" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
-              <NumericUpDown Minimum="10" Maximum="1000" Increment="1" Value="{Binding SaveEvery}" />
-              <TextBlock Text="Train cursor speed" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
-              <NumericUpDown Minimum="5" Maximum="40" Increment="0.1" FormatString="0.0" Value="{Binding CursorSpeed}" />
-              <TextBlock Text="Learning rate" Margin="0,10,0,5" Foreground="{StaticResource TextMutedBrush}" />
-              <NumericUpDown Minimum="0.000003" Maximum="0.01" Increment="0.00001" FormatString="0.000000" Value="{Binding LearningRate}" />
-              <CheckBox Content="Reset best metric" Margin="0,12,0,4" Foreground="{StaticResource TextMainBrush}" IsChecked="{Binding ResetBest}" />
-              <Button Content="Start Training" Classes="pink" Command="{Binding StartTrainingCommand}" />
-              <Button Content="Stop Training" Classes="red" Command="{Binding StopTrainingCommand}" />
-              <Button Content="Open Checkpoints" Classes="blue" Command="{Binding OpenCheckpointsCommand}" />
-            </StackPanel>
-          </Border>
+        <!-- <Border Grid.Column="1" Width="96" Height="96" HorizontalAlignment="Left" BorderBrush="{StaticResource PurpleBrush}" BorderThickness="1" CornerRadius="13" ClipToBounds="True">
+          <Image Source="{Binding AvatarImage}" Stretch="UniformToFill" />
+        </Border> -->
 
-          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
-            <Grid RowDefinitions="Auto,Auto,*,Auto">
-              <StackPanel>
-                <TextBlock Text="Training Maps" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
-                <TextBlock Text="Maps folder" Margin="0,14,0,5" Foreground="{StaticResource TextMutedBrush}" />
-                <TextBox Text="{Binding MapsFolder}" />
-              </StackPanel>
-              <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,8,0,10">
-                <Button Content="Browse" Classes="blue" Click="BrowseMapsFolder_Click" Margin="0,4,5,4" />
-                <Button Grid.Column="1" Content="Rescan" Classes="cyan" Command="{Binding RescanMapsCommand}" Margin="5,4" />
-                <Button Grid.Column="2" Content="Select All" Classes="green" Command="{Binding SelectAllMapsCommand}" Margin="5,4" />
-                <Button Grid.Column="3" Content="Select None" Classes="yellow" Command="{Binding SelectNoneMapsCommand}" Margin="5,4,0,4" />
+        <Grid Grid.Column="2" ColumnDefinitions="150,270,54,54,54,54" HorizontalAlignment="Right" Margin="0,0,18,0">
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="STATUS" Foreground="{StaticResource DimBrush}" FontSize="20" FontWeight="Bold" />
+            <TextBlock Text="{Binding ShellStatus}" FontSize="18" FontWeight="Bold" Margin="0,8,0,0" />
+          </StackPanel>
+          <Image Grid.Column="1" Source="{Binding ThinkingImage}" Width="260" Height="62" Stretch="Uniform" VerticalAlignment="Center" />
+          <Button Grid.Column="2" Classes="window" ToolTip.Tip="Parameters">
+            <Image Source="{Binding ParametersImage}" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          </Button>
+          <Button Grid.Column="3" Classes="window" Click="Minimize_Click" Content="-" />
+          <Button Grid.Column="4" Classes="window" Click="Maximize_Click" Content="□" />
+          <Button Grid.Column="5" Classes="window" Click="Close_Click" Content="X" />
+        </Grid>
+      </Grid>
+
+      <Grid Grid.Row="1" ColumnDefinitions="360,*" Margin="14,12,14,14">
+        <Border Background="#151722" CornerRadius="11" Padding="20" Margin="0,0,18,0">
+          <Grid RowDefinitions="Auto,*,196">
+            <TextBlock Text="NAVIGATION" Foreground="{StaticResource PurpleBrush}" FontSize="25" FontWeight="Bold" />
+
+            <Border Grid.Row="1" Margin="0,16,0,24" BorderBrush="#363A4D" BorderThickness="1" CornerRadius="10" Padding="14">
+              <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="2">
+                  <Button Classes="nav" Command="{Binding NavigateChatCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavChatIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Chat" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateMemoryCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavMemoryIcon}" Width="42" Height="42" />
+                      <TextBlock Grid.Column="1" Text="Memory" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateEmotionCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavEmotionIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Emotion" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateSkillsCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavSkillsIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Skills" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateAgentsCommand}">
+                    <Grid ColumnDefinitions="64,*,24">
+                      <Image Source="{Binding NavAgentsIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Agents" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                      <TextBlock Grid.Column="2" Text="⌄" FontSize="20" VerticalAlignment="Center" Foreground="{StaticResource PurpleBrush}" />
+                    </Grid>
+                  </Button>
+                  <Border IsVisible="{Binding IsAgentsMenuOpen}" Background="#10111A" BorderBrush="#35204F" BorderThickness="1" CornerRadius="9" Padding="10" Margin="18,0,0,8">
+                    <StackPanel Spacing="6">
+                      <Button Content="osu! Agent" Classes="cyan" Command="{Binding NavigateOsuCommand}" />
+                      <Button Content="Minecraft Agent - soon" Command="{Binding NavigateMinecraftCommand}" />
+                      <Button Content="Desktop Agent - soon" Command="{Binding NavigateDevCommand}" />
+                    </StackPanel>
+                  </Border>
+                  <Button Classes="nav" Command="{Binding NavigateVisionCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavVisionIcon}" Width="48" Height="48" />
+                      <TextBlock Grid.Column="1" Text="Vision" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateVoiceCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavVoiceIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Voice" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateAutonomyCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavAutonomyIcon}" Width="44" Height="44" />
+                      <TextBlock Grid.Column="1" Text="Autonomy" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                  <Button Classes="nav" Command="{Binding NavigateDevCommand}">
+                    <Grid ColumnDefinitions="64,*">
+                      <Image Source="{Binding NavDevIcon}" Width="50" Height="50" />
+                      <TextBlock Grid.Column="1" Text="Dev" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" />
+                    </Grid>
+                  </Button>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+
+            <Border Grid.Row="2" BorderBrush="#363A4D" BorderThickness="1" CornerRadius="10" Padding="18">
+              <Grid ColumnDefinitions="104,*" RowDefinitions="*,Auto">
+                <Border Width="92" Height="92" CornerRadius="46" ClipToBounds="True">
+                  <Image Source="{Binding AvatarImage}" Stretch="UniformToFill" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding CharacterName}" FontSize="28" FontWeight="Bold" />
+                  <TextBlock Text="DIGITAL AI" Foreground="{StaticResource PurpleBrush}" FontSize="13" FontWeight="Bold" />
+                  <TextBlock Text="{Binding VersionText}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,8,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8" Margin="30,14,0,0">
+                  <Ellipse Width="11" Height="11" Fill="#20F741" VerticalAlignment="Center" />
+                  <TextBlock Text="Online" Foreground="{StaticResource MutedBrush}" FontSize="17" FontWeight="SemiBold" />
+                </StackPanel>
               </Grid>
-              <ListBox Grid.Row="2"
-                       ItemsSource="{Binding Maps}"
-                       Background="#03050A"
-                       BorderBrush="#2A304A"
-                       BorderThickness="1"
-                       Foreground="{StaticResource TextMainBrush}">
-                <ListBox.ItemTemplate>
-                  <DataTemplate>
-                    <CheckBox IsChecked="{Binding IsSelected}" Content="{Binding DisplayName}" Foreground="{StaticResource TextMainBrush}" />
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-              <TextBlock Grid.Row="3" Text="{Binding MapsStatus}" Margin="0,10,0,0" Foreground="{StaticResource TextMutedBrush}" />
+            </Border>
+          </Grid>
+        </Border>
+
+        <Grid Grid.Column="1">
+          <Grid IsVisible="{Binding IsOsuAgentVisible}" RowDefinitions="*,290">
+            <Border Background="#181B27" BorderBrush="#272B3E" BorderThickness="1" CornerRadius="11" Padding="18">
+              <Grid RowDefinitions="62,*">
+                <Border Background="#202437" CornerRadius="10" Padding="22,0">
+                  <Grid ColumnDefinitions="*,280,Auto" ColumnSpacing="14">
+                    <TextBlock Text="OSU AGENT" Foreground="{StaticResource PurpleBrush}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" />
+                    <Border Grid.Column="1" Background="#171224" BorderBrush="{StaticResource PurpleBrush}" BorderThickness="1" CornerRadius="10" Padding="10,7" VerticalAlignment="Center">
+                      <Grid ColumnDefinitions="42,*">
+                        <Border Width="34" Height="34" CornerRadius="17" ClipToBounds="True" VerticalAlignment="Center">
+                          <Image Source="{Binding AvatarImage}" Stretch="UniformToFill" />
+                        </Border>
+                        <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                          <TextBlock Text="LiraAi monitor" Foreground="{StaticResource PurpleBrush}" FontSize="12" FontWeight="Bold" />
+                          <TextBlock Text="{Binding AgentReactionText}" Foreground="#C7CBE1" FontSize="12" TextWrapping="Wrap" MaxHeight="34" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                      <Border Background="#101829" BorderBrush="{StaticResource CyanBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                        <TextBlock Text="{Binding AgentStatus, StringFormat='Agent  {0}'}" />
+                      </Border>
+                      <Border Background="#211127" BorderBrush="{StaticResource PinkBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                        <TextBlock Text="{Binding TrainingStatus, StringFormat='Training  {0}'}" />
+                      </Border>
+                      <Border Background="#251C10" BorderBrush="{StaticResource YellowBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                        <TextBlock Text="{Binding ExportStatus, StringFormat='Export  {0}'}" />
+                      </Border>
+                      <Border Background="#10231C" BorderBrush="{StaticResource GreenBrush}" BorderThickness="1" CornerRadius="8" Padding="10,7">
+                        <TextBlock Text="{Binding FilesStatus}" />
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+
+                <TabControl Grid.Row="1"
+                            SelectedIndex="{Binding SelectedTabIndex}"
+                            Background="Transparent"
+                            Foreground="{StaticResource InkBrush}"
+                            Margin="0,14,0,0">
+                  <TabItem Header="Play">
+                    <Grid ColumnDefinitions="*,*" Margin="0,12,0,0">
+                      <Border Background="#181B28" BorderBrush="#3C4261" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+                        <StackPanel>
+                          <TextBlock Text="Live Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource CyanBrush}" />
+                          <TextBlock Text="Runtime config" Margin="0,18,0,5" Foreground="{StaticResource MutedBrush}" />
+                          <ComboBox ItemsSource="{Binding Configs}" SelectedItem="{Binding SelectedConfig}" />
+                          <Button Content="Launch Agent" Classes="cyan launch" Command="{Binding LaunchAgentCommand}" Margin="0,10,0,0" />
+                          <Button Content="Launch Oracle" Classes="cyan launch" Command="{Binding LaunchOracleCommand}" Margin="0,8,0,0" />
+                          <Button Content="Stop / Kill Agent" Classes="red stop" Command="{Binding StopAgentCommand}" Margin="0,8,0,0" />
+                          <Button Content="Open Live Logs" Classes="blue" Command="{Binding OpenLiveLogsCommand}" Margin="0,8,0,0" />
+                        </StackPanel>
+                      </Border>
+                      <Border Grid.Column="1" Background="#121520" BorderBrush="#292D41" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Runtime Notes" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
+                          <TextBlock Margin="0,18,0,0" Foreground="{StaticResource MutedBrush}" Text="Auto map mode resolves the current osu!lazer map after gameplay starts.&#x0a;&#x0a;Pause/stop events are watched from osu!lazer runtime logs, so the controller releases input instead of playing through menus.&#x0a;&#x0a;Sensitivity in osu!lazer should stay at 1.0." />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </TabItem>
+
+                  <TabItem Header="Training">
+                    <Grid ColumnDefinitions="390,*" Margin="0,12,0,0">
+                      <Border Background="#181B28" BorderBrush="#3C4261" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                          <StackPanel MinHeight="500" Margin="0,0,10,0">
+                            <TextBlock Text="Training Control" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PinkBrush}" />
+                            <TextBlock Text="Updates" Margin="0,14,0,5" Foreground="{StaticResource MutedBrush}" />
+                            <NumericUpDown Minimum="1" Maximum="100000" Increment="1" Value="{Binding Updates}" />
+                            <TextBlock Text="Save every" Margin="0,10,0,5" Foreground="{StaticResource MutedBrush}" />
+                            <NumericUpDown Minimum="10" Maximum="1000" Increment="1" Value="{Binding SaveEvery}" />
+                            <TextBlock Text="Train cursor speed" Margin="0,10,0,5" Foreground="{StaticResource MutedBrush}" />
+                            <NumericUpDown Minimum="5" Maximum="40" Increment="0.1" FormatString="0.0" Value="{Binding CursorSpeed}" />
+                            <TextBlock Text="Learning rate" Margin="0,10,0,5" Foreground="{StaticResource MutedBrush}" />
+                            <NumericUpDown Minimum="0.000003" Maximum="0.01" Increment="0.00001" FormatString="0.000000" Value="{Binding LearningRate}" />
+                            <CheckBox Content="Reset best metric" Margin="0,12,0,4" Foreground="{StaticResource InkBrush}" IsChecked="{Binding ResetBest}" />
+                            <Button Content="Start Training" Classes="pink launch" Command="{Binding StartTrainingCommand}" IsEnabled="{Binding IsTrainingAvailable}" Margin="0,12,0,0" />
+                            <Button Content="Stop Training" Classes="red stop" Command="{Binding StopTrainingCommand}" Margin="0,8,0,0" />
+                            <Button Content="Open Checkpoints" Classes="blue" Command="{Binding OpenCheckpointsCommand}" Margin="0,8,0,0" />
+                          </StackPanel>
+                        </ScrollViewer>
+                      </Border>
+
+                      <Border Grid.Column="1" Background="#151722" BorderBrush="#303348" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+                        <Grid RowDefinitions="Auto,Auto,*,Auto">
+                          <StackPanel>
+                            <TextBlock Text="Training Maps" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
+                            <TextBlock Text="Maps folder" Margin="0,14,0,5" Foreground="{StaticResource MutedBrush}" />
+                            <TextBox Text="{Binding MapsFolder}" />
+                          </StackPanel>
+                          <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" Margin="0,8,0,10">
+                            <Button Content="Browse" Classes="blue" Click="BrowseMapsFolder_Click" Margin="0,4,5,4" />
+                            <Button Grid.Column="1" Content="Rescan" Classes="cyan" Command="{Binding RescanMapsCommand}" Margin="5,4" />
+                            <Button Grid.Column="2" Content="Select All" Classes="green" Command="{Binding SelectAllMapsCommand}" Margin="5,4" />
+                            <Button Grid.Column="3" Content="Select None" Classes="yellow" Command="{Binding SelectNoneMapsCommand}" Margin="5,4,0,4" />
+                          </Grid>
+                          <ListBox Grid.Row="2" ItemsSource="{Binding Maps}" Background="#03050A" BorderBrush="#303348" BorderThickness="1" Foreground="{StaticResource InkBrush}">
+                            <ListBox.ItemTemplate>
+                              <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding DisplayName}" Foreground="{StaticResource InkBrush}" />
+                              </DataTemplate>
+                            </ListBox.ItemTemplate>
+                          </ListBox>
+                          <TextBlock Grid.Row="3" Text="{Binding MapsStatus}" Margin="0,10,0,0" Foreground="{StaticResource MutedBrush}" />
+                        </Grid>
+                      </Border>
+                    </Grid>
+                  </TabItem>
+
+                  <TabItem Header="Export">
+                    <Grid ColumnDefinitions="*,*" Margin="0,12,0,0">
+                      <Border Background="#181B28" BorderBrush="#3C4261" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
+                        <StackPanel>
+                          <TextBlock Text="Export ONNX" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource YellowBrush}" />
+                          <Button Content="Export Latest" Classes="yellow exportGold" Command="{Binding ExportLatestCommand}" IsEnabled="{Binding IsExportAvailable}" Margin="0,20,0,4" />
+                          <Button Content="Export Best" Classes="yellow exportGold" Command="{Binding ExportBestCommand}" Margin="0,8,0,0" IsEnabled="{Binding IsExportAvailable}" />
+                          <Button Content="Open ONNX Folder" Classes="blue" Command="{Binding OpenOnnxFolderCommand}" Margin="0,8,0,0" />
+                          <Button Content="Refresh Status" Classes="cyan" Command="{Binding RefreshStatusCommand}" Margin="0,8,0,0" />
+                        </StackPanel>
+                      </Border>
+                      <Border Grid.Column="1" Background="#151722" BorderBrush="#303348" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
+                        <StackPanel>
+                          <TextBlock Text="Checkpoint Flow" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
+                          <TextBlock Margin="0,18,0,0" Foreground="{StaticResource MutedBrush}" Text="Use Export Latest when you want to test what is currently learning.&#x0a;&#x0a;Use Export Best when the cycle score actually improved.&#x0a;&#x0a;Export writes to artifacts/exports/onnx/lazer_transfer_generalization.onnx - the file used by runtime.onnx.live_play.agent_observed.gu.json (Launch Agent)." />
+                        </StackPanel>
+                      </Border>
+                    </Grid>
+                  </TabItem>
+
+                  <TabItem Header="Files">
+                    <Border Background="#151722" BorderBrush="#303348" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,12,0,0">
+                      <StackPanel Width="420" HorizontalAlignment="Left">
+                        <TextBlock Text="Project Shortcuts" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
+                        <Button Content="Open Maps Folder" Classes="cyan" Command="{Binding OpenMapsFolderCommand}" Margin="0,20,0,4" />
+                        <Button Content="Open Checkpoints" Classes="pink" Command="{Binding OpenCheckpointsCommand}" Margin="0,8,0,0" />
+                        <Button Content="Open ONNX Folder" Classes="yellow" Command="{Binding OpenOnnxFolderCommand}" Margin="0,8,0,0" />
+                        <Button Content="Open Controller Configs" Classes="blue" Command="{Binding OpenConfigsCommand}" Margin="0,8,0,0" />
+                        <Button Content="Open Studio Logs" Classes="green" Command="{Binding OpenStudioLogsCommand}" Margin="0,8,0,0" />
+                      </StackPanel>
+                    </Border>
+                  </TabItem>
+                </TabControl>
+              </Grid>
+            </Border>
+
+            <Border Grid.Row="1" Background="#151722" BorderBrush="#343A58" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,16,0,0">
+              <Grid RowDefinitions="42,*">
+                <Grid ColumnDefinitions="*,Auto,150" ColumnSpacing="14">
+                  <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <TextBlock Text="Console" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Text="LIVE _" Foreground="{StaticResource GreenBrush}" FontFamily="Cascadia Mono" FontSize="13" FontWeight="Bold" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" Text="smart follow" Foreground="{StaticResource DimBrush}" FontSize="12" VerticalAlignment="Center" />
+                  <Button Grid.Column="2" Content="Clear Console" Command="{Binding ClearConsoleCommand}" />
+                </Grid>
+                <ListBox x:Name="ConsoleList" Grid.Row="1" ItemsSource="{Binding Logs}" Background="#03050A" BorderThickness="0" Foreground="#D6E2F4" FontFamily="Cascadia Mono" FontSize="13">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Foreground="{Binding Brush}" FontFamily="Cascadia Mono" FontSize="13" TextWrapping="NoWrap" Margin="0,2">
+                        <Run Text="{Binding Prefix}" />
+                        <Run Text="{Binding RewardText}" Foreground="#7CFFB2" FontWeight="Bold" />
+                        <Run Text="{Binding BetweenRewardAndMiss}" />
+                        <Run Text="{Binding MissText}" Foreground="#FF6A82" FontWeight="Bold" />
+                        <Run Text="{Binding Suffix}" />
+                      </TextBlock>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </Grid>
+            </Border>
+          </Grid>
+
+          <Grid IsVisible="{Binding IsChatVisible}" ColumnDefinitions="*,500">
+            <Border Background="{StaticResource PanelBrush}" CornerRadius="11" Padding="16" Margin="0,0,18,0">
+              <Grid RowDefinitions="62,*,108">
+                <Border Background="#1A1D2A" CornerRadius="10" Padding="26,0">
+                  <TextBlock Text="CHAT" Foreground="{StaticResource PurpleBrush}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" />
+                </Border>
+                <Border Grid.Row="1" Background="#12141F" CornerRadius="10" Margin="0,12,0,12" />
+                <Border Grid.Row="2" Background="#151722" CornerRadius="18" Padding="14">
+                  <Grid ColumnDefinitions="*,188,48,48" ColumnSpacing="10">
+                    <TextBox PlaceholderText="Напиши что-нибудь..." FontSize="19" Height="72" VerticalContentAlignment="Center" />
+                    <Button Grid.Column="1" Classes="pink" Height="56" VerticalAlignment="Center">
+                      <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                        <TextBlock Text="Отправить" FontSize="20" FontWeight="Bold" />
+                        <Image Source="{Binding SendImage}" Width="32" Height="32" />
+                      </StackPanel>
+                    </Button>
+                    <Button Grid.Column="2" Height="48" Width="48" VerticalAlignment="Center">
+                      <Image Source="{Binding MicroImage}" Width="26" Height="26" />
+                    </Button>
+                    <Button Grid.Column="3" Height="48" Width="48" VerticalAlignment="Center">
+                      <Image Source="{Binding PreferencesImage}" Width="26" Height="26" />
+                    </Button>
+                  </Grid>
+                </Border>
+              </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="#151722" CornerRadius="11" Padding="26">
+              <ScrollViewer>
+                <StackPanel Spacing="32">
+                  <TextBlock Text="STATE" Foreground="{StaticResource PurpleBrush}" FontSize="25" FontWeight="Bold" />
+                  <Border BorderBrush="#4A4E60" BorderThickness="1" CornerRadius="10" Padding="12">
+                    <StackPanel Spacing="12">
+                      <TextBlock Text="MOOD" Foreground="#B7A7CB" FontSize="18" FontWeight="Bold" />
+                      <Grid ColumnDefinitions="68,*">
+                        <Image Source="{Binding MoodImage}" Width="60" Height="60" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                          <TextBlock Text="ИГРИВАЯ" Foreground="{StaticResource PurpleBrush}" FontSize="19" FontWeight="Bold" />
+                          <TextBlock Text="Легкое настроение, хочет играть" Foreground="#B7A7CB" FontSize="14" FontWeight="SemiBold" />
+                        </StackPanel>
+                      </Grid>
+                      <Grid ColumnDefinitions="80,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                        <TextBlock Text="Energy" FontWeight="Bold" />
+                        <ProgressBar Grid.Column="1" Value="72" Maximum="100" />
+                        <TextBlock Grid.Row="1" Text="Curiosity" FontWeight="Bold" />
+                        <ProgressBar Grid.Row="1" Grid.Column="1" Value="71" Maximum="100" />
+                        <TextBlock Grid.Row="2" Text="Irritation" FontWeight="Bold" />
+                        <ProgressBar Grid.Row="2" Grid.Column="1" Value="13" Maximum="100" Foreground="{StaticResource YellowBrush}" />
+                      </Grid>
+                      <TextBlock Text="SCENE" Foreground="#B7A7CB" FontSize="18" FontWeight="Bold" />
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Border Background="#5A4692" CornerRadius="9" Padding="10,6"><TextBlock Text="Игривая" FontWeight="Bold" /></Border>
+                        <Border Background="#5A4692" CornerRadius="9" Padding="10,6"><TextBlock Text="Шутливая" FontWeight="Bold" /></Border>
+                      </StackPanel>
+                      <TextBlock Text="BIAS" Foreground="#B7A7CB" FontSize="18" FontWeight="Bold" />
+                      <StackPanel Orientation="Horizontal" Spacing="18">
+                        <Border Background="#6A2D37" CornerRadius="9" Padding="14,8"><TextBlock Text="Сарказм ↑" Foreground="#FF6060" FontWeight="Bold" /></Border>
+                        <Border Background="#332E70" CornerRadius="9" Padding="14,8"><TextBlock Text="Сарказм ↑" Foreground="#6B63FF" FontWeight="Bold" /></Border>
+                        <Border Background="#63266A" CornerRadius="9" Padding="14,8"><TextBlock Text="Дразнит ↑" Foreground="#FF6AE8" FontWeight="Bold" /></Border>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+
+                  <Border BorderBrush="#4A4E60" BorderThickness="1" CornerRadius="10" Padding="12">
+                    <StackPanel Spacing="18">
+                      <TextBlock Text="ACTIVE SKILLS" Foreground="#B7A7CB" FontSize="18" FontWeight="Bold" />
+                      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="18">
+                        <StackPanel HorizontalAlignment="Center" Spacing="8">
+                            <Image Source="{Binding SkillMemoryIcon}" Width="72" Height="72" />
+                            
+                            <TextBlock Text="Память"
+                                      Foreground="{StaticResource MutedBrush}"
+                                      FontWeight="Bold"
+                                      TextAlignment="Center" />
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="1" HorizontalAlignment="Center" Spacing="8">
+                            <Image Source="{Binding SkillEmotionIcon}" Width="72" Height="72" />
+                            
+                            <TextBlock Text="Эмоции" 
+                                        Foreground="{StaticResource MutedBrush}" 
+                                        FontWeight="Bold" 
+                                        TextAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="2" HorizontalAlignment="Center" Spacing="8">
+                            <Image Source="{Binding SkillVisionIcon}" Width="72" Height="72" />
+                            
+                            <TextBlock Text="Глаза" 
+                                        Foreground="{StaticResource MutedBrush}" 
+                                        FontWeight="Bold" 
+                                        TextAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Column="3" HorizontalAlignment="Center" Spacing="8">
+                            <Image Source="{Binding SkillChatIcon}" Width="72" Height="72" />
+                            
+                            <TextBlock Text="Chat" 
+                                        Foreground="{StaticResource MutedBrush}" 
+                                        FontWeight="Bold" 
+                                        TextAlignment="Center"/>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+
+                  <Border BorderBrush="#4A4E60" BorderThickness="1" CornerRadius="10" Padding="12">
+                    <StackPanel Spacing="14">
+                      <TextBlock Text="LAST EVENTS" Foreground="#B7A7CB" FontSize="18" FontWeight="Bold" />
+                      <TextBlock Text="23:40  Ты запустил OSU!" FontWeight="Bold" />
+                      <TextBlock Text="23:38  Шутка про Play Style" FontWeight="Bold" />
+                      <TextBlock Text="23:35  Ты спросил, видит ли она экран" FontWeight="Bold" />
+                      <Button Content="Показать больше!" />
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+              </ScrollViewer>
+            </Border>
+          </Grid>
+
+          <Border IsVisible="{Binding IsPlaceholderVisible}" Background="{StaticResource PanelBrush}" CornerRadius="11" Padding="32">
+            <Grid RowDefinitions="62,*">
+              <Border Background="#1A1D2A" CornerRadius="10" Padding="26,0">
+                <TextBlock Text="{Binding ModuleTitle}" Foreground="{StaticResource PurpleBrush}" FontSize="24" FontWeight="Bold" VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="16">
+                <TextBlock Text="SOON" Foreground="{StaticResource PurpleBrush}" FontSize="58" FontWeight="Bold" HorizontalAlignment="Center" />
+                <TextBlock Text="{Binding PlaceholderText}" Foreground="{StaticResource MutedBrush}" FontSize="20" MaxWidth="560" TextAlignment="Center" />
+                <Button Content="Back to osu! Agent" Classes="cyan" Command="{Binding NavigateOsuCommand}" Width="220" />
+              </StackPanel>
             </Grid>
           </Border>
         </Grid>
-      </TabItem>
-
-      <TabItem Header="Export">
-        <Grid ColumnDefinitions="*,*" Margin="0,14,0,0">
-          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,0,10,0">
-            <StackPanel>
-              <TextBlock Text="Export ONNX" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource YellowBrush}" />
-              <Button Content="Export Latest" Classes="yellow" Command="{Binding ExportLatestCommand}" Margin="0,20,0,4" />
-              <Button Content="Export Best" Classes="green" Command="{Binding ExportBestCommand}" />
-              <Button Content="Open ONNX Folder" Classes="blue" Command="{Binding OpenOnnxFolderCommand}" />
-              <Button Content="Refresh Status" Classes="cyan" Command="{Binding RefreshStatusCommand}" />
-            </StackPanel>
-          </Border>
-          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="10,0,0,0">
-            <StackPanel>
-              <TextBlock Text="Checkpoint Flow" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource GreenBrush}" />
-              <TextBlock Margin="0,18,0,0"
-                         Foreground="{StaticResource TextMutedBrush}"
-                         Text="Use Export Latest when you want to test what is currently learning.&#x0a;&#x0a;Use Export Best when the cycle score actually improved.&#x0a;&#x0a;Export writes to artifacts/exports/onnx/lazer_transfer_generalization.onnx - the file used by runtime.onnx.live_play.agent_observed.gu.json (Launch Agent)." />
-            </StackPanel>
-          </Border>
-        </Grid>
-      </TabItem>
-
-      <TabItem Header="Files">
-        <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="18" Margin="0,14,0,0">
-          <StackPanel Width="420" HorizontalAlignment="Left">
-            <TextBlock Text="Project Shortcuts" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource BlueBrush}" />
-            <Button Content="Open Maps Folder" Classes="cyan" Command="{Binding OpenMapsFolderCommand}" Margin="0,20,0,4" />
-            <Button Content="Open Checkpoints" Classes="pink" Command="{Binding OpenCheckpointsCommand}" />
-            <Button Content="Open ONNX Folder" Classes="yellow" Command="{Binding OpenOnnxFolderCommand}" />
-            <Button Content="Open Controller Configs" Classes="blue" Command="{Binding OpenConfigsCommand}" />
-            <Button Content="Open Studio Logs" Classes="green" Command="{Binding OpenStudioLogsCommand}" />
-          </StackPanel>
-        </Border>
-      </TabItem>
-    </TabControl>
-
-    <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}" BorderBrush="#2A304A" BorderThickness="1" CornerRadius="10" Padding="16" Margin="0,16,0,0">
-      <Grid RowDefinitions="42,*">
-        <Grid ColumnDefinitions="*,150">
-          <TextBlock Text="Console" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
-          <Button Grid.Column="1" Content="Clear Console" Command="{Binding ClearConsoleCommand}" />
-        </Grid>
-        <ListBox x:Name="ConsoleList"
-                 Grid.Row="1"
-                 ItemsSource="{Binding Logs}"
-                 Background="#03050A"
-                 BorderThickness="0"
-                 Foreground="#D6E2F4"
-                 FontFamily="Cascadia Mono"
-                 FontSize="13" />
       </Grid>
-    </Border>
-  </Grid>
+
+      <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Background="#0E0F16" Margin="0" VerticalAlignment="Stretch">
+        <StackPanel Orientation="Horizontal" Spacing="28" VerticalAlignment="Center" Margin="14,0,0,0">
+          <TextBlock Text="SYSTEM" Foreground="{StaticResource PurpleBrush}" FontSize="20" FontWeight="Bold" />
+          <TextBlock Text="CPU" Foreground="{StaticResource MutedBrush}" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="12%" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="RAM" Foreground="{StaticResource MutedBrush}" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="4.1/16 GB" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="VRAM" Foreground="{StaticResource MutedBrush}" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="10/12 GB" FontSize="18" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" Margin="0,0,60,0">
+          <TextBlock Text="MODE" Foreground="{StaticResource PurpleBrush}" FontSize="20" FontWeight="Bold" />
+          <TextBlock Text="{Binding ModuleTitle}" FontSize="18" FontWeight="Bold" />
+        </StackPanel>
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="28" VerticalAlignment="Center" Margin="0,0,20,0">
+          <TextBlock Text="UPTIME" Foreground="{StaticResource PurpleBrush}" FontSize="20" FontWeight="Bold" />
+          <TextBlock Text="12:20:30" FontSize="18" FontWeight="Bold" />
+          <TextBlock Text="FPS" Foreground="{StaticResource PurpleBrush}" FontSize="20" FontWeight="Bold" />
+          <TextBlock Text="1000" FontSize="18" FontWeight="Bold" />
+        </StackPanel>
+      </Grid>
+    </Grid>
+
+    <Grid x:Name="WelcomeOverlay"
+          IsVisible="{Binding IsWelcomeVisible}"
+          Opacity="1"
+          Background="#080910">
+      <Image x:Name="WelcomeBackground"
+            Source="{Binding WelcomeBackgroundImage}"
+            Stretch="UniformToFill"
+            Opacity="0" />
+
+      <Rectangle x:Name="WelcomeDim"
+                Fill="#A8000000"
+                Opacity="0" />
+      <Rectangle Fill="#A8000000" />
+      <Border x:Name="WelcomeCard"
+              Width="760"
+              MaxWidth="760"
+              Opacity="0"
+        HorizontalAlignment="Center" 
+        VerticalAlignment="Center" 
+        Background="#D010111A" 
+        BorderBrush="{StaticResource PurpleBrush}" 
+        BorderThickness="1" 
+        CornerRadius="22" 
+        Padding="42">
+        <StackPanel Spacing="18">
+          <TextBlock x:Name="WelcomeTitleText"
+                    Text="{Binding WelcomeTitle}"
+                    Opacity="0"
+                    FontSize="44"
+                    FontWeight="Bold"
+                    TextAlignment="Center" />
+
+          <TextBlock x:Name="WelcomeBodyText"
+                    Text="{Binding WelcomeText}"
+                    Opacity="0"
+                    Foreground="#D6D1E2"
+                    FontSize="20"
+                    TextAlignment="Center" />
+
+          <Button x:Name="WelcomeStartButton"
+                  Content="Начать работу"
+                  Opacity="0"
+                  Click="StartWork_Click"
+                  Classes="pink"
+                  Width="220"
+                  Height="54"
+                  HorizontalAlignment="Center"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  FontSize="18"
+                  FontWeight="Bold"
+                  Margin="0,18,0,0" />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid> 
 </Window>

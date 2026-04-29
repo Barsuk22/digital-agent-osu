@@ -12,9 +12,7 @@ namespace OsuAgentStudio;
 public sealed class MainForm : Form
 {
     private readonly StudioState _state;
-    private readonly ManagedProcess _controller = new();
-    private readonly ManagedProcess _training = new();
-    private readonly ManagedProcess _export = new();
+    private readonly StudioService _studio = new();
 
     private readonly TextBox _log = new();
     private readonly Queue<string> _visibleLogLines = new();
@@ -99,9 +97,7 @@ public sealed class MainForm : Form
 
         _mapsFolder.Text = string.IsNullOrWhiteSpace(_state.MapsFolder) ? StudioPaths.MapsDir : _state.MapsFolder;
 
-        WireProcess(_controller, _agentChip, "Agent");
-        WireProcess(_training, _trainChip, "Training");
-        WireProcess(_export, _exportChip, "Export");
+        WireStudioService();
 
         BuildUi();
         SetupLogQueue();
@@ -197,9 +193,7 @@ public sealed class MainForm : Form
 
         try { _logFlushTimer.Stop(); } catch { }
         SaveUiState();
-        StopControllerProcesses();
-        _training.Stop("training");
-        _export.Stop("export");
+        _studio.Shutdown();
 
         base.OnFormClosing(e);
     }
@@ -1445,7 +1439,7 @@ public sealed class MainForm : Form
         var startTrain = Button("Start Training", Pink, (_, _) => StartTraining());
         startTrain.Enabled = canTrain;
         actions.Controls.Add(startTrain, 0, 0);
-        actions.Controls.Add(Button("Stop Training", Red, (_, _) => _training.Stop("training")), 1, 0);
+        actions.Controls.Add(Button("Stop Training", Red, (_, _) => _studio.StopTraining()), 1, 0);
         actions.Controls.Add(Button("Open Checkpoints", Blue, (_, _) => OpenPath(StudioPaths.CheckpointsDir)), 2, 0);
         layout.Controls.Add(actions, 0, 4);
         return scroll;
@@ -1518,7 +1512,7 @@ public sealed class MainForm : Form
             var startTrain = Button("Start Training", Pink, (_, _) => StartTraining());
             startTrain.Enabled = canTrain;
             body.Controls.Add(startTrain, 0, 5);
-            var stopTrain = Button("Stop Training", Red, (_, _) => _training.Stop("training"));
+            var stopTrain = Button("Stop Training", Red, (_, _) => _studio.StopTraining());
             body.Controls.Add(stopTrain, 0, 6);
             body.Controls.Add(Button("Open Checkpoints", Blue, (_, _) => OpenPath(StudioPaths.CheckpointsDir)), 0, 7);
         }
@@ -1592,7 +1586,7 @@ public sealed class MainForm : Form
         var body = Stack(7);
         var exLatest = Button("Export Latest", Yellow, (_, _) => ExportCheckpoint(StudioPaths.LatestCheckpoint));
         exLatest.Enabled = canExport;
-        var exBest = Button("Export Best", Green, (_, _) => ExportCheckpoint(StudioPaths.BestCheckpoint));
+        var exBest = Button("Export Best", Green, (_, _) => ExportCheckpoint(StudioPaths.ExportBestCheckpoint));
         exBest.Enabled = canExport;
         body.Controls.Add(exLatest, 0, 0);
         body.Controls.Add(exBest, 0, 1);
@@ -1711,28 +1705,12 @@ public sealed class MainForm : Form
 
     private void StartController(string configPath)
     {
-        if (!File.Exists(configPath))
-        {
-            AppendLog($"Config not found: {configPath}");
-            return;
-        }
-
-        StopOrphanedControllerProcesses();
-        var launcher = StudioPaths.ResolveControllerLaunchPath();
-        if (string.Equals(launcher, "dotnet", StringComparison.OrdinalIgnoreCase))
-        {
-            _controller.Start("agent", "dotnet", new[] { "run", "--project", StudioPaths.ControllerProject, "--", configPath }, StudioPaths.ProjectRoot);
-            return;
-        }
-
-        var workingDir = Path.GetDirectoryName(launcher) ?? StudioPaths.ProjectRoot;
-        _controller.Start("agent", launcher, new[] { configPath }, workingDir);
+        _studio.StartController(configPath);
     }
 
     private void StopControllerProcesses()
     {
-        _controller.Stop("agent");
-        StopOrphanedControllerProcesses();
+        _studio.StopControllerProcesses();
         RefreshStatus();
     }
 
@@ -1774,59 +1752,19 @@ public sealed class MainForm : Form
             return;
         }
        
-        var args = new List<string>
-        {
-            "-m", "src.apps.train_osu_lazer_transfer",
-            "--run-name", StudioPaths.PrecisionRunName,
-            "--source-checkpoint",
-            Path.Combine(
-                StudioPaths.ProjectRoot,
-                "artifacts", "runs",
-                "osu_lazer_transfer_problem_normals_v1",
-                "checkpoints",
-                "best_lazer_transfer.pt"
-            ),
-            "--profile", "precision_spinner",
-            "--resume-latest",
-            "--updates", ((int)_updates.Value).ToString(),
-            "--save-every", ((int)_saveEvery.Value).ToString(),
-            "--cursor-speed", _cursorSpeed.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "--learning-rate", _learningRate.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            "--maps-dir", _mapsFolder.Text,
-        };
-        foreach (var map in selectedMaps)
-        {
-            args.Add("--map");
-            args.Add(map);
-        }
-        if (_resetBest.Checked)
-        {
-            args.Add("--reset-best");
-        }
-
-        args.Insert(0, "-u");
-        _training.Start("training", "python", args, StudioPaths.ProjectRoot);
+        _studio.StartTraining(new TrainingOptions(
+            (int)_updates.Value,
+            (int)_saveEvery.Value,
+            _cursorSpeed.Value,
+            _learningRate.Value,
+            _resetBest.Checked,
+            _mapsFolder.Text,
+            selectedMaps));
     }
 
     private void ExportCheckpoint(string checkpoint)
     {
-        if (!StudioPaths.IsExportFromSourceAvailable())
-        {
-            AppendLog("ONNX export needs Python project (src/apps/export_osu_policy_onnx). Not in test-only bundle.");
-            return;
-        }
-
-        if (!File.Exists(checkpoint))
-        {
-            AppendLog($"Checkpoint not found: {checkpoint}");
-            return;
-        }
-
-        _export.Start(
-            "export",
-            "python",
-            new[] { "-m", "src.apps.export_osu_policy_onnx", "--checkpoint", checkpoint, "--out", StudioPaths.OnnxOutput },
-            StudioPaths.ProjectRoot);
+        _studio.ExportCheckpoint(checkpoint);
     }
 
     private void BrowseMapsFolder()
@@ -1934,11 +1872,46 @@ public sealed class MainForm : Form
     private void RefreshStatus()
     {
         RefreshConfigList();
-        SetChip(_agentChip, _controller.IsRunning ? "Running" : "Idle");
-        SetChip(_trainChip, _training.IsRunning ? "Running" : "Idle");
-        SetChip(_exportChip, _export.IsRunning ? "Running" : "Idle");
+        SetChip(_agentChip, _studio.IsControllerRunning ? "Running" : "Idle");
+        SetChip(_trainChip, _studio.IsTrainingRunning ? "Running" : "Idle");
+        SetChip(_exportChip, _studio.IsExportRunning ? "Running" : "Idle");
         RefreshFileStatusOnly();
         AppendLog("Status refreshed.");
+    }
+
+    private void WireStudioService()
+    {
+        _studio.LogReceived += AppendLog;
+
+        _studio.StatusChanged += (key, value) =>
+        {
+            if (_isClosing || IsDisposed || Disposing || !IsHandleCreated)
+                return;
+
+            try
+            {
+                BeginInvoke(() =>
+                {
+                    if (_isClosing)
+                        return;
+
+                    switch (key)
+                    {
+                        case "agent" when !_agentChip.IsDisposed:
+                            SetChip(_agentChip, value);
+                            break;
+                        case "training" when !_trainChip.IsDisposed:
+                            SetChip(_trainChip, value);
+                            break;
+                        case "export" when !_exportChip.IsDisposed:
+                            SetChip(_exportChip, value);
+                            break;
+                    }
+                });
+            }
+            catch (ObjectDisposedException) { }
+            catch (InvalidOperationException) { }
+        };
     }
 
     private void WireProcess(ManagedProcess process, Label chip, string label)
@@ -2054,7 +2027,11 @@ public sealed class MainForm : Form
     private void RefreshFileStatusOnly()
     {
         var latest = File.Exists(StudioPaths.LatestCheckpoint) ? File.GetLastWriteTime(StudioPaths.LatestCheckpoint).ToString("HH:mm") : "missing";
-        var best = File.Exists(StudioPaths.BestCheckpoint) ? File.GetLastWriteTime(StudioPaths.BestCheckpoint).ToString("HH:mm") : "missing";
+        var best = File.Exists(StudioPaths.BestCheckpoint)
+            ? File.GetLastWriteTime(StudioPaths.BestCheckpoint).ToString("HH:mm")
+            : File.Exists(StudioPaths.SourceBestCheckpoint)
+                ? $"source {File.GetLastWriteTime(StudioPaths.SourceBestCheckpoint):HH:mm}"
+                : "missing";
         SetChip(_filesChip, $"latest {latest} / best {best}");
     }
 

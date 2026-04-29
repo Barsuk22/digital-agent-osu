@@ -19,21 +19,47 @@ EXCLUDED_DIR_NAMES = {
     "venv",
     "__pycache__",
     "node_modules",
+
+    # build мусор
     "dist",
     "build",
-    "site-packages",
+    "bin",
+    "obj",
+    "release",
+    "publish",
+    "publish_test",
+
+    # тяжёлые данные
     "data",
     "artifacts",
-    "docs",
     "exports",
+    "docs",
     "projectDocs",
+    "notebooks",
+
+    # локальное окружение
     ".dotnet_home",
+    "AppImage",
+
+    # если экспортируешь только Python-ядро, можно временно выкинуть external
+    # "external",
 }
 
 # Какие отдельные файлы не надо брать
 EXCLUDED_FILE_NAMES = {
     ".DS_Store",
     "Thumbs.db",
+
+    "studio_runtime.log",
+    "skill_memory.sqlite",
+}
+
+BANNED_EXTENSIONS = {
+    ".pt", ".onnx", ".pdb", ".dll", ".exe", ".lib",
+    ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico",
+    ".mp3", ".ogg", ".wav", ".mp4", ".avi",
+    ".zip", ".sqlite", ".db",
+    ".ipynb",
 }
 
 # Какие расширения считаем текстовыми и полезными для экспорта кода/конфигов
@@ -87,6 +113,9 @@ def should_skip_dir(dir_name: str) -> bool:
 
 def should_include_file(path: Path) -> bool:
     name = path.name
+
+    if path.suffix.lower() in BANNED_EXTENSIONS:
+        return False
 
     if name in EXCLUDED_FILE_NAMES:
         return False

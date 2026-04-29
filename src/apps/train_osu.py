@@ -42,6 +42,7 @@ class TrainConfig:
     dt_ms: float = 16.6667
     upcoming_count: int = 5
     cursor_speed_scale: float = 11.0
+    spinner_cursor_speed_multiplier: float = 2.6
     click_threshold: float = 0.75
     slider_hold_threshold: float = 0.45
     spinner_hold_threshold: float = 0.45
@@ -73,10 +74,10 @@ class TrainConfig:
     # ------------------------------------------------------------
     # Outcome shaping
     # ------------------------------------------------------------
-    hit_bonus: float = 0.30
-    great_bonus_extra: float = 0.10
-    good_bonus_extra: float = 0.04
-    miss_penalty: float = 0.12
+    hit_bonus: float = 0.34
+    great_bonus_extra: float = 0.22
+    good_bonus_extra: float = 0.02
+    miss_penalty: float = 0.18
 
     empty_click_penalty: float = 0.07
     far_click_penalty: float = 0.05
@@ -85,10 +86,10 @@ class TrainConfig:
     # ------------------------------------------------------------
     # Phase 2: timing refinement
     # ------------------------------------------------------------
-    timing_good_window_ms: float = 55.0
+    timing_good_window_ms: float = 42.0
     timing_ok_window_ms: float = 105.0
     timing_focus_window_ms: float = 165.0
-    timing_good_bonus: float = 0.030
+    timing_good_bonus: float = 0.048
     timing_ok_bonus: float = 0.012
     timing_near_miss_penalty: float = 0.012
     timing_early_penalty_scale: float = 0.00012
@@ -248,21 +249,21 @@ class TrainConfig:
     spinner_radius_penalty: float = 0.026
     spinner_center_penalty: float = 0.065
     spinner_no_hold_spin_scale: float = 0.0
-    spinner_angular_delta_scale: float = 0.360
-    spinner_min_orbit_delta: float = 0.025
-    spinner_max_delta_per_step: float = 0.50
-    spinner_excess_delta_penalty: float = 0.050
-    spinner_speed_bonus: float = 0.035
-    spinner_stall_penalty: float = 0.045
-    spinner_direction_consistency_bonus: float = 0.025
+    spinner_angular_delta_scale: float = 0.560
+    spinner_min_orbit_delta: float = 0.045
+    spinner_max_delta_per_step: float = 0.78
+    spinner_excess_delta_penalty: float = 0.040
+    spinner_speed_bonus: float = 0.075
+    spinner_stall_penalty: float = 0.080
+    spinner_direction_consistency_bonus: float = 0.035
     spinner_direction_flip_penalty: float = 0.020
-    spinner_progress_bonus: float = 0.110
-    spinner_clear_bonus: float = 0.650
-    spinner_partial_bonus: float = 0.220
-    spinner_miss_penalty: float = 0.260
-    spinner_no_hold_penalty: float = 0.300
-    spinner_aux_loss_coef: float = 0.20
-    spinner_aux_tangent_action: float = 0.42
+    spinner_progress_bonus: float = 0.180
+    spinner_clear_bonus: float = 0.900
+    spinner_partial_bonus: float = 0.120
+    spinner_miss_penalty: float = 0.520
+    spinner_no_hold_penalty: float = 0.480
+    spinner_aux_loss_coef: float = 0.34
+    spinner_aux_tangent_action: float = 0.92
     spinner_aux_radial_gain: float = 0.020
     spinner_aux_radial_cap: float = 0.35
 
@@ -732,6 +733,7 @@ def build_env(cfg: TrainConfig, beatmap_path: str | Path | None = None) -> OsuEn
         click_threshold=cfg.click_threshold,
         slider_hold_threshold=cfg.slider_hold_threshold,
         spinner_hold_threshold=cfg.spinner_hold_threshold,
+        spinner_cursor_speed_multiplier=cfg.spinner_cursor_speed_multiplier,
     )
     return env
 
@@ -1625,6 +1627,13 @@ def phase23_shaping_reward(
             else 0
         )
         too_fast = angular_delta_abs > cfg.spinner_max_delta_per_step
+        remaining_spins = max(0.0, prev_obs.spinner.target_spins - prev_obs.spinner.spins)
+        remaining_steps = max(1.0, prev_obs.spinner.time_to_end_ms / max(1e-6, cfg.dt_ms))
+        target_delta = min(
+            cfg.spinner_max_delta_per_step,
+            max(cfg.spinner_min_orbit_delta * 2.0, (remaining_spins * 2.0 * math.pi) / remaining_steps),
+        )
+        speed_quality = min(1.0, angular_delta_abs / max(1e-6, target_delta))
 
         breakdown.spinner_active_step = 1
         breakdown.spinner_radius_error = radius_error
@@ -1667,11 +1676,14 @@ def phase23_shaping_reward(
                 radius_gate = 1.0 if good_radius else 0.35
                 breakdown.spinner += min(0.060, effective_delta * spin_scale * radius_gate)
             if (
-                cfg.spinner_min_orbit_delta <= angular_delta_abs <= cfg.spinner_max_delta_per_step
+                target_delta * 0.88 <= angular_delta_abs <= cfg.spinner_max_delta_per_step
                 and good_radius
                 and click_held
             ):
-                breakdown.spinner += cfg.spinner_speed_bonus
+                breakdown.spinner += cfg.spinner_speed_bonus * speed_quality
+            elif click_held and good_radius and angular_delta_abs < target_delta * 0.88:
+                slow_ratio = 1.0 - min(1.0, angular_delta_abs / max(1e-6, target_delta))
+                breakdown.spinner -= cfg.spinner_stall_penalty * (0.40 + slow_ratio)
             if motion_state.prev_spinner_delta_sign != 0 and delta_sign == motion_state.prev_spinner_delta_sign and click_held:
                 breakdown.spinner += cfg.spinner_direction_consistency_bonus
             elif motion_state.prev_spinner_delta_sign != 0 and delta_sign != 0:

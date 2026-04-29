@@ -43,6 +43,7 @@
     "aimAssistStrength": 0.55,
     "aimAssistMaxDistance": 220.0,
     "aimAssistDeadzone": 12.0,
+    "spinnerOrbitSpeedMultiplier": 2.8,
     "clickThreshold": 0.75,
     "sliderHoldThreshold": 0.45,
     "spinnerHoldThreshold": 0.45

@@ -32,7 +32,7 @@ public sealed class ActionApplier
         var assistedAction = ApplyAimAssist(snapshot, cursorX, cursorY, action, hasImmediateTarget);
         assistedAction = ApplySpinnerOrbitAssist(snapshot, cursorX, cursorY, assistedAction);
         var movementAction = SmoothMovement(assistedAction, hasImmediateTarget, snapshot.ActiveSpinner);
-        var effectiveSpeedScale = GetEffectiveSpeedScale();
+        var effectiveSpeedScale = GetEffectiveSpeedScale(false);
         var nextCursorX = cursorX;
         var nextCursorY = cursorY;
         if (hasImmediateTarget)
@@ -148,7 +148,7 @@ public sealed class ActionApplier
             0.0,
             1.0);
 
-        var effectiveSpeedScale = GetEffectiveSpeedScale();
+        var effectiveSpeedScale = GetEffectiveSpeedScale(false);
         var assistDx = Clamp(targetDxPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
         var assistDy = Clamp(targetDyPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
         var policyNextX = Clamp(cursorX + action.Dx * effectiveSpeedScale, 0.0, 512.0);
@@ -208,17 +208,19 @@ public sealed class ActionApplier
         var ny = dy / radius;
         var tangentX = -ny;
         var tangentY = nx;
-        var spinnerSpeedMultiplier = Clamp(_config.SpinnerOrbitSpeedMultiplier, 0.7, 2.4);
-        var radiusCorrection = Clamp((targetRadius - radius) * 0.18, -5.0, 5.0);
-        var orbitDxPx = (tangentX * 11.5 * spinnerSpeedMultiplier) + (nx * radiusCorrection);
-        var orbitDyPx = (tangentY * 11.5 * spinnerSpeedMultiplier) + (ny * radiusCorrection);
-        var effectiveSpeedScale = GetEffectiveSpeedScale();
+        var spinnerSpeedMultiplier = Clamp(_config.SpinnerOrbitSpeedMultiplier, 0.8, 4.0);
+        spinnerSpeedMultiplier = Clamp(spinnerSpeedMultiplier * SpinnerUrgencyMultiplier(snapshot), 1.2, 5.5);
+        var radiusCorrection = Clamp((targetRadius - radius) * 0.24, -8.0, 8.0);
+        var orbitPxPerTick = Clamp(30.0 * spinnerSpeedMultiplier, 24.0, 90.0);
+        var orbitDxPx = (tangentX * orbitPxPerTick) + (nx * radiusCorrection);
+        var orbitDyPx = (tangentY * orbitPxPerTick) + (ny * radiusCorrection);
+        var effectiveSpeedScale = GetEffectiveSpeedScale(false);
         var orbitDx = Clamp(orbitDxPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
         var orbitDy = Clamp(orbitDyPx / Math.Max(1.0, effectiveSpeedScale), -1.0, 1.0);
         var policyMagnitude = Math.Sqrt((action.Dx * action.Dx) + (action.Dy * action.Dy));
-        var assistWeightBase = policyMagnitude < 0.28 || radius < 42.0 ? 0.78 : 0.36;
-        var assistWeight = Clamp(assistWeightBase + ((spinnerSpeedMultiplier - 1.0) * 0.18), 0.30, 0.95);
-        var clickStrength = Math.Max(action.ClickStrength, _config.SpinnerHoldThreshold + 0.12);
+        var assistWeightBase = policyMagnitude < 0.42 || radius < 42.0 ? 0.92 : 0.64;
+        var assistWeight = Clamp(assistWeightBase + ((spinnerSpeedMultiplier - 1.0) * 0.12), 0.55, 0.98);
+        var clickStrength = Math.Max(action.ClickStrength, _config.SpinnerHoldThreshold + 0.22);
 
         return action with
         {
@@ -250,7 +252,46 @@ public sealed class ActionApplier
         var dy = ay - by;
         return Math.Sqrt((dx * dx) + (dy * dy));
     }
-    private double GetEffectiveSpeedScale() => _config.CursorSpeedScale * _adaptiveMovementCompensation;
+    private double GetEffectiveSpeedScale(bool activeSpinner)
+    {
+        var speedScale = _config.CursorSpeedScale * _adaptiveMovementCompensation;
+        if (activeSpinner)
+        {
+            speedScale *= Clamp(_config.SpinnerOrbitSpeedMultiplier, 0.8, 4.0);
+        }
+
+        return speedScale;
+    }
+
+    private static double SpinnerUrgencyMultiplier(ObservationSnapshot snapshot)
+    {
+        if (snapshot.Vector.Length < 59)
+        {
+            return 1.0;
+        }
+
+        var spins = snapshot.Vector[49] * 8.0;
+        var targetSpins = snapshot.Vector[50] * 8.0;
+        var timeToEndSeconds = Math.Max(0.05, snapshot.Vector[51]);
+        var requiredSpinsPerSecond = Math.Max(0.0, targetSpins - spins) / timeToEndSeconds;
+
+        if (requiredSpinsPerSecond >= 3.8)
+        {
+            return 1.35;
+        }
+
+        if (requiredSpinsPerSecond >= 3.1)
+        {
+            return 1.18;
+        }
+
+        if (requiredSpinsPerSecond <= 1.6)
+        {
+            return 0.88;
+        }
+
+        return 1.0;
+    }
     private static double Lerp(double start, double end, double amount) => start + ((end - start) * amount);
 }
 

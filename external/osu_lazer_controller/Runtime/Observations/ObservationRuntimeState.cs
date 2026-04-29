@@ -12,7 +12,9 @@ public sealed class ObservationRuntimeState
     private const double SpinnerMaxValidRadius = 125.0;
     private const double SpinnerMaxDeltaPerStep = 0.78;
     private const double SpinnerMinDeltaPerStep = 0.035;
-    private const double SpinnerTargetSpins = 2.70;
+    private const double SpinnerClearMinSpins = 3.50;
+    private const double SpinnerTargetSpinsPerSecond = 3.05;
+    private const double SpinnerMaxTargetSpins = 9.25;
 
     public int ObjectIndex { get; private set; }
     public BridgeHitObject? ActiveSlider { get; private set; }
@@ -23,7 +25,9 @@ public sealed class ObservationRuntimeState
     public double? LastSpinnerAngle { get; private set; }
     public double LastAngularVelocity { get; private set; }
     public double LastSpinnerTimeMs { get; private set; }
-    public double SpinnerTargetSpinsValue => SpinnerTargetSpins;
+    public double SpinnerTargetSpinsValue => ActiveSpinner is null || !ActiveSpinner.EndTimeMs.HasValue
+        ? SpinnerClearMinSpins
+        : CalculateSpinnerTargetSpins(ActiveSpinner.TimeMs, ActiveSpinner.EndTimeMs.Value);
     public bool LastRawClickDown { get; private set; }
     public bool JustPressed { get; private set; }
 
@@ -204,4 +208,12 @@ public sealed class ObservationRuntimeState
 
     private static double Distance(double x1, double y1, double x2, double y2)
         => Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
+
+    private static double CalculateSpinnerTargetSpins(double startTimeMs, double endTimeMs)
+    {
+        var durationSeconds = Math.Max(0.1, (endTimeMs - startTimeMs) / 1000.0);
+        return Math.Min(
+            SpinnerMaxTargetSpins,
+            Math.Max(SpinnerClearMinSpins, durationSeconds * SpinnerTargetSpinsPerSecond));
+    }
 }

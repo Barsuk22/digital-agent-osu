@@ -31,6 +31,7 @@ class OsuEnv:
         slider_hold_threshold: float = 0.45,
         spinner_hold_threshold: float = 0.45,
         cursor_speed_scale: float = 14.0,
+        spinner_cursor_speed_multiplier: float = 1.0,
     ) -> None:
         self.beatmap = beatmap
         self.dt_ms = dt_ms
@@ -39,6 +40,7 @@ class OsuEnv:
         self.slider_hold_threshold = slider_hold_threshold
         self.spinner_hold_threshold = spinner_hold_threshold
         self.cursor_speed_scale = cursor_speed_scale
+        self.spinner_cursor_speed_multiplier = max(1.0, spinner_cursor_speed_multiplier)
         self.judge = OsuJudge(beatmap)
 
         self.cursor_start_x = cursor_start_x
@@ -81,8 +83,12 @@ class OsuEnv:
 
         dt_step = self.dt_ms if dt_ms_override is None else max(0.1, float(dt_ms_override))
 
-        new_x = self.cursor_x + action.dx * self.cursor_speed_scale
-        new_y = self.cursor_y + action.dy * self.cursor_speed_scale
+        active_spinner_movement = self.judge.active_spinner is not None
+        speed_scale = self.cursor_speed_scale * (
+            self.spinner_cursor_speed_multiplier if active_spinner_movement else 1.0
+        )
+        new_x = self.cursor_x + action.dx * speed_scale
+        new_y = self.cursor_y + action.dy * speed_scale
         self.cursor_x, self.cursor_y = clamp_position(new_x, new_y)
 
         raw_click_down = action.click_strength >= self.click_threshold

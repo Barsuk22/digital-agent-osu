@@ -1,0 +1,22 @@
+# Example config for a future live Minecraft bridge.
+# The Python agent expects a JSON-lines TCP server that speaks the protocol in docs/minecraft/bridge_protocol_ru.md.
+
+connector: tcp
+observation_hz: 5.0
+frame_stack: 4
+max_episode_steps: 200
+run_id: minecraft_phase_a_tcp_smoke
+
+bridge:
+  host: 127.0.0.1
+  port: 4711
+  timeout_seconds: 2.0
+
+paths:
+  checkpoints_dir: artifacts/checkpoints/minecraft
+  logs_dir: artifacts/logs/minecraft
+  debug_dir: artifacts/debug/minecraft
+  runs_dir: artifacts/runs/minecraft
+  recordings_dir: data/minecraft/recordings
+  datasets_dir: data/minecraft/datasets
+  worlds_dir: data/minecraft/worlds

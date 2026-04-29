@@ -1,0 +1,32 @@
+# Phase A.3: Python <-> Mineflayer bridge config.
+
+connector: tcp
+observation_hz: 5.0
+frame_stack: 4
+max_episode_steps: 200
+run_id: minecraft_phase_a_mineflayer_bridge
+
+bridge:
+  host: 127.0.0.1
+  port: 4711
+  timeout_seconds: 2.0
+
+mineflayer:
+  minecraft_host: localhost
+  minecraft_port: 25565
+  username: AgentGirl
+  version: 1.20.1
+  auth: offline
+  block_radius: 3
+  entity_radius: 16
+  default_pulse_ms: 120
+  max_pulse_ms: 500
+
+paths:
+  checkpoints_dir: artifacts/checkpoints/minecraft
+  logs_dir: artifacts/logs/minecraft
+  debug_dir: artifacts/debug/minecraft
+  runs_dir: artifacts/runs/minecraft
+  recordings_dir: data/minecraft/recordings
+  datasets_dir: data/minecraft/datasets
+  worlds_dir: data/minecraft/worlds

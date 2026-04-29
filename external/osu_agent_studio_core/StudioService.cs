@@ -105,7 +105,7 @@ public sealed class StudioService
             "--run-name", StudioPaths.PrecisionRunName,
             "--source-checkpoint", StudioPaths.SourceBestCheckpoint,
             "--profile", "precision_spinner",
-            // "--resume-latest",
+            "--resume-latest",
             "--updates", options.Updates.ToString(CultureInfo.InvariantCulture),
             "--save-every", options.SaveEvery.ToString(CultureInfo.InvariantCulture),
             "--cursor-speed", options.CursorSpeed.ToString(CultureInfo.InvariantCulture),

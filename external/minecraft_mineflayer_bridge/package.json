@@ -1,0 +1,18 @@
+{
+  "name": "minecraft-mineflayer-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JSON-lines TCP bridge between Python Minecraft agent code and a local Mineflayer bot.",
+  "main": "src/bridge.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/bridge.js",
+    "check": "node --check src/bridge.js"
+  },
+  "dependencies": {
+    "mineflayer": "^4.20.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
